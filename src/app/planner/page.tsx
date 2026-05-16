@@ -1,0 +1,228 @@
+"use client";
+
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { motion } from "framer-motion";
+import toast from "react-hot-toast";
+import {
+  CalendarClock,
+  ClipboardCheck,
+  GitBranch,
+  Play,
+  Share2,
+  SlidersHorizontal
+} from "lucide-react";
+import { SectionHeader } from "@/components/SectionHeader";
+import { StatCard } from "@/components/StatCard";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Select } from "@/components/ui/form";
+import { ConstraintPanel } from "@/features/constraints/ConstraintPanel";
+import { CourseBuilder } from "@/features/courses/CourseBuilder";
+import { getRankingProfiles } from "@/engine/ranking";
+import { RankingMode } from "@/engine/types";
+import { useGenerator } from "@/hooks/useGenerator";
+import { useAppStore } from "@/store/useAppStore";
+import { buildShareUrl, createSharedState, encodeSharedState } from "@/utils/share";
+import { cn } from "@/utils/cn";
+
+const tabs = [
+  { id: "courses", label: "Courses", icon: ClipboardCheck },
+  { id: "constraints", label: "Constraints", icon: SlidersHorizontal }
+] as const;
+
+type TabId = (typeof tabs)[number]["id"];
+
+export default function PlannerPage() {
+  const [tab, setTab] = useState<TabId>("courses");
+  const courses = useAppStore((state) => state.courses);
+  const slots = useAppStore((state) => state.slots);
+  const constraints = useAppStore((state) => state.constraints);
+  const generatedSchedules = useAppStore((state) => state.generatedSchedules);
+  const rankingMode = useAppStore((state) => state.rankingMode);
+  const usePriorityRanking = useAppStore(
+    (state) => state.uiPreferences.usePriorityRanking
+  );
+  const setRankingMode = useAppStore((state) => state.setRankingMode);
+  const setUsePriorityRanking = useAppStore(
+    (state) => state.setUsePriorityRanking
+  );
+  const { generate, cancel, isGenerating, progress, checked, accepted } = useGenerator();
+
+  const optionCount = useMemo(
+    () => courses.reduce((sum, course) => sum + course.options.length, 0),
+    [courses]
+  );
+
+  async function sharePlanner() {
+    const encoded = encodeSharedState(
+      createSharedState({
+        slots,
+        courses,
+        constraints,
+        rankingMode,
+        usePriorityRanking,
+        activeSchedule: null
+      })
+    );
+    await navigator.clipboard.writeText(buildShareUrl("/planner", encoded));
+    toast.success("Planner URL copied.");
+  }
+
+  function runGeneration() {
+    generate({
+      courses,
+      slots,
+      constraints,
+      rankingMode,
+      usePriorityRanking,
+      maxResults: 500
+    });
+  }
+
+  return (
+    <div className="pb-20 lg:pb-0">
+      <SectionHeader
+        eyebrow="Workspace"
+        title="Planner"
+        description="Build your local course data, set constraints, and run the browser worker."
+        action={
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="outline" onClick={sharePlanner}>
+              <Share2 className="h-4 w-4" />
+              Share
+            </Button>
+            <Button
+              type="button"
+              variant={isGenerating ? "secondary" : "default"}
+              onClick={isGenerating ? cancel : runGeneration}
+            >
+              <Play className="h-4 w-4" />
+              {isGenerating ? "Cancel" : "Generate"}
+            </Button>
+          </div>
+        }
+      />
+
+      <div className="mb-5 grid gap-3 md:grid-cols-4">
+        <StatCard
+          label="Courses"
+          value={courses.length}
+          detail={`${optionCount} professor options`}
+          icon={ClipboardCheck}
+        />
+        <StatCard
+          label="Fixed Slots"
+          value={slots.length}
+          detail="FFCS theory and lab catalog"
+          icon={CalendarClock}
+        />
+        <StatCard
+          label="Generated"
+          value={generatedSchedules.length}
+          detail={generatedSchedules[0] ? `Best score ${generatedSchedules[0].score}` : "No run yet"}
+          icon={GitBranch}
+        />
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  Ranking
+                </p>
+                <p className="mt-2 text-sm text-muted-foreground">Optimization mode</p>
+              </div>
+              <Badge>{rankingMode}</Badge>
+            </div>
+            <Select
+              className="mt-3"
+              value={rankingMode}
+              onChange={(event) => setRankingMode(event.target.value as RankingMode)}
+            >
+              {getRankingProfiles().map((profile) => (
+                <option key={profile} value={profile}>
+                  {profile}
+                </option>
+              ))}
+            </Select>
+            <button
+              type="button"
+              onClick={() => setUsePriorityRanking(!usePriorityRanking)}
+              className={cn(
+                "mt-3 flex w-full items-center justify-between rounded-md border px-3 py-2 text-sm font-semibold transition",
+                usePriorityRanking
+                  ? "border-primary bg-primary/15 text-primary"
+                  : "border-border bg-secondary/40 text-muted-foreground hover:text-foreground"
+              )}
+            >
+              Priority ranking
+              <span
+                className={cn(
+                  "h-2.5 w-2.5 rounded-full",
+                  usePriorityRanking ? "bg-primary" : "bg-muted-foreground/40"
+                )}
+              />
+            </button>
+          </CardContent>
+        </Card>
+      </div>
+
+      {isGenerating || checked > 0 ? (
+        <Card className="mb-5">
+          <CardContent className="p-4">
+            <div className="mb-2 flex items-center justify-between text-sm">
+              <span className="text-muted-foreground">
+                Checked {checked} branches, accepted {accepted}
+              </span>
+              <span className="font-semibold">{Math.round(progress)}%</span>
+            </div>
+            <Progress value={progress} />
+            {accepted > 0 && !isGenerating ? (
+              <Link
+                href="/results"
+                className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-glow transition hover:bg-primary/90"
+              >
+                Open Results
+              </Link>
+            ) : null}
+          </CardContent>
+        </Card>
+      ) : null}
+
+      <div className="mb-5 flex flex-wrap gap-2 rounded-lg border border-border bg-card/70 p-2">
+        {tabs.map((item) => {
+          const Icon = item.icon;
+          const active = tab === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setTab(item.id)}
+              className={cn(
+                "inline-flex h-10 items-center gap-2 rounded-md px-4 text-sm font-semibold transition",
+                active
+                  ? "bg-primary text-primary-foreground shadow-glow"
+                  : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
+              )}
+            >
+              <Icon className="h-4 w-4" />
+              {item.label}
+            </button>
+          );
+        })}
+      </div>
+
+      <motion.div
+        key={tab}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.18 }}
+      >
+        {tab === "courses" ? <CourseBuilder /> : null}
+        {tab === "constraints" ? <ConstraintPanel /> : null}
+      </motion.div>
+    </div>
+  );
+}
