@@ -39,7 +39,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const applySharedState = useAppStore((state) => state.applySharedState);
 
   const activeLabel = useMemo(
-    () => navItems.find((item) => item.href === pathname)?.label ?? "UniTime",
+    () => navItems.find((item) => item.href === pathname)?.label ?? "Ultimate FFCS",
     [pathname]
   );
 
@@ -61,7 +61,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
     const sharedState = decodeSharedState(encoded);
     if (!sharedState) {
-      toast.error("This shared UniTime URL could not be opened.");
+      toast.error("This shared Ultimate FFCS URL could not be opened.");
       return;
     }
     applySharedState(sharedState);
@@ -81,7 +81,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </span>
             <span>
               <span className="block text-sm font-semibold text-foreground">
-                UniTime Pro
+                Ultimate FFCS
               </span>
               <span className="block text-xs text-muted-foreground">{activeLabel}</span>
             </span>

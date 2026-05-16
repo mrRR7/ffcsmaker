@@ -19,7 +19,7 @@ export function exportScheduleJson(schedule: ScoredTimetable) {
     type: "application/json"
   });
   const url = URL.createObjectURL(blob);
-  downloadUrl(url, `unitime-${schedule.id}.json`);
+  downloadUrl(url, `ultimate-ffcs-${schedule.id}.json`);
   URL.revokeObjectURL(url);
 }
 
@@ -50,10 +50,10 @@ export async function exportElementPdf(
   pdf.rect(0, 0, 1280, 820, "F");
   pdf.setFontSize(18);
   pdf.setTextColor(240, 253, 250);
-  pdf.text(`UniTime Pro - ${schedule.rankingMode} - ${schedule.score}`, 40, 38);
+  pdf.text(`Ultimate FFCS - ${schedule.rankingMode} - ${schedule.score}`, 40, 38);
   pdf.addImage(dataUrl, "PNG", 40, 58, 1200, 700);
   pdf.setFontSize(10);
   pdf.setTextColor(148, 163, 184);
   pdf.text(`Exported ${format(new Date(), "PPpp")}`, 40, 790);
-  pdf.save(`unitime-${schedule.id}.pdf`);
+  pdf.save(`ultimate-ffcs-${schedule.id}.pdf`);
 }

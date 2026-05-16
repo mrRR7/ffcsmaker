@@ -76,7 +76,7 @@ export function ScheduleSummaryCard({
     try {
       setIsExporting(true);
       if (type === "png") {
-        await exportElementPng(previewRef.current, `unitime-${schedule.id}.png`);
+        await exportElementPng(previewRef.current, `ultimate-ffcs-${schedule.id}.png`);
       } else {
         await exportElementPdf(previewRef.current, schedule);
       }

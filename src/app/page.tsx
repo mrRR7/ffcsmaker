@@ -45,7 +45,7 @@ export default function LandingPage() {
             Frontend-only timetable optimizer
           </Badge>
           <h1 className="mt-5 max-w-3xl text-5xl font-semibold tracking-normal text-foreground sm:text-6xl">
-            UniTime Pro
+            Ultimate FFCS
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
             Build clash-free college schedules with professor options, lab/theory

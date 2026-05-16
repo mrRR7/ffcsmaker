@@ -173,7 +173,7 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent>
             <Button type="button" variant="destructive" onClick={resetAll}>
-              Reset UniTime Pro
+              Reset Ultimate FFCS
             </Button>
           </CardContent>
         </Card>

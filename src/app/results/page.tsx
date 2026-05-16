@@ -73,7 +73,7 @@ export default function ResultsPage() {
     }
     try {
       if (type === "png") {
-        await exportElementPng(exportRef.current, `unitime-${activeSchedule.id}.png`);
+        await exportElementPng(exportRef.current, `ultimate-ffcs-${activeSchedule.id}.png`);
       } else {
         await exportElementPdf(exportRef.current, activeSchedule);
       }

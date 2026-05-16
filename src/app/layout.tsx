@@ -3,7 +3,7 @@ import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
 
 export const metadata: Metadata = {
-  title: "UniTime Pro",
+  title: "Ultimate FFCS",
   description: "Frontend-only college timetable optimizer"
 };
 
