@@ -5,7 +5,6 @@ import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import {
-  CalendarClock,
   ClipboardCheck,
   GitBranch,
   Play,
@@ -106,18 +105,12 @@ export default function PlannerPage() {
         }
       />
 
-      <div className="mb-5 grid gap-3 md:grid-cols-4">
+      <div className="mb-5 grid gap-3 md:grid-cols-3">
         <StatCard
           label="Courses"
           value={courses.length}
           detail={`${optionCount} professor options`}
           icon={ClipboardCheck}
-        />
-        <StatCard
-          label="Fixed Slots"
-          value={slots.length}
-          detail="FFCS theory and lab catalog"
-          icon={CalendarClock}
         />
         <StatCard
           label="Generated"
