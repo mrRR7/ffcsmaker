@@ -12,6 +12,7 @@
   "dependencies": {
     "@next/bundle-analyzer": "^14.2.23",
     "@types/node": "^22.10.5",
+    "@types/papaparse": "^5.5.2",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "class-variance-authority": "^0.7.1",
@@ -24,12 +25,15 @@
     "lz-string": "^1.5.0",
     "nanoid": "^5.0.9",
     "next": "^14.2.23",
+    "papaparse": "^5.5.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-dropzone": "^15.0.0",
     "react-hot-toast": "^2.4.1",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.7.2",
+    "xlsx": "^0.18.5",
     "zustand": "^5.0.2"
   },
   "devDependencies": {

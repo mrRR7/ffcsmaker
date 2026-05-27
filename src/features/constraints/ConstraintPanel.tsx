@@ -1,41 +1,39 @@
 "use client";
 
 import { useState } from "react";
-import { Ban, Clock4, LockKeyhole, Plus, SlidersHorizontal, Trash2 } from "lucide-react";
+import { Clock4, Plus, Settings2, SlidersHorizontal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input, Label, Select } from "@/components/ui/form";
-import { BlockedWindow, DAYS } from "@/engine/types";
+import { BlockedWindow, Constraints, DAYS } from "@/engine/types";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/utils/cn";
+import { ConstraintSectionNav } from "./ConstraintSectionNav";
 
-function commaList(value: string) {
-  return value
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
+function getInitialEndBeforeTime(constraints: Constraints) {
+  return constraints.endBeforeByDay[DAYS[0]] ?? "16:00";
+}
+
+function getInitialEndBeforeDays(constraints: Constraints) {
+  return Object.values(constraints.endBeforeByDay).filter(Boolean).length;
 }
 
 export function ConstraintPanel() {
   const constraints = useAppStore((state) => state.constraints);
-  const courses = useAppStore((state) => state.courses);
   const setConstraint = useAppStore((state) => state.setConstraint);
   const addBlockedWindow = useAppStore((state) => state.addBlockedWindow);
   const updateBlockedWindow = useAppStore((state) => state.updateBlockedWindow);
   const deleteBlockedWindow = useAppStore((state) => state.deleteBlockedWindow);
   const resetConstraints = useAppStore((state) => state.resetConstraints);
+
   const [blockedDraft, setBlockedDraft] = useState<Omit<BlockedWindow, "id">>({
     day: "All",
     startTime: "12:30",
     endTime: "13:30",
     label: "Focus block"
   });
+  const [endBeforeTime, setEndBeforeTime] = useState(() => getInitialEndBeforeTime(constraints));
+  const [endBeforeDays, setEndBeforeDays] = useState(() => getInitialEndBeforeDays(constraints));
 
   function submitBlockedWindow() {
     addBlockedWindow(blockedDraft);
@@ -47,330 +45,338 @@ export function ConstraintPanel() {
     });
   }
 
+  function updateEndBeforePreference(nextDays: number, nextTime: string) {
+    setEndBeforeDays(nextDays);
+    setEndBeforeTime(nextTime);
+
+    const nextMap = DAYS.reduce<Partial<Record<(typeof DAYS)[number], string | null>>>((acc, day, index) => {
+      acc[day] = index < nextDays ? nextTime : null;
+      return acc;
+    }, {});
+
+    setConstraint("endBeforeByDay", nextMap);
+  }
+
+  const sections = [
+    { id: "time-preferences", label: "Time Preferences", icon: <Settings2 className="h-4 w-4" /> },
+    { id: "end-before", label: "Early Finish", icon: <SlidersHorizontal className="h-4 w-4" /> },
+    { id: "blocked-windows", label: "Blocked Windows", icon: <Clock4 className="h-4 w-4" /> }
+  ];
+
   return (
-    <div className="grid gap-5 xl:grid-cols-2">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Ban className="h-5 w-5 text-primary" />
-            Hard Constraints
-          </CardTitle>
-          <CardDescription>Invalid schedules are rejected during generation.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Field label="No classes before">
-              <Input
-                type="time"
-                value={constraints.noBeforeTime ?? ""}
-                onChange={(event) =>
-                  setConstraint("noBeforeTime", event.target.value || null)
-                }
-              />
-            </Field>
-            <Field label="No classes after">
-              <Input
-                type="time"
-                value={constraints.noAfterTime ?? ""}
-                onChange={(event) =>
-                  setConstraint("noAfterTime", event.target.value || null)
-                }
-              />
-            </Field>
-            <Field label="Max classes per day">
-              <Input
-                type="number"
-                min={1}
-                value={constraints.maxClassesPerDay ?? ""}
-                onChange={(event) =>
-                  setConstraint(
-                    "maxClassesPerDay",
-                    event.target.value ? Number(event.target.value) : null
-                  )
-                }
-              />
-            </Field>
-            <Field label="Max total gap slots">
-              <Input
-                type="number"
-                min={0}
-                value={constraints.maxGapSlots ?? ""}
-                onChange={(event) =>
-                  setConstraint(
-                    "maxGapSlots",
-                    event.target.value ? Number(event.target.value) : null
-                  )
-                }
-              />
-            </Field>
-            <Field label="Avoid professors">
-              <Input
-                value={constraints.avoidProfessors.join(", ")}
-                onChange={(event) =>
-                  setConstraint("avoidProfessors", commaList(event.target.value))
-                }
-                placeholder="Name, Name"
-              />
-            </Field>
-          </div>
+    <div className="relative grid items-start gap-8 xl:grid-cols-[220px_1fr]">
+      <ConstraintSectionNav sections={sections} />
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            <SwitchButton
-              active={constraints.avoidFirstPeriod}
-              label="Avoid first period"
-              onClick={() =>
-                setConstraint("avoidFirstPeriod", !constraints.avoidFirstPeriod)
-              }
-            />
-            <SwitchButton
-              active={constraints.avoidLastPeriod}
-              label="Avoid last period"
-              onClick={() =>
-                setConstraint("avoidLastPeriod", !constraints.avoidLastPeriod)
-              }
-            />
-            <SwitchButton
-              active={constraints.protectLunch}
-              label="Protect lunch"
-              onClick={() => setConstraint("protectLunch", !constraints.protectLunch)}
-            />
-          </div>
-
+      <div className="space-y-8 pb-24">
+        <section id="time-preferences" className="scroll-mt-24 space-y-4">
           <div>
-            <Label>End before by day</Label>
-            <div className="mt-2 grid gap-2 sm:grid-cols-2">
-              {DAYS.map((day) => (
-                <div key={day} className="flex items-center gap-2">
-                  <span className="w-20 text-sm text-muted-foreground">{day.slice(0, 3)}</span>
+            <h2 className="text-xl font-bold tracking-tight">Time Preferences</h2>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Keep the schedule shaped around the parts of the day you actually want to protect.
+            </p>
+          </div>
+          <Card>
+            <CardContent className="space-y-6 p-6">
+              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <Field label="No classes before">
                   <Input
                     type="time"
-                    value={constraints.endBeforeByDay[day] ?? ""}
+                    value={constraints.noBeforeTime ?? ""}
                     onChange={(event) =>
-                      setConstraint("endBeforeByDay", {
-                        ...constraints.endBeforeByDay,
-                        [day]: event.target.value || null
-                      })
+                      setConstraint("noBeforeTime", event.target.value || null)
                     }
                   />
-                </div>
-              ))}
-            </div>
-          </div>
+                </Field>
+                <Field label="Max classes per day">
+                  <Input
+                    type="number"
+                    min={1}
+                    value={constraints.maxClassesPerDay ?? ""}
+                    onChange={(event) =>
+                      setConstraint(
+                        "maxClassesPerDay",
+                        event.target.value ? Number(event.target.value) : null
+                      )
+                    }
+                  />
+                </Field>
+                <Field label="Max gap slots">
+                  <Input
+                    type="number"
+                    min={0}
+                    value={constraints.maxGapSlots ?? ""}
+                    onChange={(event) =>
+                      setConstraint(
+                        "maxGapSlots",
+                        event.target.value ? Number(event.target.value) : null
+                      )
+                    }
+                  />
+                </Field>
+                <Field label="Protect lunch">
+                  <button
+                    type="button"
+                    onClick={() => setConstraint("protectLunch", !constraints.protectLunch)}
+                    className={cn(
+                      "flex h-10 items-center justify-between rounded-md border px-3 text-sm font-medium transition",
+                      constraints.protectLunch
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-secondary/35 text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    <span>{constraints.protectLunch ? "On" : "Off"}</span>
+                    <span
+                      className={cn(
+                        "h-2.5 w-2.5 rounded-full",
+                        constraints.protectLunch ? "bg-primary" : "bg-muted-foreground/30"
+                      )}
+                    />
+                  </button>
+                </Field>
+              </div>
 
+              <div className="grid gap-3 sm:grid-cols-3">
+                <SwitchButton
+                  active={constraints.minimizeDays}
+                  label="Minimize active days"
+                  onClick={() => setConstraint("minimizeDays", !constraints.minimizeDays)}
+                />
+                <SwitchButton
+                  active={constraints.preferCompactness}
+                  label="Prefer compactness"
+                  onClick={() =>
+                    setConstraint("preferCompactness", !constraints.preferCompactness)
+                  }
+                />
+                <SwitchButton
+                  active={constraints.preferHalfDays}
+                  label="Prefer half days"
+                  onClick={() =>
+                    setConstraint("preferHalfDays", !constraints.preferHalfDays)
+                  }
+                />
+                <SwitchButton
+                  active={constraints.preferEarlyFinish}
+                  label="Prefer early finish"
+                  onClick={() =>
+                    setConstraint("preferEarlyFinish", !constraints.preferEarlyFinish)
+                  }
+                />
+                <SwitchButton
+                  active={constraints.avoidFirstPeriod}
+                  label="Avoid first period"
+                  onClick={() =>
+                    setConstraint("avoidFirstPeriod", !constraints.avoidFirstPeriod)
+                  }
+                />
+                <SwitchButton
+                  active={constraints.avoidLastPeriod}
+                  label="Avoid last period"
+                  onClick={() => setConstraint("avoidLastPeriod", !constraints.avoidLastPeriod)}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section id="end-before" className="scroll-mt-24 space-y-4">
           <div>
-            <Label>Professor locks</Label>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {courses.flatMap((course) =>
-                course.options.map((option) => {
-                  const value = `${course.id}:${option.id}`;
-                  const active = constraints.professorLocks.includes(value);
+            <h2 className="text-xl font-bold tracking-tight">Early Finish</h2>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Optional. Pick how many days should end by the same time instead of filling in day-by-day cutoffs.
+            </p>
+          </div>
+          <Card>
+            <CardContent className="space-y-4 p-6">
+              <div className="grid gap-3 lg:grid-cols-[1fr_160px_160px]">
+                <Field label="Days to apply">
+                  <Input
+                    type="range"
+                    min={0}
+                    max={DAYS.length}
+                    value={endBeforeDays}
+                    onChange={(event) =>
+                      updateEndBeforePreference(Number(event.target.value), endBeforeTime)
+                    }
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Apply the cutoff to {endBeforeDays} day{endBeforeDays === 1 ? "" : "s"}.
+                  </p>
+                </Field>
+                <Field label="Cutoff time">
+                  <Input
+                    type="time"
+                    value={endBeforeTime}
+                    onChange={(event) =>
+                      updateEndBeforePreference(endBeforeDays, event.target.value || "16:00")
+                    }
+                  />
+                </Field>
+                <div className="flex items-end">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => updateEndBeforePreference(0, endBeforeTime)}
+                  >
+                    Clear cutoff
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                {DAYS.map((day, index) => {
+                  const active = Boolean(constraints.endBeforeByDay[day]);
                   return (
                     <button
-                      key={value}
+                      key={day}
                       type="button"
-                      onClick={() =>
-                        setConstraint(
-                          "professorLocks",
-                          constraints.professorLocks.includes(value)
-                            ? constraints.professorLocks.filter((lock) => lock !== value)
-                            : [...constraints.professorLocks, value]
-                        )
-                      }
+                      onClick={() => updateEndBeforePreference(index + 1, endBeforeTime)}
                       className={cn(
-                        "inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm transition",
+                        "flex items-center justify-between rounded-md border px-3 py-2 text-sm transition",
                         active
-                          ? "border-primary bg-primary/15 text-primary"
+                          ? "border-primary bg-primary/10 text-primary"
                           : "border-border bg-secondary/35 text-muted-foreground hover:text-foreground"
                       )}
                     >
-                      <LockKeyhole className="h-3.5 w-3.5" />
-                      {course.courseCode} - {option.professorName}
+                      <span>{day.slice(0, 3)}</span>
+                      <span>{active ? constraints.endBeforeByDay[day] : "Off"}</span>
                     </button>
                   );
-                })
-              )}
-              {courses.every((course) => course.options.length === 0) ? (
-                <p className="text-sm text-muted-foreground">No professor options.</p>
-              ) : null}
-            </div>
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section id="blocked-windows" className="scroll-mt-24 space-y-4">
+          <div>
+            <h2 className="text-xl font-bold tracking-tight">Blocked Windows</h2>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Protect lunch, work, commute, or club time.
+            </p>
           </div>
-        </CardContent>
-      </Card>
-
-      <div className="space-y-5">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <SlidersHorizontal className="h-5 w-5 text-primary" />
-              Soft Preferences
-            </CardTitle>
-            <CardDescription>Preferences influence ranking after hard pruning.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <SwitchButton
-                active={constraints.minimizeDays}
-                label="Minimize active days"
-                onClick={() => setConstraint("minimizeDays", !constraints.minimizeDays)}
-              />
-              <SwitchButton
-                active={constraints.preferCompactness}
-                label="Prefer compactness"
-                onClick={() =>
-                  setConstraint("preferCompactness", !constraints.preferCompactness)
-                }
-              />
-              <SwitchButton
-                active={constraints.preferHalfDays}
-                label="Prefer half days"
-                onClick={() =>
-                  setConstraint("preferHalfDays", !constraints.preferHalfDays)
-                }
-              />
-              <SwitchButton
-                active={constraints.preferEarlyFinish}
-                label="Prefer early finish"
-                onClick={() =>
-                  setConstraint("preferEarlyFinish", !constraints.preferEarlyFinish)
-                }
-              />
-            </div>
-            <Field label="Preferred professors">
-              <Input
-                value={constraints.preferredProfessors.join(", ")}
-                onChange={(event) =>
-                  setConstraint("preferredProfessors", commaList(event.target.value))
-                }
-                placeholder="Name, Name"
-              />
-            </Field>
-            <Button type="button" variant="outline" onClick={resetConstraints}>
-              Reset Constraints
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock4 className="h-5 w-5 text-primary" />
-              Blocked Windows
-            </CardTitle>
-            <CardDescription>Protect lunch, work, commute, or club time.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-3 md:grid-cols-[1fr_140px_140px_140px_44px]">
-              <Input
-                value={blockedDraft.label ?? ""}
-                onChange={(event) =>
-                  setBlockedDraft((current) => ({
-                    ...current,
-                    label: event.target.value
-                  }))
-                }
-                placeholder="Label"
-              />
-              <Select
-                value={blockedDraft.day}
-                onChange={(event) =>
-                  setBlockedDraft((current) => ({
-                    ...current,
-                    day: event.target.value as BlockedWindow["day"]
-                  }))
-                }
-              >
-                <option value="All">All</option>
-                {DAYS.map((day) => (
-                  <option key={day} value={day}>
-                    {day}
-                  </option>
-                ))}
-              </Select>
-              <Input
-                type="time"
-                value={blockedDraft.startTime}
-                onChange={(event) =>
-                  setBlockedDraft((current) => ({
-                    ...current,
-                    startTime: event.target.value
-                  }))
-                }
-              />
-              <Input
-                type="time"
-                value={blockedDraft.endTime}
-                onChange={(event) =>
-                  setBlockedDraft((current) => ({
-                    ...current,
-                    endTime: event.target.value
-                  }))
-                }
-              />
-              <Button type="button" size="icon" onClick={submitBlockedWindow}>
-                <Plus className="h-4 w-4" />
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              {constraints.blockedWindows.map((blockedWindow) => (
-                <div
-                  key={blockedWindow.id}
-                  className="grid gap-2 rounded-md border border-border bg-background/35 p-3 md:grid-cols-[1fr_140px_140px_140px_44px]"
+          <Card>
+            <CardContent className="space-y-6 p-6">
+              <div className="grid gap-3 md:grid-cols-[1fr_140px_140px_140px_44px]">
+                <Input
+                  value={blockedDraft.label ?? ""}
+                  onChange={(event) =>
+                    setBlockedDraft((current) => ({
+                      ...current,
+                      label: event.target.value
+                    }))
+                  }
+                  placeholder="Label"
+                />
+                <Select
+                  value={blockedDraft.day}
+                  onChange={(event) =>
+                    setBlockedDraft((current) => ({
+                      ...current,
+                      day: event.target.value as BlockedWindow["day"]
+                    }))
+                  }
                 >
-                  <Input
-                    value={blockedWindow.label ?? ""}
-                    onChange={(event) =>
-                      updateBlockedWindow(blockedWindow.id, {
-                        label: event.target.value
-                      })
-                    }
-                  />
-                  <Select
-                    value={blockedWindow.day}
-                    onChange={(event) =>
-                      updateBlockedWindow(blockedWindow.id, {
-                        day: event.target.value as BlockedWindow["day"]
-                      })
-                    }
+                  <option value="All">All</option>
+                  {DAYS.map((day) => (
+                    <option key={day} value={day}>
+                      {day}
+                    </option>
+                  ))}
+                </Select>
+                <Input
+                  type="time"
+                  value={blockedDraft.startTime}
+                  onChange={(event) =>
+                    setBlockedDraft((current) => ({
+                      ...current,
+                      startTime: event.target.value
+                    }))
+                  }
+                />
+                <Input
+                  type="time"
+                  value={blockedDraft.endTime}
+                  onChange={(event) =>
+                    setBlockedDraft((current) => ({
+                      ...current,
+                      endTime: event.target.value
+                    }))
+                  }
+                />
+                <Button type="button" size="icon" onClick={submitBlockedWindow}>
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+
+              <div className="space-y-2">
+                {constraints.blockedWindows.map((blockedWindow) => (
+                  <div
+                    key={blockedWindow.id}
+                    className="grid gap-2 rounded-md border border-border bg-background/35 p-3 md:grid-cols-[1fr_140px_140px_140px_44px]"
                   >
-                    <option value="All">All</option>
-                    {DAYS.map((day) => (
-                      <option key={day} value={day}>
-                        {day}
-                      </option>
-                    ))}
-                  </Select>
-                  <Input
-                    type="time"
-                    value={blockedWindow.startTime}
-                    onChange={(event) =>
-                      updateBlockedWindow(blockedWindow.id, {
-                        startTime: event.target.value
-                      })
-                    }
-                  />
-                  <Input
-                    type="time"
-                    value={blockedWindow.endTime}
-                    onChange={(event) =>
-                      updateBlockedWindow(blockedWindow.id, {
-                        endTime: event.target.value
-                      })
-                    }
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    onClick={() => deleteBlockedWindow(blockedWindow.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                    <Input
+                      value={blockedWindow.label ?? ""}
+                      onChange={(event) =>
+                        updateBlockedWindow(blockedWindow.id, {
+                          label: event.target.value
+                        })
+                      }
+                    />
+                    <Select
+                      value={blockedWindow.day}
+                      onChange={(event) =>
+                        updateBlockedWindow(blockedWindow.id, {
+                          day: event.target.value as BlockedWindow["day"]
+                        })
+                      }
+                    >
+                      <option value="All">All</option>
+                      {DAYS.map((day) => (
+                        <option key={day} value={day}>
+                          {day}
+                        </option>
+                      ))}
+                    </Select>
+                    <Input
+                      type="time"
+                      value={blockedWindow.startTime}
+                      onChange={(event) =>
+                        updateBlockedWindow(blockedWindow.id, {
+                          startTime: event.target.value
+                        })
+                      }
+                    />
+                    <Input
+                      type="time"
+                      value={blockedWindow.endTime}
+                      onChange={(event) =>
+                        updateBlockedWindow(blockedWindow.id, {
+                          endTime: event.target.value
+                        })
+                      }
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      onClick={() => deleteBlockedWindow(blockedWindow.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </section>
+
+        <div className="flex justify-center pt-2">
+          <Button type="button" variant="outline" onClick={resetConstraints}>
+            Reset All Constraints
+          </Button>
+        </div>
       </div>
     </div>
   );
@@ -385,7 +391,9 @@ function Field({
 }) {
   return (
     <div className="space-y-2">
-      <Label>{label}</Label>
+      <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        {label}
+      </Label>
       {children}
     </div>
   );
@@ -407,15 +415,15 @@ function SwitchButton({
       className={cn(
         "flex items-center justify-between rounded-md border px-3 py-3 text-left text-sm font-medium transition",
         active
-          ? "border-primary bg-primary/15 text-primary"
+          ? "border-primary bg-primary/10 text-primary"
           : "border-border bg-secondary/35 text-muted-foreground hover:text-foreground"
       )}
     >
       <span>{label}</span>
       <span
         className={cn(
-          "h-2.5 w-2.5 rounded-full",
-          active ? "bg-primary" : "bg-muted-foreground/40"
+          "h-2.5 w-2.5 rounded-full transition-colors",
+          active ? "bg-primary" : "bg-muted-foreground/30"
         )}
       />
     </button>

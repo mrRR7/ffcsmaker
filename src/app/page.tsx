@@ -60,12 +60,6 @@ export default function LandingPage() {
               Open Planner
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link
-              href="/dashboard"
-              className="inline-flex h-10 items-center justify-center rounded-md border border-border bg-background/30 px-4 text-sm font-semibold transition hover:bg-secondary/70"
-            >
-              Dashboard
-            </Link>
           </div>
         </div>
 

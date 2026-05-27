@@ -45,10 +45,6 @@ const config: Config = {
       boxShadow: {
         glow: "0 0 0 1px rgba(45, 212, 191, 0.14), 0 18px 48px rgba(8, 47, 73, 0.32)",
         card: "0 20px 60px rgba(2, 6, 23, 0.26)"
-      },
-      backgroundImage: {
-        "premium-mesh":
-          "radial-gradient(circle at 10% 0%, rgba(16, 185, 129, 0.18), transparent 28%), radial-gradient(circle at 92% 8%, rgba(99, 102, 241, 0.16), transparent 26%), linear-gradient(145deg, #020617 0%, #07111f 47%, #031c21 100%)"
       }
     }
   },

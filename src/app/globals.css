@@ -99,3 +99,11 @@ textarea {
   background: rgba(45, 212, 191, 0.42);
   border-radius: 999px;
 }
+
+.bg-premium-mesh {
+  background-color: hsl(var(--background));
+  background-image:
+    radial-gradient(circle at 10% 0%, hsl(var(--primary) / 0.18), transparent 28%),
+    radial-gradient(circle at 92% 8%, hsl(var(--accent) / 0.16), transparent 26%),
+    linear-gradient(145deg, hsl(var(--background)) 0%, hsl(var(--secondary) / 0.4) 47%, hsl(var(--background)) 100%);
+}

@@ -2,13 +2,15 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { GitCompare, Plus, X } from "lucide-react";
+import { BookmarkPlus, GitCompare, Plus, X } from "lucide-react";
+import toast from "react-hot-toast";
 import { SectionHeader } from "@/components/SectionHeader";
-import { TimetableGrid } from "@/components/TimetableGrid";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select } from "@/components/ui/form";
+import { CourseSummaryPanel } from "@/features/results/CourseSummaryPanel";
+import { SlotMatrixTimetable } from "@/features/results/SlotMatrixTimetable";
 import { getAllSchedules, useAppStore } from "@/store/useAppStore";
 
 const metricRows = [
@@ -27,6 +29,7 @@ export default function ComparePage() {
   const addCompareSchedule = useAppStore((state) => state.addCompareSchedule);
   const removeCompareSchedule = useAppStore((state) => state.removeCompareSchedule);
   const clearCompare = useAppStore((state) => state.clearCompare);
+  const saveSchedule = useAppStore((state) => state.saveSchedule);
   const savedSchedulesRaw = useAppStore((state) => state.savedSchedules);
   const generatedSchedulesRaw = useAppStore((state) => state.generatedSchedules);
   const compareScheduleIds = Array.isArray(compareScheduleIdsRaw) ? compareScheduleIdsRaw : [];
@@ -46,7 +49,7 @@ export default function ComparePage() {
       <SectionHeader
         eyebrow="Compare"
         title="Schedule Comparison"
-        description="Place up to three generated or saved schedules side by side."
+        description="Compare up to three timetables using the same theory and lab matrix as Results."
         action={
           <div className="flex flex-wrap gap-2">
             <Select
@@ -147,7 +150,7 @@ export default function ComparePage() {
             </CardContent>
           </Card>
 
-          <div className="grid gap-5 xl:grid-cols-3">
+          <div className="space-y-5">
             {selected.map((schedule, index) => (
               <div key={schedule!.id} className="space-y-3">
                 <Card>
@@ -156,22 +159,44 @@ export default function ComparePage() {
                       <Badge>Schedule {index + 1}</Badge>
                       <p className="mt-2 font-semibold">Score {schedule!.score}</p>
                     </div>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon"
-                      title="Remove"
-                      onClick={() => removeCompareSchedule(schedule!.id)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          saveSchedule(schedule!);
+                          toast.success("Timetable saved locally.");
+                        }}
+                      >
+                        <BookmarkPlus className="h-4 w-4" />
+                        Save
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        title="Remove"
+                        onClick={() => removeCompareSchedule(schedule!.id)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
-                <TimetableGrid
+                <SlotMatrixTimetable
                   schedule={schedule!}
                   slots={slots}
                   courses={courses}
-                  compact
+                />
+                <CourseSummaryPanel
+                  schedule={schedule!}
+                  slots={slots}
+                  courses={courses}
+                  highlightCourseCode={null}
+                  previewCourseCode={null}
+                  onHighlightCourseCodeChange={() => undefined}
+                  onPreviewCourseCodeChange={() => undefined}
                 />
               </div>
             ))}

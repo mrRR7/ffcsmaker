@@ -9,8 +9,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/utils/cn";
+import { motion, AnimatePresence } from "framer-motion";
 
-type Block = {
+export type Block = {
   id: string;
   day: string;
   start: number;
@@ -21,9 +22,14 @@ type Block = {
   slotLabel: string;
   type: "Theory" | "Lab";
   color: string;
+  courseId: string;
+  credits: number;
+  courseCode: string;
+  professorName: string;
+  slotIds: string[];
 };
 
-function buildBlocks(
+export function buildBlocks(
   schedule: ScoredTimetable,
   slots: TimeSlot[],
   courses: Course[]
@@ -47,7 +53,16 @@ function buildBlocks(
       courseName: selection.courseName,
       slotLabel: `${slot.label} ${slot.startTime}-${slot.endTime}`,
       type: slotTypeById.get(slot.id) ?? (slot.kind === "lab" ? "Lab" : "Theory"),
-      color: course?.color ?? "#14b8a6"
+      color: course?.color ?? "#14b8a6",
+      courseId: selection.courseId,
+      credits: selection.credits,
+      courseCode: selection.courseCode,
+      professorName: selection.professorName,
+      slotIds: [
+        ...selection.theorySlotIds,
+        ...selection.labSlotIds,
+        ...selection.combinedSlotIds
+      ]
     }));
   });
 }
@@ -57,13 +72,21 @@ export function TimetableGrid({
   slots,
   courses,
   className,
-  compact = false
+  compact = false,
+  onBlockClick,
+  onBlockHover,
+  highlightCourseCode,
+  activeBlockId
 }: {
   schedule: ScoredTimetable | null;
   slots: TimeSlot[];
   courses: Course[];
   className?: string;
   compact?: boolean;
+  onBlockClick?: (block: Block) => void;
+  onBlockHover?: (block: Block | null) => void;
+  highlightCourseCode?: string | null;
+  activeBlockId?: string | null;
 }) {
   if (!schedule) {
     return (
@@ -167,21 +190,41 @@ export function TimetableGrid({
                     style={{ top: `${((hour - startMinute) / totalMinutes) * 100}%` }}
                   />
                 ))}
-                {blocks
-                  .filter((block) => block.day === day)
-                  .map((block) => {
-                    const top = ((block.start - startMinute) / totalMinutes) * 100;
-                    const height = ((block.end - block.start) / totalMinutes) * 100;
-                    return (
-                      <div
-                        key={block.id}
-                        className="absolute left-2 right-2 overflow-hidden rounded-md border border-white/20 p-2 text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-glow"
-                        style={{
-                          top: `${top}%`,
-                          height: `max(${height}%, 54px)`,
-                          background: `linear-gradient(145deg, ${block.color}, ${block.color}bb)`
-                        }}
-                        title={`${block.courseName} with ${block.professor}`}
+                <AnimatePresence mode="popLayout">
+                  {blocks
+                    .filter((block) => block.day === day)
+                    .map((block, index) => {
+                      const top = ((block.start - startMinute) / totalMinutes) * 100;
+                      const height = ((block.end - block.start) / totalMinutes) * 100;
+                      const isHighlighted =
+                        !highlightCourseCode || block.courseCode === highlightCourseCode;
+                      const isActive = activeBlockId === block.id;
+                      return (
+                        <motion.button
+                          key={block.id}
+                          type="button"
+                          layoutId={block.id}
+                          initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          whileHover={{ scale: 1.015 }}
+                          whileTap={{ scale: 0.99 }}
+                          exit={{ opacity: 0, scale: 0.95 }}
+                          transition={{ duration: 0.2, delay: index * 0.05 }}
+                          onClick={() => onBlockClick?.(block)}
+                          onMouseEnter={() => onBlockHover?.(block)}
+                          onMouseLeave={() => onBlockHover?.(null)}
+                          className={cn(
+                            "absolute left-2 right-2 overflow-hidden rounded-md border border-white/20 p-2 text-left text-white shadow-lg transition hover:z-10 hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80",
+                            onBlockClick && "cursor-pointer",
+                            isHighlighted ? "opacity-100" : "opacity-40 saturate-50",
+                            isActive && "ring-2 ring-white/90 ring-offset-2 ring-offset-background"
+                          )}
+                          style={{
+                            top: `${top}%`,
+                            height: `max(${height}%, 54px)`,
+                            background: `linear-gradient(145deg, ${block.color}, ${block.color}bb)`
+                          }}
+                          title={`${block.courseName} with ${block.professor}`}
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span className="truncate text-sm font-semibold">
@@ -197,9 +240,10 @@ export function TimetableGrid({
                         <p className="mt-1 truncate text-[11px] text-white/75">
                           {block.slotLabel}
                         </p>
-                      </div>
+                        </motion.button>
                     );
                   })}
+                </AnimatePresence>
               </div>
             ))}
           </div>

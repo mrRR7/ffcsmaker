@@ -20,6 +20,7 @@ import { Progress } from "@/components/ui/progress";
 import { Select } from "@/components/ui/form";
 import { ConstraintPanel } from "@/features/constraints/ConstraintPanel";
 import { CourseBuilder } from "@/features/courses/CourseBuilder";
+import { ImportManager } from "@/features/import/ImportManager";
 import { getRankingProfiles } from "@/engine/ranking";
 import { RankingMode } from "@/engine/types";
 import { useGenerator } from "@/hooks/useGenerator";
@@ -28,6 +29,7 @@ import { buildShareUrl, createSharedState, encodeSharedState } from "@/utils/sha
 import { cn } from "@/utils/cn";
 
 const tabs = [
+  { id: "import", label: "Import", icon: ClipboardCheck },
   { id: "courses", label: "Courses", icon: ClipboardCheck },
   { id: "constraints", label: "Constraints", icon: SlidersHorizontal }
 ] as const;
@@ -213,6 +215,7 @@ export default function PlannerPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.18 }}
       >
+        {tab === "import" ? <ImportManager /> : null}
         {tab === "courses" ? <CourseBuilder /> : null}
         {tab === "constraints" ? <ConstraintPanel /> : null}
       </motion.div>

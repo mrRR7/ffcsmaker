@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import {
-  BarChart3,
   CalendarCheck,
   GalleryVerticalEnd,
   Home,
@@ -23,7 +22,6 @@ import { useAppStore } from "@/store/useAppStore";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },
-  { href: "/dashboard", label: "Dashboard", icon: BarChart3 },
   { href: "/planner", label: "Planner", icon: CalendarCheck },
   { href: "/results", label: "Results", icon: Table2 },
   { href: "/compare", label: "Compare", icon: Layers3 },
@@ -75,7 +73,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-premium-mesh">
       <header className="sticky top-0 z-40 border-b border-white/10 bg-background/72 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-          <Link href="/dashboard" className="flex items-center gap-3">
+          <Link href="/" className="flex items-center gap-3">
             <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-glow">
               <Sparkles className="h-5 w-5" />
             </span>
@@ -120,7 +118,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{children}</main>
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-background/90 px-2 py-2 backdrop-blur-xl lg:hidden">
         <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
-          {navItems.slice(1, 6).map((item) => {
+          {navItems.slice(1, 7).map((item) => {
             const Icon = item.icon;
             const active = item.href === pathname;
             return (

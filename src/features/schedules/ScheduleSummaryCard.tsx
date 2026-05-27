@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TimetableGrid } from "@/components/TimetableGrid";
 import { ScoredTimetable } from "@/engine/types";
-import { exportElementPdf, exportElementPng, exportScheduleJson } from "@/utils/export";
+import { exportElementPng, exportScheduleJson, exportTimetablePdf } from "@/utils/export";
 import { buildShareUrl, createSharedState, encodeSharedState } from "@/utils/share";
 import { useAppStore } from "@/store/useAppStore";
 
@@ -78,7 +78,7 @@ export function ScheduleSummaryCard({
       if (type === "png") {
         await exportElementPng(previewRef.current, `ultimate-ffcs-${schedule.id}.png`);
       } else {
-        await exportElementPdf(previewRef.current, schedule);
+        await exportTimetablePdf(schedule, slots, courses);
       }
       toast.success(`${type.toUpperCase()} export created.`);
     } catch (error) {

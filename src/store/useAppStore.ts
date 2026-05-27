@@ -119,6 +119,7 @@ export interface UniTimeStore {
   clearSlots: () => void;
   applySlotPreset: (preset?: string) => void;
   importSlotsFromCsv: (csv?: string) => number;
+  setCourses: (courses: Course[]) => void;
   addCourse: (course: Omit<Course, "id" | "options" | "color">) => void;
   updateCourse: (courseId: string, patch: Partial<Course>) => void;
   deleteCourse: (courseId: string) => void;
@@ -218,6 +219,7 @@ export const useAppStore = create<UniTimeStore>()(
       clearSlots: () => set({ slots: defaultSlots }),
       applySlotPreset: () => set({ slots: defaultSlots }),
       importSlotsFromCsv: () => 0,
+      setCourses: (courses) => set({ courses }),
       addCourse: (course) =>
         set((state) => ({
           courses: [
@@ -472,7 +474,9 @@ export const useAppStore = create<UniTimeStore>()(
       toggleFavoriteSchedule: (savedId) =>
         set((state) => ({
           savedSchedules: state.savedSchedules.map((saved) =>
-            saved.id === savedId ? { ...saved, favorite: !saved.favorite } : saved
+            saved.id === savedId || saved.timetable.id === savedId
+              ? { ...saved, favorite: !saved.favorite }
+              : saved
           )
         })),
       addCompareSchedule: (scheduleId) =>
@@ -534,11 +538,14 @@ export const useAppStore = create<UniTimeStore>()(
         const state = persistedState as Partial<UniTimeStore> | undefined;
         return {
           slots: defaultSlots,
-          courses: [],
-          constraints: defaultConstraints,
+          courses: (state?.courses ?? []).map((course) => ({
+            ...course,
+            options: course.options.map(cleanOption)
+          })),
+          constraints: normalizeImportedConstraints(state?.constraints),
           generatedSchedules: [],
           activeScheduleId: null,
-          savedSchedules: [],
+          savedSchedules: state?.savedSchedules ?? [],
           compareScheduleIds: [],
           rankingMode:
             state?.rankingMode === "Free-Day Focused"

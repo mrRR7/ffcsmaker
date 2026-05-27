@@ -1,18 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { Download, FileJson, FileText, Share2, SlidersHorizontal } from "lucide-react";
+import { BookmarkPlus, Check, Download, FileJson, FileText, Share2 } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
-import { TimetableGrid } from "@/components/TimetableGrid";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Input, Select } from "@/components/ui/form";
-import { ScheduleSummaryCard } from "@/features/schedules/ScheduleSummaryCard";
+import { ResultsControlBar } from "@/features/results/ResultsControlBar";
+import { ScheduleMetricsStrip } from "@/features/results/ScheduleMetricsStrip";
+import { CourseSummaryPanel } from "@/features/results/CourseSummaryPanel";
+import { BlockDetailPanel } from "@/features/results/BlockDetailPanel";
+import { ScheduleBrowser } from "@/features/results/ScheduleBrowser";
+import { SlotMatrixTimetable } from "@/features/results/SlotMatrixTimetable";
+import { buildMatrixCells, MatrixCell } from "@/features/results/timetableMatrix";
 import { ScoredTimetable } from "@/engine/types";
-import { exportElementPdf, exportElementPng, exportScheduleJson } from "@/utils/export";
+import { exportElementPng, exportScheduleJson, exportTimetablePdf } from "@/utils/export";
 import { buildShareUrl, createSharedState, encodeSharedState } from "@/utils/share";
 import { useAppStore } from "@/store/useAppStore";
 
@@ -21,7 +24,10 @@ type SortMode = "score" | "lowGaps" | "earlyFinish";
 export default function ResultsPage() {
   const exportRef = useRef<HTMLDivElement>(null);
   const [sortMode, setSortMode] = useState<SortMode>("score");
-  const [minScore, setMinScore] = useState("");
+  const [activeCellId, setActiveCellId] = useState<string | null>(null);
+  const [activeBlockAnchor, setActiveBlockAnchor] = useState<DOMRect | null>(null);
+  const [highlightCourseCode, setHighlightCourseCode] = useState<string | null>(null);
+
   const slots = useAppStore((state) => state.slots);
   const courses = useAppStore((state) => state.courses);
   const constraints = useAppStore((state) => state.constraints);
@@ -32,11 +38,13 @@ export default function ResultsPage() {
   const generatedSchedules = useAppStore((state) => state.generatedSchedules);
   const activeScheduleId = useAppStore((state) => state.activeScheduleId);
   const setActiveScheduleId = useAppStore((state) => state.setActiveScheduleId);
+  const saveSchedule = useAppStore((state) => state.saveSchedule);
+  const toggleFavoriteSchedule = useAppStore((state) => state.toggleFavoriteSchedule);
+  const addCompareSchedule = useAppStore((state) => state.addCompareSchedule);
+  const savedSchedules = useAppStore((state) => state.savedSchedules);
 
   const filteredSchedules = useMemo(() => {
-    const min = minScore ? Number(minScore) : 0;
-    const schedules = generatedSchedules.filter((schedule) => schedule.score >= min);
-    return [...schedules].sort((a, b) => {
+    return [...generatedSchedules].sort((a, b) => {
       if (sortMode === "lowGaps") {
         return a.metrics.totalGapSlots - b.metrics.totalGapSlots || b.score - a.score;
       }
@@ -45,12 +53,99 @@ export default function ResultsPage() {
       }
       return b.score - a.score;
     });
-  }, [generatedSchedules, minScore, sortMode]);
+  }, [generatedSchedules, sortMode]);
 
   const activeSchedule =
     filteredSchedules.find((schedule) => schedule.id === activeScheduleId) ??
     filteredSchedules[0] ??
     null;
+
+  const activeIndex = useMemo(() => {
+    if (!activeSchedule) {
+      return -1;
+    }
+    return filteredSchedules.findIndex((schedule) => schedule.id === activeSchedule.id);
+  }, [activeSchedule, filteredSchedules]);
+
+  const activeCells = useMemo(
+    () => (activeSchedule ? buildMatrixCells(activeSchedule, slots, courses) : null),
+    [activeSchedule, slots, courses]
+  );
+
+  const flattenedCells = useMemo(
+    () => (activeCells ? [...activeCells.theory.flat(), ...activeCells.lab.flat()] : []),
+    [activeCells]
+  );
+
+  const activeCell = useMemo(
+    () => flattenedCells.find((cell) => cell.id === activeCellId) ?? null,
+    [activeCellId, flattenedCells]
+  );
+
+  const isFavorite = useMemo(() => {
+    if (!activeSchedule) {
+      return false;
+    }
+    return savedSchedules.some(
+      (saved) => saved.timetable.id === activeSchedule.id && saved.favorite
+    );
+  }, [activeSchedule, savedSchedules]);
+  const isSaved = Boolean(
+    activeSchedule &&
+      savedSchedules.some((saved) => saved.timetable.id === activeSchedule.id)
+  );
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (
+        target &&
+        (target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.tagName === "SELECT" ||
+          target.isContentEditable)
+      ) {
+        return;
+      }
+
+      if (filteredSchedules.length === 0) {
+        return;
+      }
+
+      const currentIndex = activeIndex >= 0 ? activeIndex : 0;
+
+      if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+        event.preventDefault();
+        const nextIndex = Math.min(currentIndex + 1, filteredSchedules.length - 1);
+        setActiveScheduleId(filteredSchedules[nextIndex].id);
+      } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+        event.preventDefault();
+        const previousIndex = Math.max(currentIndex - 1, 0);
+        setActiveScheduleId(filteredSchedules[previousIndex].id);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeIndex, filteredSchedules, setActiveScheduleId]);
+
+  useEffect(() => {
+    if (!activeSchedule) {
+      return;
+    }
+
+    if (activeScheduleId !== activeSchedule.id) {
+      setActiveScheduleId(activeSchedule.id);
+    }
+
+    setActiveCellId(null);
+    setActiveBlockAnchor(null);
+    setHighlightCourseCode((current) =>
+      current && activeSchedule.selections.some((selection) => selection.courseCode === current)
+        ? current
+        : null
+    );
+  }, [activeSchedule, activeScheduleId, setActiveScheduleId]);
 
   async function shareActive(schedule: ScoredTimetable) {
     const encoded = encodeSharedState(
@@ -71,16 +166,41 @@ export default function ResultsPage() {
     if (!activeSchedule || !exportRef.current) {
       return;
     }
+
     try {
       if (type === "png") {
         await exportElementPng(exportRef.current, `ultimate-ffcs-${activeSchedule.id}.png`);
       } else {
-        await exportElementPdf(exportRef.current, activeSchedule);
+        await exportTimetablePdf(activeSchedule, slots, courses);
       }
       toast.success(`${type.toUpperCase()} export created.`);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Export failed.");
     }
+  }
+
+  function selectSchedule(scheduleId: string) {
+    setActiveScheduleId(scheduleId);
+    setActiveCellId(null);
+    setActiveBlockAnchor(null);
+  }
+
+  function selectCell(cell: MatrixCell, anchor: DOMRect) {
+    setActiveCellId(cell.id);
+    setActiveBlockAnchor(anchor);
+    if (cell.courseCode) {
+      setHighlightCourseCode(cell.courseCode);
+    }
+  }
+
+  function clearBlockFocus() {
+    setActiveCellId(null);
+    setActiveBlockAnchor(null);
+  }
+
+  function saveActive(schedule: ScoredTimetable) {
+    saveSchedule(schedule);
+    toast.success(isSaved ? "Saved timetable updated." : "Timetable saved locally.");
   }
 
   if (generatedSchedules.length === 0) {
@@ -106,92 +226,128 @@ export default function ResultsPage() {
     );
   }
 
-  return (
-    <div className="pb-20 lg:pb-0">
-      <SectionHeader
-        eyebrow="Results"
-        title="Schedule Explorer"
-        description={`${filteredSchedules.length} ranked schedules from the latest generation run.`}
-        action={
-          activeSchedule ? (
-            <div className="flex flex-wrap gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => shareActive(activeSchedule)}
-              >
-                <Share2 className="h-4 w-4" />
-                Share
-              </Button>
-              <Button type="button" variant="outline" onClick={() => exportScheduleJson(activeSchedule)}>
-                <FileJson className="h-4 w-4" />
-                JSON
-              </Button>
-              <Button type="button" variant="outline" onClick={() => exportActive("png")}>
-                <Download className="h-4 w-4" />
-                PNG
-              </Button>
-              <Button type="button" onClick={() => exportActive("pdf")}>
-                <FileText className="h-4 w-4" />
-                PDF
-              </Button>
-            </div>
-          ) : null
-        }
-      />
-
-      <div className="mb-5 grid gap-3 md:grid-cols-[1fr_180px_180px]">
-        <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <SlidersHorizontal className="h-5 w-5 text-primary" />
-            <div>
-              <p className="font-semibold">Sort and filter</p>
-              <p className="text-sm text-muted-foreground">Tune the explorer list.</p>
-            </div>
+  if (filteredSchedules.length === 0) {
+    return (
+      <div className="space-y-4 pb-20 lg:pb-0">
+        <ResultsControlBar
+          count={0}
+          sortMode={sortMode}
+          onSortModeChange={setSortMode}
+        />
+        <Card className="flex min-h-72 items-center justify-center text-center">
+          <CardContent className="space-y-4">
+            <p className="text-lg font-semibold">No schedules match the current filters.</p>
+            <p className="text-sm text-muted-foreground">
+              Change the sort mode or regenerate schedules to bring results back into view.
+            </p>
           </CardContent>
         </Card>
-        <Select value={sortMode} onChange={(event) => setSortMode(event.target.value as SortMode)}>
-          <option value="score">Best score</option>
-          <option value="lowGaps">Lowest gaps</option>
-          <option value="earlyFinish">Earliest finish</option>
-        </Select>
-        <Input
-          type="number"
-          value={minScore}
-          onChange={(event) => setMinScore(event.target.value)}
-          placeholder="Min score"
-        />
+      </div>
+    );
+  }
+
+  const toolbarActions = activeSchedule ? (
+    <>
+      <Button
+        type="button"
+        variant={isSaved ? "secondary" : "default"}
+        onClick={() => saveActive(activeSchedule)}
+      >
+        {isSaved ? <Check className="h-4 w-4" /> : <BookmarkPlus className="h-4 w-4" />}
+        {isSaved ? "Saved" : "Save Timetable"}
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => shareActive(activeSchedule)}
+      >
+        <Share2 className="h-4 w-4" />
+        Share
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        onClick={() => exportScheduleJson(activeSchedule)}
+      >
+        <FileJson className="h-4 w-4" />
+        JSON
+      </Button>
+      <Button type="button" variant="outline" onClick={() => exportActive("png") }>
+        <Download className="h-4 w-4" />
+        PNG
+      </Button>
+      <Button type="button" onClick={() => exportActive("pdf") }>
+        <FileText className="h-4 w-4" />
+        PDF
+      </Button>
+    </>
+  ) : null;
+
+  return (
+    <div className="space-y-4 pb-20 lg:pb-0">
+      <ResultsControlBar
+        count={filteredSchedules.length}
+        sortMode={sortMode}
+        onSortModeChange={setSortMode}
+        actions={toolbarActions}
+      />
+
+      <div className="space-y-4">
+        {activeSchedule ? (
+          <ScheduleBrowser
+            schedules={filteredSchedules}
+            activeSchedule={activeSchedule}
+            activeIndex={activeIndex}
+            onSelectSchedule={selectSchedule}
+            onPrevious={() =>
+              selectSchedule(filteredSchedules[Math.max(activeIndex - 1, 0)].id)
+            }
+            onNext={() =>
+              selectSchedule(
+                filteredSchedules[Math.min(activeIndex + 1, filteredSchedules.length - 1)].id
+              )
+            }
+            onToggleFavorite={toggleFavoriteSchedule}
+            onAddCompare={addCompareSchedule}
+            isFavorite={isFavorite}
+          />
+        ) : null}
+
+        <div ref={exportRef} className="relative min-w-0 space-y-4">
+          <SlotMatrixTimetable
+            schedule={activeSchedule}
+            slots={slots}
+            courses={courses}
+            onCellClick={selectCell}
+            highlightCourseCode={highlightCourseCode}
+            activeCellId={activeCellId}
+          />
+        </div>
+
+        {activeSchedule ? (
+          <>
+            <ScheduleMetricsStrip schedule={activeSchedule} />
+            <CourseSummaryPanel
+              schedule={activeSchedule}
+              slots={slots}
+              courses={courses}
+              highlightCourseCode={highlightCourseCode}
+              previewCourseCode={null}
+              onHighlightCourseCodeChange={setHighlightCourseCode}
+              onPreviewCourseCodeChange={() => undefined}
+            />
+          </>
+        ) : null}
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1.35fr)_420px]">
-        <div ref={exportRef}>
-          <TimetableGrid schedule={activeSchedule} slots={slots} courses={courses} />
-        </div>
-        <div className="space-y-3">
-          {activeSchedule ? (
-            <div className="flex flex-wrap gap-2">
-              <Badge>Compactness {activeSchedule.metrics.compactness}</Badge>
-              <Badge>{activeSchedule.metrics.activeDays} active days</Badge>
-              <Badge>{activeSchedule.metrics.totalGapSlots} gap slots</Badge>
-              <Badge>Average end {activeSchedule.metrics.averageEndTime}</Badge>
-            </div>
-          ) : null}
-          <div className="max-h-[780px] space-y-3 overflow-y-auto pr-1">
-            {filteredSchedules.map((schedule) => (
-              <div
-                key={schedule.id}
-                onClick={() => setActiveScheduleId(schedule.id)}
-                className="cursor-pointer"
-              >
-                <ScheduleSummaryCard
-                  schedule={schedule}
-                  selected={schedule.id === activeSchedule?.id}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <BlockDetailPanel
+        block={activeCell}
+        schedule={activeSchedule}
+        courses={courses}
+        onClose={clearBlockFocus}
+        anchorRect={activeBlockAnchor}
+        mode="selected"
+      />
     </div>
   );
 }

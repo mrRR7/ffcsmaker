@@ -1,19 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ExternalLink, Heart, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { SectionHeader } from "@/components/SectionHeader";
-import { TimetableGrid } from "@/components/TimetableGrid";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/form";
 import { useAppStore } from "@/store/useAppStore";
+import { CourseSummaryPanel } from "@/features/results/CourseSummaryPanel";
+import { SlotMatrixTimetable } from "@/features/results/SlotMatrixTimetable";
 import { cn } from "@/utils/cn";
 
 export default function SavedPage() {
+  const router = useRouter();
   const slots = useAppStore((state) => state.slots);
   const courses = useAppStore((state) => state.courses);
   const savedSchedules = useAppStore((state) => state.savedSchedules);
@@ -33,6 +36,7 @@ export default function SavedPage() {
     }
     setGeneratedSchedules([saved.timetable]);
     toast.success("Schedule reopened in results.");
+    router.push("/results");
   }
 
   return (
@@ -124,7 +128,20 @@ export default function SavedPage() {
               </Card>
             ))}
           </div>
-          <TimetableGrid schedule={featured} slots={slots} courses={courses} />
+          <div className="space-y-4">
+            <SlotMatrixTimetable schedule={featured} slots={slots} courses={courses} />
+            {featured ? (
+              <CourseSummaryPanel
+                schedule={featured}
+                slots={slots}
+                courses={courses}
+                highlightCourseCode={null}
+                previewCourseCode={null}
+                onHighlightCourseCodeChange={() => undefined}
+                onPreviewCourseCodeChange={() => undefined}
+              />
+            ) : null}
+          </div>
         </div>
       )}
     </div>
