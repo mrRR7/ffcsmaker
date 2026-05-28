@@ -46,7 +46,6 @@ export interface BlockedWindow {
 
 export interface Constraints {
   blockedWindows: BlockedWindow[];
-  noBeforeTime: string | null;
   noAfterTime: string | null;
   avoidFirstPeriod: boolean;
   avoidLastPeriod: boolean;
@@ -62,7 +61,6 @@ export interface Constraints {
   avoidDays: DayOfWeek[];
   avoidProfessors: string[];
   endBeforeByDay: Partial<Record<DayOfWeek, string | null>>;
-  protectLunch: boolean;
   preferredProfessors: string[];
 }
 

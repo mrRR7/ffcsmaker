@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { popover, popoverDrawer } from "@/utils/motion";
 import { X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -54,10 +56,6 @@ export function BlockDetailPanel({
     };
   }, [block, courses, schedule]);
 
-  if (!block || !details) {
-    return null;
-  }
-
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const panelWidth = 360;
   const desktopLeft = anchorRect
@@ -65,32 +63,43 @@ export function BlockDetailPanel({
     : 12;
   const desktopTop = anchorRect ? Math.max(12, anchorRect.bottom + 12) : 12;
 
-  const sharedHeader = (
-    <div className="space-y-1">
-      <div className="flex items-center gap-2">
-        <span className="h-3 w-3 rounded-full" style={{ backgroundColor: block.color }} />
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
-          {mode === "preview" ? "Hover preview" : "Selected slot"}
-        </p>
+  const renderSharedHeader = () => {
+    if (!block || !details) return null;
+    return (
+      <div className="space-y-1">
+        <div className="flex items-center gap-2">
+          <span className="h-3 w-3 rounded-full" style={{ backgroundColor: block.color }} />
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-primary">
+            {mode === "preview" ? "Hover preview" : "Selected slot"}
+          </p>
+        </div>
+        <CardTitle className="text-base">
+          {details.empty ? `${block.day} ${block.track}` : details.selection?.courseName}
+        </CardTitle>
       </div>
-      <CardTitle className="text-base">
-        {details.empty ? `${block.day} ${block.track}` : details.selection?.courseName}
-      </CardTitle>
-    </div>
-  );
+    );
+  };
 
   return (
-    <>
-      <Card
-        className="hidden overflow-hidden border-border/70 bg-card/95 shadow-2xl shadow-black/10 backdrop-blur md:block md:z-30"
-        style={
-          anchorRect
-            ? { position: "fixed", top: desktopTop, left: desktopLeft, width: panelWidth }
-            : { position: "fixed", top: 12, left: 12, width: panelWidth }
-        }
-      >
+    <AnimatePresence>
+      {block && details && (
+        <>
+          <motion.div
+            key="desktop-panel"
+            variants={popover}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="hidden md:block md:z-30"
+            style={
+              anchorRect
+                ? { position: "fixed", top: desktopTop, left: desktopLeft, width: panelWidth }
+                : { position: "fixed", top: 12, left: 12, width: panelWidth }
+            }
+          >
+            <Card className="overflow-hidden border-border/70 bg-card/95 shadow-2xl shadow-black/10 backdrop-blur">
         <CardHeader className="flex flex-row items-start justify-between gap-3 border-b border-border/60 pb-3">
-          {sharedHeader}
+          {renderSharedHeader()}
           <Button type="button" variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
@@ -150,12 +159,21 @@ export function BlockDetailPanel({
               </div>
             </>
           )}
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+          </motion.div>
 
-      <Card className="fixed inset-x-3 bottom-3 z-40 overflow-hidden border-border/70 bg-card/95 shadow-2xl shadow-black/20 backdrop-blur md:hidden">
+          <motion.div
+            key="mobile-panel"
+            variants={popoverDrawer}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="fixed inset-x-3 bottom-3 z-40 md:hidden"
+          >
+            <Card className="overflow-hidden border-border/70 bg-card/95 shadow-2xl shadow-black/20 backdrop-blur">
         <CardHeader className="flex flex-row items-start justify-between gap-3 border-b border-border/60 pb-3">
-          {sharedHeader}
+          {renderSharedHeader()}
           <Button type="button" variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
@@ -194,9 +212,12 @@ export function BlockDetailPanel({
                 {details.option?.notes || "No extra notes for this selection."}
               </p>
             </>
-          )}
-        </CardContent>
-      </Card>
-    </>
+              )}
+            </CardContent>
+          </Card>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
   );
 }

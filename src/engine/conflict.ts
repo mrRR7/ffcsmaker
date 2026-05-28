@@ -134,13 +134,6 @@ export function violatesSlotHardConstraints(
   constraints: Constraints
 ) {
   if (
-    constraints.noBeforeTime &&
-    parseTime(slot.startTime) < parseTime(constraints.noBeforeTime)
-  ) {
-    return true;
-  }
-
-  if (
     constraints.noAfterTime &&
     parseTime(slot.endTime) > parseTime(constraints.noAfterTime)
   ) {
@@ -157,13 +150,6 @@ export function violatesSlotHardConstraints(
 
   const dayLimit = constraints.endBeforeByDay[slot.day];
   if (dayLimit && parseTime(slot.endTime) > parseTime(dayLimit)) {
-    return true;
-  }
-
-  const lunchProtected =
-    constraints.protectLunch &&
-    rangesOverlap(slot.startTime, slot.endTime, "12:30", "13:30");
-  if (lunchProtected) {
     return true;
   }
 

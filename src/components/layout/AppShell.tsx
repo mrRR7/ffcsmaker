@@ -15,7 +15,9 @@ import {
   Sun,
   Table2
 } from "lucide-react";
+import { MotionConfig } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { AppFooter } from "@/components/layout/AppFooter";
 import { decodeSharedState } from "@/utils/share";
 import { cn } from "@/utils/cn";
 import { useAppStore } from "@/store/useAppStore";
@@ -115,7 +117,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Button>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+      <main className="mx-auto max-w-7xl px-4 py-6 pb-28 sm:px-6 lg:px-8 lg:pb-8">
+        <MotionConfig reducedMotion="user">
+          {children}
+        </MotionConfig>
+      </main>
+      <AppFooter />
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-background/90 px-2 py-2 backdrop-blur-xl lg:hidden">
         <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
           {navItems.slice(1, 7).map((item) => {

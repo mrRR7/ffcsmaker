@@ -32,7 +32,6 @@ export const defaultSlots = FIXED_SLOTS;
 
 export const defaultConstraints: Constraints = {
   blockedWindows: [],
-  noBeforeTime: null,
   noAfterTime: null,
   avoidFirstPeriod: false,
   avoidLastPeriod: false,
@@ -48,7 +47,6 @@ export const defaultConstraints: Constraints = {
   avoidDays: [],
   avoidProfessors: [],
   endBeforeByDay: {},
-  protectLunch: false,
   preferredProfessors: []
 };
 
@@ -123,6 +121,7 @@ export interface UniTimeStore {
   addCourse: (course: Omit<Course, "id" | "options" | "color">) => void;
   updateCourse: (courseId: string, patch: Partial<Course>) => void;
   deleteCourse: (courseId: string) => void;
+  clearCourses: () => void;
   duplicateCourse: (courseId: string) => void;
   moveCourse: (courseId: string, direction: "up" | "down") => void;
   addOption: (courseId: string, option: Omit<CourseOption, "id">) => void;
@@ -272,6 +271,17 @@ export const useAppStore = create<UniTimeStore>()(
             ]
           };
         }),
+      clearCourses: () =>
+        set((state) => ({
+          courses: [],
+          generatedSchedules: [],
+          activeScheduleId: null,
+          compareScheduleIds: [],
+          constraints: {
+            ...state.constraints,
+            professorLocks: []
+          }
+        })),
       moveCourse: (courseId, direction) =>
         set((state) => {
           const courses = [...state.courses];

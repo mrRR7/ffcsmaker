@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, Fragment } from "react";
+import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Course, DAYS, ScoredTimetable, TimeSlot } from "@/engine/types";
@@ -47,6 +48,9 @@ export function SlotMatrixTimetable({
 
   const renderCellContent = (cell: MatrixCell) => {
     if (cell.slotLabel === "Lunch") {
+      return null;
+    }
+    if (!cell.occupied && !cell.slotLabel) {
       return null;
     }
     if (cell.occupied) {
@@ -161,21 +165,24 @@ export function SlotMatrixTimetable({
                       
                       return (
                         <td key={`t-${i}`} className={cn("border border-border/50 p-0 align-top", isLunch && "bg-secondary/20")}>
-                          <button
+                          <motion.button
+                            layout={cell.occupied ? "position" : false}
                             type="button"
                             disabled={isLunch}
                             onClick={(e) => onCellClick?.(cell, e.currentTarget.getBoundingClientRect())}
                             className={cn(
-                              "min-h-[52px] w-full px-1 py-1 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70",
+                              "min-h-[52px] w-full px-1 py-1 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70",
                               isLunch
                                 ? "cursor-default"
                                 : cell.occupied
-                                  ? "shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:z-10 relative border-0"
+                                  ? "shadow-sm hover:z-10 relative border-0"
                                   : "bg-background/20 text-muted-foreground hover:bg-secondary/40",
                               isActive && "ring-2 ring-primary ring-inset",
                               isMatched && "ring-1 ring-primary/50 ring-inset opacity-100",
                               !isMatched && highlightCourseCode && cell.occupied && "opacity-40"
                             )}
+                            whileHover={cell.occupied && !isLunch ? { scale: 1.01, y: -2, transition: { duration: 0.15 } } : undefined}
+                            whileTap={cell.occupied && !isLunch ? { scale: 0.96 } : undefined}
                             style={
                               !isLunch && cell.occupied
                                 ? { background: `linear-gradient(135deg, ${cell.color}, ${cell.color}dd)` }
@@ -183,7 +190,7 @@ export function SlotMatrixTimetable({
                             }
                           >
                             {renderCellContent(cell)}
-                          </button>
+                          </motion.button>
                         </td>
                       );
                     })}
@@ -200,21 +207,24 @@ export function SlotMatrixTimetable({
 
                       return (
                         <td key={`l-${i}`} className={cn("border border-border/50 p-0 align-top", isLunch && "bg-secondary/20")}>
-                          <button
+                          <motion.button
+                            layout={cell.occupied ? "position" : false}
                             type="button"
                             disabled={isLunch}
                             onClick={(e) => onCellClick?.(cell, e.currentTarget.getBoundingClientRect())}
                             className={cn(
-                              "min-h-[52px] w-full px-1 py-1 text-center transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70",
+                              "min-h-[52px] w-full px-1 py-1 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/70",
                               isLunch
                                 ? "cursor-default"
                                 : cell.occupied
-                                  ? "shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:z-10 relative border-0"
+                                  ? "shadow-sm hover:z-10 relative border-0"
                                   : "bg-background/20 text-muted-foreground hover:bg-secondary/40",
                               isActive && "ring-2 ring-primary ring-inset",
                               isMatched && "ring-1 ring-primary/50 ring-inset opacity-100",
                               !isMatched && highlightCourseCode && cell.occupied && "opacity-40"
                             )}
+                            whileHover={cell.occupied && !isLunch ? { scale: 1.01, y: -2, transition: { duration: 0.15 } } : undefined}
+                            whileTap={cell.occupied && !isLunch ? { scale: 0.96 } : undefined}
                             style={
                               !isLunch && cell.occupied
                                 ? { background: `linear-gradient(135deg, ${cell.color}, ${cell.color}dd)` }
@@ -222,7 +232,7 @@ export function SlotMatrixTimetable({
                             }
                           >
                             {renderCellContent(cell)}
-                          </button>
+                          </motion.button>
                         </td>
                       );
                     })}

@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { staggerContainer, fadeUp } from "@/utils/motion";
 import toast from "react-hot-toast";
 import { BookmarkPlus, Check, Download, FileJson, FileText, Share2 } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -292,28 +294,30 @@ export default function ResultsPage() {
         actions={toolbarActions}
       />
 
-      <div className="space-y-4">
+      <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
         {activeSchedule ? (
-          <ScheduleBrowser
-            schedules={filteredSchedules}
-            activeSchedule={activeSchedule}
-            activeIndex={activeIndex}
-            onSelectSchedule={selectSchedule}
-            onPrevious={() =>
-              selectSchedule(filteredSchedules[Math.max(activeIndex - 1, 0)].id)
-            }
-            onNext={() =>
-              selectSchedule(
-                filteredSchedules[Math.min(activeIndex + 1, filteredSchedules.length - 1)].id
-              )
-            }
-            onToggleFavorite={toggleFavoriteSchedule}
-            onAddCompare={addCompareSchedule}
-            isFavorite={isFavorite}
-          />
+          <motion.div variants={fadeUp}>
+            <ScheduleBrowser
+              schedules={filteredSchedules}
+              activeSchedule={activeSchedule}
+              activeIndex={activeIndex}
+              onSelectSchedule={selectSchedule}
+              onPrevious={() =>
+                selectSchedule(filteredSchedules[Math.max(activeIndex - 1, 0)].id)
+              }
+              onNext={() =>
+                selectSchedule(
+                  filteredSchedules[Math.min(activeIndex + 1, filteredSchedules.length - 1)].id
+                )
+              }
+              onToggleFavorite={toggleFavoriteSchedule}
+              onAddCompare={addCompareSchedule}
+              isFavorite={isFavorite}
+            />
+          </motion.div>
         ) : null}
 
-        <div ref={exportRef} className="relative min-w-0 space-y-4">
+        <motion.div variants={fadeUp} ref={exportRef} className="relative min-w-0 space-y-4">
           <SlotMatrixTimetable
             schedule={activeSchedule}
             slots={slots}
@@ -322,23 +326,27 @@ export default function ResultsPage() {
             highlightCourseCode={highlightCourseCode}
             activeCellId={activeCellId}
           />
-        </div>
+        </motion.div>
 
         {activeSchedule ? (
           <>
-            <ScheduleMetricsStrip schedule={activeSchedule} />
-            <CourseSummaryPanel
-              schedule={activeSchedule}
-              slots={slots}
-              courses={courses}
-              highlightCourseCode={highlightCourseCode}
-              previewCourseCode={null}
-              onHighlightCourseCodeChange={setHighlightCourseCode}
-              onPreviewCourseCodeChange={() => undefined}
-            />
+            <motion.div variants={fadeUp}>
+              <ScheduleMetricsStrip schedule={activeSchedule} />
+            </motion.div>
+            <motion.div variants={fadeUp}>
+              <CourseSummaryPanel
+                schedule={activeSchedule}
+                slots={slots}
+                courses={courses}
+                highlightCourseCode={highlightCourseCode}
+                previewCourseCode={null}
+                onHighlightCourseCodeChange={setHighlightCourseCode}
+                onPreviewCourseCodeChange={() => undefined}
+              />
+            </motion.div>
           </>
         ) : null}
-      </div>
+      </motion.div>
 
       <BlockDetailPanel
         block={activeCell}

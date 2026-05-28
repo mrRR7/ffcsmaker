@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import { staggerContainer, fadeUp } from "@/utils/motion";
 import toast from "react-hot-toast";
 import {
   ClipboardCheck,
@@ -107,62 +108,73 @@ export default function PlannerPage() {
         }
       />
 
-      <div className="mb-5 grid gap-3 md:grid-cols-3">
-        <StatCard
-          label="Courses"
-          value={courses.length}
-          detail={`${optionCount} professor options`}
-          icon={ClipboardCheck}
-        />
-        <StatCard
-          label="Generated"
-          value={generatedSchedules.length}
-          detail={generatedSchedules[0] ? `Best score ${generatedSchedules[0].score}` : "No run yet"}
-          icon={GitBranch}
-        />
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Ranking
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">Optimization mode</p>
+      <motion.div
+        variants={staggerContainer}
+        initial="initial"
+        animate="animate"
+        className="mb-5 grid gap-3 md:grid-cols-3"
+      >
+        <motion.div variants={fadeUp}>
+          <StatCard
+            label="Courses"
+            value={courses.length}
+            detail={`${optionCount} professor options`}
+            icon={ClipboardCheck}
+          />
+        </motion.div>
+        <motion.div variants={fadeUp}>
+          <StatCard
+            label="Generated"
+            value={generatedSchedules.length}
+            detail={generatedSchedules[0] ? `Best score ${generatedSchedules[0].score}` : "No run yet"}
+            icon={GitBranch}
+          />
+        </motion.div>
+        <motion.div variants={fadeUp} className="flex flex-col h-full">
+          <Card className="h-full">
+            <CardContent className="p-4 flex flex-col h-full">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    Ranking
+                  </p>
+                  <p className="mt-2 text-sm text-muted-foreground">Optimization mode</p>
+                </div>
+                <Badge>{rankingMode}</Badge>
               </div>
-              <Badge>{rankingMode}</Badge>
-            </div>
-            <Select
-              className="mt-3"
-              value={rankingMode}
-              onChange={(event) => setRankingMode(event.target.value as RankingMode)}
-            >
-              {getRankingProfiles().map((profile) => (
-                <option key={profile} value={profile}>
-                  {profile}
-                </option>
-              ))}
-            </Select>
-            <button
-              type="button"
-              onClick={() => setUsePriorityRanking(!usePriorityRanking)}
-              className={cn(
-                "mt-3 flex w-full items-center justify-between rounded-md border px-3 py-2 text-sm font-semibold transition",
-                usePriorityRanking
-                  ? "border-primary bg-primary/15 text-primary"
-                  : "border-border bg-secondary/40 text-muted-foreground hover:text-foreground"
-              )}
-            >
-              Priority ranking
-              <span
+              <Select
+                className="mt-auto pt-3"
+                value={rankingMode}
+                onChange={(event) => setRankingMode(event.target.value as RankingMode)}
+              >
+                {getRankingProfiles().map((profile) => (
+                  <option key={profile} value={profile}>
+                    {profile}
+                  </option>
+                ))}
+              </Select>
+              <button
+                type="button"
+                onClick={() => setUsePriorityRanking(!usePriorityRanking)}
                 className={cn(
-                  "h-2.5 w-2.5 rounded-full",
-                  usePriorityRanking ? "bg-primary" : "bg-muted-foreground/40"
+                  "mt-3 flex w-full items-center justify-between rounded-md border px-3 py-2 text-sm font-semibold transition",
+                  usePriorityRanking
+                    ? "border-primary bg-primary/15 text-primary"
+                    : "border-border bg-secondary/40 text-muted-foreground hover:text-foreground"
                 )}
-              />
-            </button>
-          </CardContent>
-        </Card>
-      </div>
+              >
+                Priority ranking
+                <span
+                  className={cn(
+                    "h-2.5 w-2.5 rounded-full",
+                    usePriorityRanking ? "bg-primary" : "bg-muted-foreground/40"
+                  )}
+                />
+              </button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
 
       {isGenerating || checked > 0 ? (
         <Card className="mb-5">

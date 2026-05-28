@@ -1,11 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
+import { staggerContainer, fadeUp } from "@/utils/motion";
 import toast from "react-hot-toast";
 import {
   ArrowDown,
   ArrowUp,
   Copy,
+  ChevronDown,
   LockKeyhole,
   Plus,
   Trash2,
@@ -48,8 +51,42 @@ export function CourseBuilder() {
   const [courseCode, setCourseCode] = useState("");
   const [courseName, setCourseName] = useState("");
   const [credits, setCredits] = useState("");
+  const [collapsedCourseIds, setCollapsedCourseIds] = useState<Record<string, boolean>>(
+    {}
+  );
+  const [isDeleteAllOpen, setIsDeleteAllOpen] = useState(false);
   const courses = useAppStore((state) => state.courses);
   const addCourse = useAppStore((state) => state.addCourse);
+  const clearCourses = useAppStore((state) => state.clearCourses);
+
+  useEffect(() => {
+    if (!isDeleteAllOpen) {
+      return;
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsDeleteAllOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isDeleteAllOpen]);
+
+  function toggleCourseCollapse(courseId: string) {
+    setCollapsedCourseIds((current) => ({
+      ...current,
+      [courseId]: !current[courseId]
+    }));
+  }
+
+  function confirmDeleteAllCourses() {
+    clearCourses();
+    setCollapsedCourseIds({});
+    setIsDeleteAllOpen(false);
+    toast.success("All courses cleared.");
+  }
 
   function submitCourse() {
     const parsedCredits = Number(credits);
@@ -109,22 +146,111 @@ export function CourseBuilder() {
         </CardContent>
       </Card>
 
-      <div className="space-y-4">
-        {courses.length === 0 ? (
-          <Card className="p-8 text-center text-muted-foreground">
-            No courses added yet.
-          </Card>
-        ) : (
-          courses.map((course, index) => (
-            <CourseCard key={course.id} courseId={course.id} index={index} />
-          ))
-        )}
-      </div>
+      <Card className="h-fit">
+        <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <CardTitle>Courses</CardTitle>
+            <CardDescription>
+              Collapse individual courses to scan the list, or clear the planner's
+              course data in one step.
+            </CardDescription>
+          </div>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsDeleteAllOpen(true)}
+            disabled={courses.length === 0}
+            className="border-border text-muted-foreground hover:text-foreground"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete All Courses
+          </Button>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {courses.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-border bg-background/30 p-8 text-center text-muted-foreground">
+              No courses added yet.
+            </div>
+          ) : (
+            <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
+              {courses.map((course, index) => (
+                <motion.div key={course.id} variants={fadeUp} layout="position">
+                  <CourseCard
+                    courseId={course.id}
+                    index={index}
+                    collapsed={Boolean(collapsedCourseIds[course.id])}
+                    onToggleCollapse={toggleCourseCollapse}
+                  />
+                </motion.div>
+              ))}
+            </motion.div>
+          )}
+        </CardContent>
+      </Card>
+
+      <AnimatePresence>
+        {isDeleteAllOpen ? (
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4 py-6 backdrop-blur-sm"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsDeleteAllOpen(false)}
+          >
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="delete-all-courses-title"
+              aria-describedby="delete-all-courses-description"
+              className="w-full max-w-md rounded-xl border border-border bg-card p-6 shadow-card"
+              initial={{ scale: 0.96, y: 10 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.96, y: 10 }}
+              transition={{ duration: 0.16 }}
+              onClick={(event) => event.stopPropagation()}
+            >
+              <div className="space-y-2">
+                <p className="text-sm font-medium uppercase tracking-wide text-muted-foreground">
+                  Confirm delete
+                </p>
+                <h2 id="delete-all-courses-title" className="text-xl font-semibold">
+                  Delete all courses?
+                </h2>
+                <p
+                  id="delete-all-courses-description"
+                  className="text-sm text-muted-foreground"
+                >
+                  This will remove all courses from the planner. This cannot be
+                  undone.
+                </p>
+              </div>
+              <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                <Button type="button" variant="outline" onClick={() => setIsDeleteAllOpen(false)}>
+                  Cancel
+                </Button>
+                <Button type="button" variant="destructive" onClick={confirmDeleteAllCourses}>
+                  Delete All
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   );
 }
 
-function CourseCard({ courseId, index }: { courseId: string; index: number }) {
+function CourseCard({
+  courseId,
+  index,
+  collapsed,
+  onToggleCollapse
+}: {
+  courseId: string;
+  index: number;
+  collapsed: boolean;
+  onToggleCollapse: (courseId: string) => void;
+}) {
   const courses = useAppStore((state) => state.courses);
   const slots = useAppStore((state) => state.slots);
   const constraints = useAppStore((state) => state.constraints);
@@ -153,6 +279,10 @@ function CourseCard({ courseId, index }: { courseId: string; index: number }) {
     return null;
   }
 
+  const lockedOptionCount = course.options.filter((option) =>
+    constraints.professorLocks.includes(`${course.id}:${option.id}`)
+  ).length;
+
   function submitOption() {
     if (!draft.professorName.trim()) {
       toast.error("Professor name is required.");
@@ -178,195 +308,305 @@ function CourseCard({ courseId, index }: { courseId: string; index: number }) {
 
   return (
     <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-          <div className="grid flex-1 gap-3 sm:grid-cols-[140px_minmax(0,1fr)_96px_64px]">
-            <Input
-              value={course.courseCode}
-              onChange={(event) =>
-                updateCourse(course.id, { courseCode: event.target.value.toUpperCase() })
-              }
+      <CardHeader className="space-y-4">
+        <div className="flex items-start gap-3">
+          <button
+            type="button"
+            onClick={() => onToggleCollapse(course.id)}
+            aria-expanded={!collapsed}
+            className="flex flex-1 items-start gap-3 rounded-lg text-left transition hover:bg-secondary/40"
+          >
+            <span
+              className="mt-1.5 h-3 w-3 rounded-full border border-border shadow-sm"
+              style={{ backgroundColor: course.color ?? "#14b8a6" }}
             />
-            <Input
-              value={course.courseName}
-              onChange={(event) =>
-                updateCourse(course.id, { courseName: event.target.value })
-              }
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="truncate text-base font-semibold tracking-normal sm:text-lg">
+                  {course.courseCode || "Untitled course"}
+                </p>
+                <Badge>{course.credits} credits</Badge>
+                <Badge>{course.options.length} professors</Badge>
+                {lockedOptionCount > 0 ? (
+                  <Badge className="border-primary/25 bg-primary/10 text-primary">
+                    {lockedOptionCount} locked
+                  </Badge>
+                ) : null}
+                <Badge>Priority {index + 1}</Badge>
+              </div>
+              <p className="mt-1 truncate text-sm text-muted-foreground">
+                {course.courseName}
+              </p>
+            </div>
+          </button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            title={collapsed ? "Expand course" : "Collapse course"}
+            aria-expanded={!collapsed}
+            onClick={() => onToggleCollapse(course.id)}
+          >
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 transition-transform duration-200",
+                collapsed ? "-rotate-90" : "rotate-0"
+              )}
             />
-            <Input
-              type="number"
-              min={1}
-              max={8}
-              value={course.credits}
-              onChange={(event) =>
-                updateCourse(course.id, { credits: Number(event.target.value) })
-              }
-            />
-            <input
-              aria-label="Course color"
-              type="color"
-              value={course.color ?? "#14b8a6"}
-              onChange={(event) => updateCourse(course.id, { color: event.target.value })}
-              className="h-10 w-full cursor-pointer rounded-md border border-border bg-background p-1"
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="outline" size="icon" title="Move up" onClick={() => moveCourse(course.id, "up")}>
-              <ArrowUp className="h-4 w-4" />
-            </Button>
-            <Button type="button" variant="outline" size="icon" title="Move down" onClick={() => moveCourse(course.id, "down")}>
-              <ArrowDown className="h-4 w-4" />
-            </Button>
-            <Button type="button" variant="outline" size="icon" title="Duplicate course" onClick={() => duplicateCourse(course.id)}>
-              <Copy className="h-4 w-4" />
-            </Button>
-            <Button type="button" variant="destructive" size="icon" title="Delete course" onClick={() => deleteCourse(course.id)}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Badge>{course.options.length} professors</Badge>
-          <Badge>{course.credits} credits</Badge>
-          <Badge>Priority {index + 1}</Badge>
+          </Button>
         </div>
       </CardHeader>
-      <CardContent className="space-y-5">
-        <div className="grid gap-3 lg:grid-cols-2">
-          {course.options.map((option, optionIndex) => {
-            const lockValue = `${course.id}:${option.id}`;
-            const locked = constraints.professorLocks.includes(lockValue);
-            return (
-              <div
-                key={option.id}
-                className="rounded-md border border-border bg-background/35 p-4"
-              >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex-1 space-y-2">
-                    <Label>Professor</Label>
-                    <Input
-                      value={option.professorName}
-                      onChange={(event) =>
-                        updateOption(course.id, option.id, {
-                          professorName: event.target.value
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <Button
-                      type="button"
-                      variant={locked ? "default" : "outline"}
-                      size="icon"
-                      title="Lock professor into generated schedules"
-                      onClick={() => toggleProfessorLock(course.id, option.id)}
+      <AnimatePresence initial={false}>
+        {!collapsed ? (
+          <motion.div
+            key="course-content"
+            className="overflow-hidden"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+          >
+            <CardContent className="space-y-5">
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div className="grid flex-1 gap-3 sm:grid-cols-[140px_minmax(0,1fr)_96px_64px]">
+                  <Input
+                    value={course.courseCode}
+                    onChange={(event) =>
+                      updateCourse(course.id, {
+                        courseCode: event.target.value.toUpperCase()
+                      })
+                    }
+                  />
+                  <Input
+                    value={course.courseName}
+                    onChange={(event) =>
+                      updateCourse(course.id, { courseName: event.target.value })
+                    }
+                  />
+                  <Input
+                    type="number"
+                    min={1}
+                    max={8}
+                    value={course.credits}
+                    onChange={(event) =>
+                      updateCourse(course.id, { credits: Number(event.target.value) })
+                    }
+                  />
+                  <input
+                    aria-label="Course color"
+                    type="color"
+                    value={course.color ?? "#14b8a6"}
+                    onChange={(event) =>
+                      updateCourse(course.id, { color: event.target.value })
+                    }
+                    className="h-10 w-full cursor-pointer rounded-md border border-border bg-background p-1"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    title="Move up"
+                    onClick={() => moveCourse(course.id, "up")}
+                  >
+                    <ArrowUp className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    title="Move down"
+                    onClick={() => moveCourse(course.id, "down")}
+                  >
+                    <ArrowDown className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    title="Duplicate course"
+                    onClick={() => duplicateCourse(course.id)}
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    title="Delete course"
+                    onClick={() => deleteCourse(course.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              <div className="grid gap-3 lg:grid-cols-2">
+                {course.options.map((option, optionIndex) => {
+                  const lockValue = `${course.id}:${option.id}`;
+                  const locked = constraints.professorLocks.includes(lockValue);
+                  return (
+                    <div
+                      key={option.id}
+                      className="rounded-md border border-border bg-background/35 p-4"
                     >
-                      <LockKeyhole className="h-4 w-4" />
-                    </Button>
-                    <Button type="button" variant="outline" size="icon" title="Move option up" onClick={() => moveOption(course.id, option.id, "up")}>
-                      <ArrowUp className="h-4 w-4" />
-                    </Button>
-                    <Button type="button" variant="outline" size="icon" title="Move option down" onClick={() => moveOption(course.id, option.id, "down")}>
-                      <ArrowDown className="h-4 w-4" />
-                    </Button>
-                    <Button type="button" variant="outline" size="icon" title="Duplicate option" onClick={() => duplicateOption(course.id, option.id)}>
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    <Button type="button" variant="destructive" size="icon" title="Delete option" onClick={() => deleteOption(course.id, option.id)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="flex-1 space-y-2">
+                          <Label>Professor</Label>
+                          <Input
+                            value={option.professorName}
+                            onChange={(event) =>
+                              updateOption(course.id, option.id, {
+                                professorName: event.target.value
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <Button
+                            type="button"
+                            variant={locked ? "default" : "outline"}
+                            size="icon"
+                            title="Lock professor into generated schedules"
+                            onClick={() => toggleProfessorLock(course.id, option.id)}
+                          >
+                            <LockKeyhole className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            title="Move option up"
+                            onClick={() => moveOption(course.id, option.id, "up")}
+                          >
+                            <ArrowUp className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            title="Move option down"
+                            onClick={() => moveOption(course.id, option.id, "down")}
+                          >
+                            <ArrowDown className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            title="Duplicate option"
+                            onClick={() => duplicateOption(course.id, option.id)}
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            title="Delete option"
+                            onClick={() => deleteOption(course.id, option.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Badge>Option {optionIndex + 1}</Badge>
+                        {locked ? (
+                          <Badge className="border-primary/25 bg-primary/10 text-primary">
+                            Locked
+                          </Badge>
+                        ) : null}
+                        {getLabelsForSlotIds(slots, option.theorySlotIds).map((label) => (
+                          <Badge key={label}>Theory {label}</Badge>
+                        ))}
+                        {getLabelsForSlotIds(slots, option.labSlotIds).map((label) => (
+                          <Badge key={label}>Lab {label}</Badge>
+                        ))}
+                      </div>
+                      <div className="mt-3 space-y-3">
+                        <TheoryPicker
+                          slots={slots}
+                          options={theoryOptions}
+                          selected={option.theorySlotIds}
+                          onSelect={(slotIds) =>
+                            updateOption(course.id, option.id, {
+                              theorySlotIds: sameIds(option.theorySlotIds, slotIds)
+                                ? []
+                                : slotIds
+                            })
+                          }
+                        />
+                        <LabPicker
+                          options={labOptions}
+                          selected={option.labSlotIds}
+                          onToggle={(slotIds) =>
+                            updateOption(course.id, option.id, {
+                              labSlotIds: toggleIds(option.labSlotIds, slotIds)
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="rounded-md border border-dashed border-primary/40 bg-primary/5 p-4">
+                <div className="mb-3 flex items-center gap-2">
+                  <UserRoundPlus className="h-4 w-4 text-primary" />
+                  <p className="font-semibold">Add Professor Option</p>
                 </div>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <Badge>Option {optionIndex + 1}</Badge>
-                  {locked ? <Badge className="border-primary/25 bg-primary/10 text-primary">Locked</Badge> : null}
-                  {getLabelsForSlotIds(slots, option.theorySlotIds).map((label) => (
-                    <Badge key={label}>Theory {label}</Badge>
-                  ))}
-                  {getLabelsForSlotIds(slots, option.labSlotIds).map((label) => (
-                    <Badge key={label}>Lab {label}</Badge>
-                  ))}
-                </div>
-                <div className="mt-3 space-y-3">
+                <Input
+                  value={draft.professorName}
+                  onChange={(event) =>
+                    setDraft((current) => ({
+                      ...current,
+                      professorName: event.target.value
+                    }))
+                  }
+                />
+                <div className="mt-3 grid gap-3 xl:grid-cols-2">
                   <TheoryPicker
                     slots={slots}
                     options={theoryOptions}
-                    selected={option.theorySlotIds}
+                    selected={draft.theorySlotIds}
                     onSelect={(slotIds) =>
-                      updateOption(course.id, option.id, {
-                        theorySlotIds: sameIds(option.theorySlotIds, slotIds)
+                      setDraft((current) => ({
+                        ...current,
+                        theorySlotIds: sameIds(current.theorySlotIds, slotIds)
                           ? []
                           : slotIds
-                      })
+                      }))
                     }
                   />
                   <LabPicker
                     options={labOptions}
-                    selected={option.labSlotIds}
+                    selected={draft.labSlotIds}
                     onToggle={(slotIds) =>
-                      updateOption(course.id, option.id, {
-                        labSlotIds: toggleIds(option.labSlotIds, slotIds)
-                      })
+                      setDraft((current) => ({
+                        ...current,
+                        labSlotIds: toggleIds(current.labSlotIds, slotIds)
+                      }))
                     }
                   />
                 </div>
+                <Textarea
+                  className="mt-3"
+                  value={draft.notes}
+                  onChange={(event) =>
+                    setDraft((current) => ({ ...current, notes: event.target.value }))
+                  }
+                />
+                <Button type="button" className="mt-3" onClick={submitOption}>
+                  <Plus className="h-4 w-4" />
+                  Add Option
+                </Button>
               </div>
-            );
-          })}
-        </div>
-
-        <div className="rounded-md border border-dashed border-primary/40 bg-primary/5 p-4">
-          <div className="mb-3 flex items-center gap-2">
-            <UserRoundPlus className="h-4 w-4 text-primary" />
-            <p className="font-semibold">Add Professor Option</p>
-          </div>
-          <Input
-            value={draft.professorName}
-            onChange={(event) =>
-              setDraft((current) => ({
-                ...current,
-                professorName: event.target.value
-              }))
-            }
-          />
-          <div className="mt-3 grid gap-3 xl:grid-cols-2">
-            <TheoryPicker
-              slots={slots}
-              options={theoryOptions}
-              selected={draft.theorySlotIds}
-              onSelect={(slotIds) =>
-                setDraft((current) => ({
-                  ...current,
-                  theorySlotIds: sameIds(current.theorySlotIds, slotIds)
-                    ? []
-                    : slotIds
-                }))
-              }
-            />
-            <LabPicker
-              options={labOptions}
-              selected={draft.labSlotIds}
-              onToggle={(slotIds) =>
-                setDraft((current) => ({
-                  ...current,
-                  labSlotIds: toggleIds(current.labSlotIds, slotIds)
-                }))
-              }
-            />
-          </div>
-          <Textarea
-            className="mt-3"
-            value={draft.notes}
-            onChange={(event) =>
-              setDraft((current) => ({ ...current, notes: event.target.value }))
-            }
-          />
-          <Button type="button" className="mt-3" onClick={submitOption}>
-            <Plus className="h-4 w-4" />
-            Add Option
-          </Button>
-        </div>
-      </CardContent>
+            </CardContent>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </Card>
   );
 }

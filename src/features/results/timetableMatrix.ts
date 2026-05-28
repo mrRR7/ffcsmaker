@@ -8,6 +8,7 @@ export type MatrixColumn = {
   kind: "slot" | "lunch";
   track: MatrixTrack;
   slotIndex?: number;
+  slotIndexByDay?: Partial<Record<DayOfWeek, number | null>>;
   partIndex?: number;
   slotLabel?: string;
   startTime?: string;
@@ -60,13 +61,84 @@ function getDaySlots(slots: TimeSlot[], day: DayOfWeek, kind: "theory" | "lab") 
 function buildColumns(slots: TimeSlot[], kind: "theory" | "lab"): MatrixColumn[] {
   const templateDay = DAYS[0];
   const templateSlots = getDaySlots(slots, templateDay, kind);
-  const morning = templateSlots.slice(0, 6);
-  const afternoon = templateSlots.slice(6, 12);
+
+  if (kind === "theory") {
+    const morning = templateSlots.slice(0, 5);
+    const preLunchSpecial = templateSlots[5];
+    const afternoon = templateSlots.slice(6, 11);
+    const finalSpecial = templateSlots[11];
+
+    return [
+      ...morning.map((slot, slotIndex) => ({
+        kind: "slot" as const,
+        track: "THEORY" as MatrixTrack,
+        slotIndexByDay: {
+          Monday: slotIndex,
+          Tuesday: slotIndex,
+          Wednesday: slotIndex,
+          Thursday: slotIndex,
+          Friday: slotIndex
+        },
+        slotLabel: slot.label,
+        startTime: slot.startTime,
+        endTime: slot.endTime
+      })),
+      {
+        kind: "slot" as const,
+        track: "THEORY" as MatrixTrack,
+        slotIndexByDay: {
+          Monday: 5,
+          Tuesday: null,
+          Wednesday: null,
+          Thursday: null,
+          Friday: 5
+        },
+        slotLabel: preLunchSpecial?.label ?? "",
+        startTime: preLunchSpecial?.startTime ?? "",
+        endTime: preLunchSpecial?.endTime ?? ""
+      },
+      {
+        kind: "lunch" as const,
+        track: "THEORY" as MatrixTrack
+      },
+      ...afternoon.map((slot, offset) => ({
+        kind: "slot" as const,
+        track: "THEORY" as MatrixTrack,
+        slotIndexByDay: {
+          Monday: 6 + offset,
+          Tuesday: 5 + offset,
+          Wednesday: 5 + offset,
+          Thursday: 5 + offset,
+          Friday: 6 + offset
+        },
+        slotLabel: slot.label,
+        startTime: slot.startTime,
+        endTime: slot.endTime
+      })),
+      {
+        kind: "slot" as const,
+        track: "THEORY" as MatrixTrack,
+        slotIndexByDay: {
+          Monday: 11,
+          Tuesday: 10,
+          Wednesday: 10,
+          Thursday: 10,
+          Friday: null
+        },
+        slotLabel: finalSpecial?.label ?? "",
+        startTime: finalSpecial?.startTime ?? "",
+        endTime: finalSpecial?.endTime ?? ""
+      }
+    ];
+  }
+
+  const morning = templateSlots.slice(0, 3);
+  const afternoon = templateSlots.slice(3, 6);
 
   return [
     ...morning.map((slot, slotIndex) => ({
       kind: "slot" as const,
-      track: (kind === "theory" ? "THEORY" : "LAB") as MatrixTrack,
+      track: "LAB" as MatrixTrack,
       slotIndex,
       slotLabel: slot.label,
       startTime: slot.startTime,
@@ -74,11 +146,11 @@ function buildColumns(slots: TimeSlot[], kind: "theory" | "lab"): MatrixColumn[]
     })),
     {
       kind: "lunch" as const,
-      track: kind === "theory" ? "THEORY" : "LAB"
+      track: "LAB" as MatrixTrack
     },
     ...afternoon.map((slot, offset) => ({
       kind: "slot" as const,
-      track: (kind === "theory" ? "THEORY" : "LAB") as MatrixTrack,
+      track: "LAB" as MatrixTrack,
       slotIndex: 6 + offset,
       slotLabel: slot.label,
       startTime: slot.startTime,
@@ -258,7 +330,8 @@ export function buildMatrixCells(
           } satisfies MatrixCell;
         }
 
-        const slot = daySlots[column.slotIndex ?? 0] ?? null;
+        const slotIndex = column.slotIndexByDay?.[day] ?? column.slotIndex ?? null;
+        const slot = slotIndex === null || slotIndex === undefined ? null : daySlots[slotIndex] ?? null;
         const selection = slot
           ? schedule.selections.find(
               (item) =>

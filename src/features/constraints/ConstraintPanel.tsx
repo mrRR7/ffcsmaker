@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
+import { staggerContainer, fadeUp } from "@/utils/motion";
 import { Clock4, Plus, Settings2, SlidersHorizontal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,7 +32,7 @@ export function ConstraintPanel() {
     day: "All",
     startTime: "12:30",
     endTime: "13:30",
-    label: "Focus block"
+    label: ""
   });
   const [endBeforeTime, setEndBeforeTime] = useState(() => getInitialEndBeforeTime(constraints));
   const [endBeforeDays, setEndBeforeDays] = useState(() => getInitialEndBeforeDays(constraints));
@@ -41,7 +43,7 @@ export function ConstraintPanel() {
       day: "All",
       startTime: "12:30",
       endTime: "13:30",
-      label: "Focus block"
+      label: ""
     });
   }
 
@@ -67,8 +69,8 @@ export function ConstraintPanel() {
     <div className="relative grid items-start gap-8 xl:grid-cols-[220px_1fr]">
       <ConstraintSectionNav sections={sections} />
 
-      <div className="space-y-8 pb-24">
-        <section id="time-preferences" className="scroll-mt-24 space-y-4">
+      <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-8 pb-24">
+        <motion.section variants={fadeUp} id="time-preferences" className="scroll-mt-24 space-y-4">
           <div>
             <h2 className="text-xl font-bold tracking-tight">Time Preferences</h2>
             <p className="mb-4 text-sm text-muted-foreground">
@@ -78,15 +80,6 @@ export function ConstraintPanel() {
           <Card>
             <CardContent className="space-y-6 p-6">
               <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <Field label="No classes before">
-                  <Input
-                    type="time"
-                    value={constraints.noBeforeTime ?? ""}
-                    onChange={(event) =>
-                      setConstraint("noBeforeTime", event.target.value || null)
-                    }
-                  />
-                </Field>
                 <Field label="Max classes per day">
                   <Input
                     type="number"
@@ -112,26 +105,6 @@ export function ConstraintPanel() {
                       )
                     }
                   />
-                </Field>
-                <Field label="Protect lunch">
-                  <button
-                    type="button"
-                    onClick={() => setConstraint("protectLunch", !constraints.protectLunch)}
-                    className={cn(
-                      "flex h-10 items-center justify-between rounded-md border px-3 text-sm font-medium transition",
-                      constraints.protectLunch
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-secondary/35 text-muted-foreground hover:text-foreground"
-                    )}
-                  >
-                    <span>{constraints.protectLunch ? "On" : "Off"}</span>
-                    <span
-                      className={cn(
-                        "h-2.5 w-2.5 rounded-full",
-                        constraints.protectLunch ? "bg-primary" : "bg-muted-foreground/30"
-                      )}
-                    />
-                  </button>
                 </Field>
               </div>
 
@@ -177,9 +150,9 @@ export function ConstraintPanel() {
               </div>
             </CardContent>
           </Card>
-        </section>
+        </motion.section>
 
-        <section id="end-before" className="scroll-mt-24 space-y-4">
+        <motion.section variants={fadeUp} id="end-before" className="scroll-mt-24 space-y-4">
           <div>
             <h2 className="text-xl font-bold tracking-tight">Early Finish</h2>
             <p className="mb-4 text-sm text-muted-foreground">
@@ -247,13 +220,13 @@ export function ConstraintPanel() {
               </div>
             </CardContent>
           </Card>
-        </section>
+        </motion.section>
 
-        <section id="blocked-windows" className="scroll-mt-24 space-y-4">
+        <motion.section variants={fadeUp} id="blocked-windows" className="scroll-mt-24 space-y-4">
           <div>
             <h2 className="text-xl font-bold tracking-tight">Blocked Windows</h2>
             <p className="mb-4 text-sm text-muted-foreground">
-              Protect lunch, work, commute, or club time.
+              Protect work, commute, club time, or any recurring block.
             </p>
           </div>
           <Card>
@@ -370,14 +343,14 @@ export function ConstraintPanel() {
               </div>
             </CardContent>
           </Card>
-        </section>
+        </motion.section>
 
-        <div className="flex justify-center pt-2">
+        <motion.div variants={fadeUp} className="flex justify-center pt-2">
           <Button type="button" variant="outline" onClick={resetConstraints}>
             Reset All Constraints
           </Button>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }
