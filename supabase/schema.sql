@@ -103,3 +103,31 @@ BEGIN
     CREATE POLICY "share_insert" ON share_links FOR INSERT WITH CHECK (true);
   END IF;
 END $$;
+
+CREATE TABLE IF NOT EXISTS share_timetables (
+  id TEXT PRIMARY KEY,
+  snapshot_json JSONB NOT NULL,
+  score REAL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE share_timetables ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'share_timetables'
+      AND policyname = 'share_timetables_public_read'
+  ) THEN
+    CREATE POLICY "share_timetables_public_read" ON share_timetables FOR SELECT USING (true);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'share_timetables'
+      AND policyname = 'share_timetables_insert'
+  ) THEN
+    CREATE POLICY "share_timetables_insert" ON share_timetables FOR INSERT WITH CHECK (true);
+  END IF;
+END $$;

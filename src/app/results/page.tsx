@@ -19,7 +19,7 @@ import { SlotMatrixTimetable } from "@/features/results/SlotMatrixTimetable";
 import { buildMatrixCells, MatrixCell } from "@/features/results/timetableMatrix";
 import { ScoredTimetable } from "@/engine/types";
 import { exportElementPng, exportScheduleJson, exportTimetablePdf } from "@/utils/export";
-import { createShortShareUrl, createSharedState, encodeSharedState } from "@/utils/share";
+import { createSharedTimetableUrl } from "@/utils/share";
 import { useAppStore } from "@/store/useAppStore";
 
 type SortMode = "score" | "lowGaps" | "earlyFinish";
@@ -151,19 +151,20 @@ export default function ResultsPage() {
   }, [activeSchedule, activeScheduleId, setActiveScheduleId]);
 
   async function shareActive(schedule: ScoredTimetable) {
-    const encoded = encodeSharedState(
-      createSharedState({
+    try {
+      const url = await createSharedTimetableUrl({
+        schedule,
         slots,
         courses,
-        constraints,
-        rankingMode,
-        usePriorityRanking,
-        activeSchedule: schedule
-      })
-    );
-    const url = await createShortShareUrl(encoded);
-    await navigator.clipboard.writeText(url);
-    toast.success("Schedule URL copied.");
+        metrics: schedule.metrics,
+        score: schedule.score,
+        generatedAt: new Date().toISOString(),
+      });
+      await navigator.clipboard.writeText(url);
+      toast.success("Shared timetable URL copied.");
+    } catch (err) {
+      toast.error("Failed to share timetable.");
+    }
   }
 
   async function exportActive(type: "png" | "pdf") {

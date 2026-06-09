@@ -17,6 +17,7 @@ import {
 } from "./conflict";
 import { computeScheduleMetrics } from "./metrics";
 import { scoreSchedule } from "./ranking";
+import { consolidateSchedulesByShape } from "./consolidation";
 
 type ProgressCallback = (progress: {
   checked: number;
@@ -187,11 +188,17 @@ export function generateTimetables(
   }
 
   dfs(0, [], []);
+  
+  // Initial sort by score
   schedules.sort((a, b) => b.score - a.score);
+  
+  // Consolidate schedules by actual timetable shape
+  const consolidatedSchedules = consolidateSchedulesByShape(schedules, slots);
+  
   emitProgress(true);
 
   return {
-    schedules,
+    schedules: consolidatedSchedules,
     checked
   };
 }
