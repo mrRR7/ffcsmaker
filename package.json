@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@next/bundle-analyzer": "^14.2.23",
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.108.0",
     "@types/node": "^22.10.5",
     "@types/papaparse": "^5.5.2",
     "@types/react": "^18.3.18",

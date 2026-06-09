@@ -18,7 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TimetableGrid } from "@/components/TimetableGrid";
 import { ScoredTimetable } from "@/engine/types";
 import { exportElementPng, exportScheduleJson, exportTimetablePdf } from "@/utils/export";
-import { buildShareUrl, createSharedState, encodeSharedState } from "@/utils/share";
+import { createShortShareUrl, createSharedState, encodeSharedState } from "@/utils/share";
 import { useAppStore } from "@/store/useAppStore";
 
 export function ScheduleSummaryCard({
@@ -63,7 +63,7 @@ export function ScheduleSummaryCard({
         activeSchedule: schedule
       })
     );
-    const url = buildShareUrl("/planner", encoded);
+    const url = await createShortShareUrl(encoded);
     await navigator.clipboard.writeText(url);
     toast.success("Share URL copied.");
   }

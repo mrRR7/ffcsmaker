@@ -55,3 +55,27 @@ export function buildShareUrl(pathname: string, encoded: string) {
   url.searchParams.set("share", encoded);
   return url.toString();
 }
+
+export async function createShortShareUrl(encoded: string) {
+  if (typeof window === "undefined") {
+    return buildShareUrl("/planner", encoded);
+  }
+
+  try {
+    const resp = await fetch("/api/share", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ payload: encoded })
+    });
+    if (!resp.ok) {
+      return buildShareUrl("/planner", encoded);
+    }
+    const json = await resp.json();
+    if (!json?.id) {
+      return buildShareUrl("/planner", encoded);
+    }
+    return `${window.location.origin}/s/${json.id}`;
+  } catch {
+    return buildShareUrl("/planner", encoded);
+  }
+}

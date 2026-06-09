@@ -13,12 +13,13 @@ import { ResultsControlBar } from "@/features/results/ResultsControlBar";
 import { ScheduleMetricsStrip } from "@/features/results/ScheduleMetricsStrip";
 import { CourseSummaryPanel } from "@/features/results/CourseSummaryPanel";
 import { BlockDetailPanel } from "@/features/results/BlockDetailPanel";
+import { IcalExportDialog } from "@/features/results/IcalExportDialog";
 import { ScheduleBrowser } from "@/features/results/ScheduleBrowser";
 import { SlotMatrixTimetable } from "@/features/results/SlotMatrixTimetable";
 import { buildMatrixCells, MatrixCell } from "@/features/results/timetableMatrix";
 import { ScoredTimetable } from "@/engine/types";
 import { exportElementPng, exportScheduleJson, exportTimetablePdf } from "@/utils/export";
-import { buildShareUrl, createSharedState, encodeSharedState } from "@/utils/share";
+import { createShortShareUrl, createSharedState, encodeSharedState } from "@/utils/share";
 import { useAppStore } from "@/store/useAppStore";
 
 type SortMode = "score" | "lowGaps" | "earlyFinish";
@@ -160,7 +161,8 @@ export default function ResultsPage() {
         activeSchedule: schedule
       })
     );
-    await navigator.clipboard.writeText(buildShareUrl("/planner", encoded));
+    const url = await createShortShareUrl(encoded);
+    await navigator.clipboard.writeText(url);
     toast.success("Schedule URL copied.");
   }
 
@@ -274,6 +276,7 @@ export default function ResultsPage() {
         <FileJson className="h-4 w-4" />
         JSON
       </Button>
+      <IcalExportDialog schedule={activeSchedule} slots={slots} />
       <Button type="button" variant="outline" onClick={() => exportActive("png") }>
         <Download className="h-4 w-4" />
         PNG

@@ -7,11 +7,17 @@ import { staggerContainer, fadeUp } from "@/utils/motion";
 import toast from "react-hot-toast";
 import {
   ClipboardCheck,
+  ClipboardList,
+  FileUp,
   GitBranch,
+  Pencil,
   Play,
+  Search,
   Share2,
-  SlidersHorizontal
+  SlidersHorizontal,
+  X
 } from "lucide-react";
+import { CreditCounter } from "@/components/CreditCounter";
 import { SectionHeader } from "@/components/SectionHeader";
 import { StatCard } from "@/components/StatCard";
 import { Badge } from "@/components/ui/badge";
@@ -19,26 +25,30 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Select } from "@/components/ui/form";
+import { CatalogSearch } from "@/features/catalog/CatalogSearch";
 import { ConstraintPanel } from "@/features/constraints/ConstraintPanel";
 import { CourseBuilder } from "@/features/courses/CourseBuilder";
 import { ImportManager } from "@/features/import/ImportManager";
+import { PasteImport } from "@/features/paste-import/PasteImport";
 import { getRankingProfiles } from "@/engine/ranking";
 import { RankingMode } from "@/engine/types";
 import { useGenerator } from "@/hooks/useGenerator";
 import { useAppStore } from "@/store/useAppStore";
-import { buildShareUrl, createSharedState, encodeSharedState } from "@/utils/share";
+import { createShortShareUrl, createSharedState, encodeSharedState } from "@/utils/share";
 import { cn } from "@/utils/cn";
 
 const tabs = [
-  { id: "import", label: "Import", icon: ClipboardCheck },
-  { id: "courses", label: "Courses", icon: ClipboardCheck },
-  { id: "constraints", label: "Constraints", icon: SlidersHorizontal }
+  { id: "search", label: "Search Catalog", mobileLabel: "Search", icon: Search },
+  { id: "paste", label: "Paste Text", mobileLabel: "Paste", icon: ClipboardList },
+  { id: "import", label: "Import File", mobileLabel: "File", icon: FileUp },
+  { id: "manual", label: "Manual Entry", mobileLabel: "Manual", icon: Pencil }
 ] as const;
 
 type TabId = (typeof tabs)[number]["id"];
 
 export default function PlannerPage() {
-  const [tab, setTab] = useState<TabId>("courses");
+  const [tab, setTab] = useState<TabId>("search");
+  const [showConstraints, setShowConstraints] = useState(false);
   const courses = useAppStore((state) => state.courses);
   const slots = useAppStore((state) => state.slots);
   const constraints = useAppStore((state) => state.constraints);
@@ -69,7 +79,8 @@ export default function PlannerPage() {
         activeSchedule: null
       })
     );
-    await navigator.clipboard.writeText(buildShareUrl("/planner", encoded));
+    const url = await createShortShareUrl(encoded);
+    await navigator.clipboard.writeText(url);
     toast.success("Planner URL copied.");
   }
 
@@ -92,6 +103,19 @@ export default function PlannerPage() {
         description="Build your local course data, set constraints, and run the browser worker."
         action={
           <div className="flex flex-wrap gap-2">
+            <CreditCounter courses={courses} />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowConstraints((current) => !current)}
+            >
+              {showConstraints ? (
+                <X className="h-4 w-4" />
+              ) : (
+                <SlidersHorizontal className="h-4 w-4" />
+              )}
+              Constraints
+            </Button>
             <Button type="button" variant="outline" onClick={sharePlanner}>
               <Share2 className="h-4 w-4" />
               Share
@@ -198,7 +222,17 @@ export default function PlannerPage() {
         </Card>
       ) : null}
 
-      <div className="mb-5 flex flex-wrap gap-2 rounded-lg border border-border bg-card/70 p-2">
+      {showConstraints ? (
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-5"
+        >
+          <ConstraintPanel />
+        </motion.div>
+      ) : null}
+
+      <div className="mb-5 flex gap-2 overflow-x-auto rounded-lg border border-border bg-card/70 p-2">
         {tabs.map((item) => {
           const Icon = item.icon;
           const active = tab === item.id;
@@ -208,14 +242,17 @@ export default function PlannerPage() {
               type="button"
               onClick={() => setTab(item.id)}
               className={cn(
-                "inline-flex h-10 items-center gap-2 rounded-md px-4 text-sm font-semibold transition",
+                "inline-flex h-10 shrink-0 items-center gap-2 rounded-md px-4 text-sm font-semibold transition",
                 active
                   ? "bg-primary text-primary-foreground shadow-glow"
                   : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
               )}
             >
               <Icon className="h-4 w-4" />
-              {item.label}
+              <span className="sm:hidden">{item.mobileLabel}</span>
+              <span className="hidden sm:inline">
+                {item.id === "search" ? `${item.label} *` : item.label}
+              </span>
             </button>
           );
         })}
@@ -227,9 +264,10 @@ export default function PlannerPage() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.18 }}
       >
+        {tab === "search" ? <CatalogSearch /> : null}
+        {tab === "paste" ? <PasteImport /> : null}
         {tab === "import" ? <ImportManager /> : null}
-        {tab === "courses" ? <CourseBuilder /> : null}
-        {tab === "constraints" ? <ConstraintPanel /> : null}
+        {tab === "manual" ? <CourseBuilder /> : null}
       </motion.div>
     </div>
   );
