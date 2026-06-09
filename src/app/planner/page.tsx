@@ -13,7 +13,6 @@ import {
   Pencil,
   Play,
   Search,
-  Share2,
   SlidersHorizontal,
   X
 } from "lucide-react";
@@ -34,7 +33,6 @@ import { getRankingProfiles } from "@/engine/ranking";
 import { RankingMode } from "@/engine/types";
 import { useGenerator } from "@/hooks/useGenerator";
 import { useAppStore } from "@/store/useAppStore";
-import { createShortShareUrl, createSharedState, encodeSharedState } from "@/utils/share";
 import { cn } from "@/utils/cn";
 
 const tabs = [
@@ -68,22 +66,6 @@ export default function PlannerPage() {
     [courses]
   );
 
-  async function sharePlanner() {
-    const encoded = encodeSharedState(
-      createSharedState({
-        slots,
-        courses,
-        constraints,
-        rankingMode,
-        usePriorityRanking,
-        activeSchedule: null
-      })
-    );
-    const url = await createShortShareUrl(encoded);
-    await navigator.clipboard.writeText(url);
-    toast.success("Planner URL copied.");
-  }
-
   function runGeneration() {
     generate({
       courses,
@@ -115,10 +97,6 @@ export default function PlannerPage() {
                 <SlidersHorizontal className="h-4 w-4" />
               )}
               Constraints
-            </Button>
-            <Button type="button" variant="outline" onClick={sharePlanner}>
-              <Share2 className="h-4 w-4" />
-              Share
             </Button>
             <Button
               type="button"
