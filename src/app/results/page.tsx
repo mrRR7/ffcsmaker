@@ -7,6 +7,7 @@ import { staggerContainer, fadeUp } from "@/utils/motion";
 import toast from "react-hot-toast";
 import { BookmarkPlus, Check, Download, FileJson, FileText, Share2 } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
+import { ResultDetailView } from "@/components/ResultDetailView";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ResultsControlBar } from "@/features/results/ResultsControlBar";
@@ -298,59 +299,16 @@ export default function ResultsPage() {
         actions={toolbarActions}
       />
 
-      <motion.div variants={staggerContainer} initial="initial" animate="animate" className="space-y-4">
-        {activeSchedule ? (
-          <motion.div variants={fadeUp}>
-            <ScheduleBrowser
-              schedules={filteredSchedules}
-              activeSchedule={activeSchedule}
-              activeIndex={activeIndex}
-              onSelectSchedule={selectSchedule}
-              onPrevious={() =>
-                selectSchedule(filteredSchedules[Math.max(activeIndex - 1, 0)].id)
-              }
-              onNext={() =>
-                selectSchedule(
-                  filteredSchedules[Math.min(activeIndex + 1, filteredSchedules.length - 1)].id
-                )
-              }
-              onToggleFavorite={toggleFavoriteSchedule}
-              onAddCompare={addCompareSchedule}
-              isFavorite={isFavorite}
-            />
-          </motion.div>
-        ) : null}
-
-        <motion.div variants={fadeUp} ref={exportRef} className="relative min-w-0 space-y-4">
-          <SlotMatrixTimetable
-            schedule={activeSchedule}
-            slots={slots}
-            courses={courses}
-            onCellClick={selectCell}
-            highlightCourseCode={highlightCourseCode}
-            activeCellId={activeCellId}
-          />
-        </motion.div>
-
-        {activeSchedule ? (
-          <>
-            <motion.div variants={fadeUp}>
-              <ScheduleMetricsStrip schedule={activeSchedule} />
-            </motion.div>
-            <motion.div variants={fadeUp}>
-              <CourseSummaryPanel
-                schedule={activeSchedule}
-                slots={slots}
-                courses={courses}
-                highlightCourseCode={highlightCourseCode}
-                previewCourseCode={null}
-                onHighlightCourseCodeChange={setHighlightCourseCode}
-                onPreviewCourseCodeChange={() => undefined}
-              />
-            </motion.div>
-          </>
-        ) : null}
-      </motion.div>
+      <ResultDetailView
+        snapshot={{
+          schedule: activeSchedule!,
+          slots,
+          courses,
+          metrics: activeSchedule!.metrics,
+          score: activeSchedule!.score,
+          generatedAt: new Date().toISOString(),
+        }}
+      />
 
       <BlockDetailPanel
         block={activeCell}
