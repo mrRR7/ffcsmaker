@@ -86,8 +86,6 @@ export function ResultDetailView({
         onCellClick={onCellClick}
         highlightCourseCode={highlightCourseCode}
         activeCellId={activeCellId}
-        // compact view disabled to show full matrix
-        compact={false}
       />
     </div>
   );
