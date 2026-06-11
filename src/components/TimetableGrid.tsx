@@ -214,7 +214,7 @@ export function TimetableGrid({
                           onMouseEnter={() => onBlockHover?.(block)}
                           onMouseLeave={() => onBlockHover?.(null)}
                           className={cn(
-                            "absolute left-2 right-2 overflow-hidden rounded-md border border-white/20 p-2 text-left text-white shadow-lg transition hover:z-10 hover:shadow-glow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80",
+                            "absolute left-2 right-2 overflow-hidden rounded-md border border-white/20 p-2 text-left text-white shadow-lg transition hover:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/80",
                             onBlockClick && "cursor-pointer",
                             isHighlighted ? "opacity-100" : "opacity-40 saturate-50",
                             isActive && "ring-2 ring-white/90 ring-offset-2 ring-offset-background"

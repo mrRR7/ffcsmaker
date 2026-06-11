@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { staggerContainer, fadeUp } from "@/utils/motion";
 import toast from "react-hot-toast";
-import { BookmarkPlus, Check, Download, FileJson, FileText, Share2 } from "lucide-react";
+import { BookmarkPlus, Check, Download, FileJson, FileText, Share2, Table2 } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
 import { ResultDetailView } from "@/components/ResultDetailView";
 import { Button } from "@/components/ui/button";
@@ -212,17 +212,17 @@ export default function ResultsPage() {
   if (generatedSchedules.length === 0) {
     return (
       <div className="pb-20 lg:pb-0">
-        <SectionHeader
-          eyebrow="Results"
-          title="Schedule Explorer"
-          description="No generated schedules are available yet."
-        />
-        <Card className="flex min-h-96 items-center justify-center text-center">
-          <CardContent>
-            <p className="text-lg font-semibold">Run the generator first.</p>
+        <SectionHeader title="Results" />
+        <Card className="flex min-h-96 items-center justify-center text-center border-primary/20 bg-primary/5">
+          <CardContent className="max-w-md">
+            <Table2 className="mx-auto mb-4 h-10 w-10 text-primary/70" />
+            <p className="text-lg font-semibold">No schedules generated yet</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Run the optimizer to generate schedules.
+            </p>
             <Link
               href="/planner"
-              className="mt-5 inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-glow"
+              className="mt-6 inline-flex h-10 items-center justify-center rounded-md bg-primary px-5 text-sm font-semibold text-on-primary shadow-sm hover:bg-primary-hover transition"
             >
               Open Planner
             </Link>

@@ -24,20 +24,14 @@ export function ResultsControlBar({
     <div className={cn("rounded-2xl border border-border/80 bg-card/80 p-4 shadow-card backdrop-blur", className)}>
       <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
         <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-2xl font-semibold text-foreground">
               Results
-            </p>
-            <Badge className="border-primary/25 bg-primary/10 text-primary">
-              {count} schedules
+            </h1>
+            <Badge variant="primary">
+              {count} {count === 1 ? 'schedule' : 'schedules'}
             </Badge>
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-            Schedule Explorer
-          </h1>
-          <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-            Timetable-first browsing with compact comparisons and focused schedule inspection.
-          </p>
         </div>
 
         <div className="flex flex-1 flex-col gap-3 xl:max-w-3xl">
@@ -53,9 +47,6 @@ export function ResultsControlBar({
             </Select>
             <div className="flex flex-wrap gap-2">{actions}</div>
           </div>
-          <p className="text-xs text-muted-foreground">
-            Jump through ranked timetables without losing the current view.
-          </p>
         </div>
       </div>
     </div>

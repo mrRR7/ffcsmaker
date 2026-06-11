@@ -11,7 +11,7 @@ import { CourseSummaryPanel } from "@/features/results/CourseSummaryPanel";
 import { SlotMatrixTimetable } from "@/features/results/SlotMatrixTimetable";
 import { Badge } from "@/components/ui/badge";
 import { ScoredTimetable, TimeSlot, Course } from "@/engine/types";
-import { Sparkles } from "lucide-react";
+
 
 interface Snapshot {
   schedule: ScoredTimetable;
@@ -54,8 +54,8 @@ export function ResultDetailView({
         </div>
         <div className="flex items-start gap-3">
           <div>
-            <h2 className="flex items-center gap-2 text-base font-medium">
-              <Sparkles className="h-4 w-4 text-primary" /> Score {snapshot.score}
+            <h2 className="text-base font-medium">
+              Score {snapshot.score}
             </h2>
           </div>
           <Badge className="border-primary/25 bg-primary/10 text-primary">

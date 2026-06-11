@@ -11,7 +11,6 @@ import {
   Layers3,
   Moon,
   Settings,
-  Sparkles,
   Sun,
   Table2
 } from "lucide-react";
@@ -72,18 +71,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [applySharedState]);
 
   return (
-    <div className="min-h-screen bg-premium-mesh">
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-background/72 backdrop-blur-xl">
+    <div className="min-h-screen bg-canvas text-body flex flex-col">
+      <header className="sticky top-0 z-40 border-b border-hairline bg-canvas/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-primary-foreground shadow-glow">
-              <Sparkles className="h-5 w-5" />
+            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-on-primary shadow-soft">
+              <Table2 className="h-5 w-5" />
             </span>
-            <span>
-              <span className="block text-sm font-semibold text-foreground">
-                Ultimate FFCS
-              </span>
-              <span className="block text-xs text-muted-foreground">{activeLabel}</span>
+            <span className="text-[15px] font-display font-semibold tracking-tight text-ink">
+              Ultimate FFCS
             </span>
           </Link>
           <nav className="hidden items-center gap-1 lg:flex">
@@ -95,8 +91,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-muted-foreground transition hover:bg-secondary/70 hover:text-foreground",
-                    active && "bg-secondary text-foreground"
+                    "inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-muted transition hover:bg-surface-soft hover:text-ink",
+                    active && "bg-primary/10 text-primary"
                   )}
                 >
                   <Icon className="h-4 w-4" />
@@ -117,13 +113,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Button>
         </div>
       </header>
-      <main className="mx-auto max-w-7xl px-4 py-6 pb-28 sm:px-6 lg:px-8 lg:pb-8">
+      <main className="mx-auto max-w-7xl flex-1 w-full px-4 py-8 pb-28 sm:px-6 lg:px-8 lg:pb-12">
         <MotionConfig reducedMotion="user">
           {children}
         </MotionConfig>
       </main>
       <AppFooter />
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-white/10 bg-background/90 px-2 py-2 backdrop-blur-xl lg:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-hairline bg-canvas/95 px-2 py-2 backdrop-blur-xl lg:hidden">
         <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
           {navItems.slice(1, 7).map((item) => {
             const Icon = item.icon;
@@ -133,8 +129,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex flex-col items-center gap-1 rounded-md px-2 py-2 text-[11px] font-medium text-muted-foreground",
-                  active && "bg-secondary text-foreground"
+                  "flex flex-col items-center gap-1 rounded-md px-2 py-2 text-[11px] font-medium text-muted transition",
+                  active && "bg-primary/10 text-primary"
                 )}
               >
                 <Icon className="h-4 w-4" />

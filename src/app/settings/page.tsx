@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
@@ -30,11 +29,7 @@ export default function SettingsPage() {
 
   return (
     <div className="pb-20 lg:pb-0">
-      <SectionHeader
-        eyebrow="Preferences"
-        title="Settings"
-        description="Theme, ranking defaults, export options, and local data controls."
-      />
+      <SectionHeader title="Settings" />
 
       <div className="grid gap-5 lg:grid-cols-2">
         <Card>
@@ -43,7 +38,6 @@ export default function SettingsPage() {
               <Settings2 className="h-5 w-5 text-primary" />
               Interface
             </CardTitle>
-            <CardDescription>Visual and workflow defaults.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-5">
             <div className="grid gap-3 sm:grid-cols-2">
@@ -51,40 +45,41 @@ export default function SettingsPage() {
                 type="button"
                 onClick={() => setTheme("dark")}
                 className={cn(
-                  "rounded-md border p-4 text-left transition",
+                  "rounded-md border px-4 py-3 text-left transition",
                   uiPreferences.theme === "dark"
-                    ? "border-primary bg-primary/15 text-primary"
-                    : "border-border bg-secondary/35"
+                    ? "border-primary/40 bg-primary/10 text-primary"
+                    : "border-hairline bg-transparent text-muted-soft hover:bg-surface-soft hover:text-ink"
                 )}
               >
-                <Moon className="mb-3 h-5 w-5" />
-                <span className="font-semibold">Dark</span>
+                <Moon className="mb-2 h-4 w-4" />
+                <span className="font-semibold text-sm">Dark</span>
               </button>
               <button
                 type="button"
                 onClick={() => setTheme("light")}
                 className={cn(
-                  "rounded-md border p-4 text-left transition",
+                  "rounded-md border px-4 py-3 text-left transition",
                   uiPreferences.theme === "light"
-                    ? "border-primary bg-primary/15 text-primary"
-                    : "border-border bg-secondary/35"
+                    ? "border-primary/40 bg-primary/10 text-primary"
+                    : "border-hairline bg-transparent text-muted-soft hover:bg-surface-soft hover:text-ink"
                 )}
               >
-                <Sun className="mb-3 h-5 w-5" />
-                <span className="font-semibold">Light</span>
+                <Sun className="mb-2 h-4 w-4" />
+                <span className="font-semibold text-sm">Light</span>
               </button>
             </div>
             <button
               type="button"
               onClick={() => setCompactMode(!uiPreferences.compactMode)}
               className={cn(
-                "w-full rounded-md border p-4 text-left transition",
+                "w-full flex items-center justify-between rounded-md border px-4 py-3 text-left transition",
                 uiPreferences.compactMode
-                  ? "border-primary bg-primary/15 text-primary"
-                  : "border-border bg-secondary/35"
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-hairline bg-transparent text-muted-soft hover:bg-surface-soft hover:text-ink"
               )}
             >
-              <span className="font-semibold">Compact timetable mode</span>
+              <span className="font-semibold text-sm">Compact timetable mode</span>
+              <span className={cn("h-2 w-2 rounded-full", uiPreferences.compactMode ? "bg-primary" : "bg-muted-foreground/40")} />
             </button>
             <button
               type="button"
@@ -92,13 +87,14 @@ export default function SettingsPage() {
                 setUsePriorityRanking(!uiPreferences.usePriorityRanking)
               }
               className={cn(
-                "w-full rounded-md border p-4 text-left transition",
+                "w-full flex items-center justify-between rounded-md border px-4 py-3 text-left transition",
                 uiPreferences.usePriorityRanking
-                  ? "border-primary bg-primary/15 text-primary"
-                  : "border-border bg-secondary/35"
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-hairline bg-transparent text-muted-soft hover:bg-surface-soft hover:text-ink"
               )}
             >
-              <span className="font-semibold">Use priority in ranking</span>
+              <span className="font-semibold text-sm">Use priority in ranking</span>
+              <span className={cn("h-2 w-2 rounded-full", uiPreferences.usePriorityRanking ? "bg-primary" : "bg-muted-foreground/40")} />
             </button>
             <div className="space-y-2">
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -124,7 +120,6 @@ export default function SettingsPage() {
               <Download className="h-5 w-5 text-primary" />
               Export Preferences
             </CardTitle>
-            <CardDescription>These flags are stored locally.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <PreferenceToggle
@@ -166,10 +161,6 @@ export default function SettingsPage() {
               <RotateCcw className="h-5 w-5 text-destructive" />
               Local Data
             </CardTitle>
-            <CardDescription>
-              Reset courses, slots, constraints, generated results, saved schedules, and
-              preferences.
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <Button type="button" variant="destructive" onClick={resetAll}>
@@ -198,8 +189,8 @@ function PreferenceToggle({
       className={cn(
         "flex w-full items-center justify-between rounded-md border px-4 py-3 text-left text-sm font-semibold transition",
         active
-          ? "border-primary bg-primary/15 text-primary"
-          : "border-border bg-secondary/35 text-muted-foreground hover:text-foreground"
+          ? "border-primary/40 bg-primary/10 text-primary"
+          : "border-hairline bg-transparent text-muted-soft hover:bg-surface-soft hover:text-ink"
       )}
     >
       {label}

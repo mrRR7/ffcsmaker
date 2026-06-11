@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -42,10 +43,10 @@ export function CourseSummaryPanel({
         const course = courses.find((item) => item.id === selection.courseId);
         const typeLabel =
           selection.theorySlotIds.length > 0 && selection.labSlotIds.length > 0
-            ? "Both"
+            ? "Theory + Lab"
             : selection.labSlotIds.length > 0
-              ? "Lab"
-              : "Theory";
+              ? "Lab Only"
+              : "Theory Only";
         return {
           selection,
           course,
@@ -65,17 +66,10 @@ export function CourseSummaryPanel({
   return (
     <Card className="border-border/70 bg-card/80">
       <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
-              Course summary
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {schedule.selections.length} selected courses, {rows.length} rows in view.
-            </p>
-          </div>
-          <Button type="button" variant="outline" size="sm" onClick={() => setExpanded((value) => !value)}>
-            {expanded ? "Collapse" : `Show ${rows.length - 3 > 0 ? `${rows.length - 3} more` : "all"}`}
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-sm font-semibold">Courses</p>
+          <Button type="button" variant="ghost" size="icon" onClick={() => setExpanded((value) => !value)}>
+            {expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </Button>
         </div>
       </CardHeader>
@@ -135,11 +129,7 @@ export function CourseSummaryPanel({
             </button>
           );
         })}
-        {!expanded && rows.length > 3 ? (
-          <p className="px-1 text-xs text-muted-foreground">
-            Showing 3 of {rows.length} courses. Expand to inspect slot allocation.
-          </p>
-        ) : null}
+
       </CardContent>
     </Card>
   );

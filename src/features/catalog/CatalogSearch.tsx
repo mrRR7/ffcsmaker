@@ -170,8 +170,8 @@ export function CatalogSearch() {
         className={cn(
           "flex min-h-12 w-full items-start gap-3 rounded-md border px-3 py-3 text-left transition",
           selected
-            ? "border-primary bg-primary/10"
-            : "border-border bg-background/30 hover:bg-secondary/60"
+            ? "border-primary/40 bg-primary/10 text-primary"
+            : "border-hairline bg-transparent hover:bg-surface-soft"
         )}
       >
         <span

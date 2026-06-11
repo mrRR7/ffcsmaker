@@ -80,9 +80,7 @@ export default function PlannerPage() {
   return (
     <div className="pb-20 lg:pb-0">
       <SectionHeader
-        eyebrow="Workspace"
         title="Planner"
-        description="Build your local course data, set constraints, and run the browser worker."
         action={
           <div className="flex flex-wrap gap-2">
             <CreditCounter courses={courses} />
@@ -137,10 +135,7 @@ export default function PlannerPage() {
             <CardContent className="p-4 flex flex-col h-full">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Ranking
-                  </p>
-                  <p className="mt-2 text-sm text-muted-foreground">Optimization mode</p>
+                  <p className="text-sm font-medium">Ranking Mode</p>
                 </div>
                 <Badge>{rankingMode}</Badge>
               </div>
@@ -161,8 +156,8 @@ export default function PlannerPage() {
                 className={cn(
                   "mt-3 flex w-full items-center justify-between rounded-md border px-3 py-2 text-sm font-semibold transition",
                   usePriorityRanking
-                    ? "border-primary bg-primary/15 text-primary"
-                    : "border-border bg-secondary/40 text-muted-foreground hover:text-foreground"
+                    ? "border-primary/40 bg-primary/10 text-primary"
+                    : "border-hairline bg-transparent text-muted-soft hover:bg-surface-soft hover:text-ink"
                 )}
               >
                 Priority ranking
@@ -191,7 +186,7 @@ export default function PlannerPage() {
             {accepted > 0 && !isGenerating ? (
               <Link
                 href="/results"
-                className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-glow transition hover:bg-primary/90"
+                className="mt-4 inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-on-primary shadow-none transition hover:bg-primary-hover"
               >
                 Open Results
               </Link>
@@ -220,10 +215,10 @@ export default function PlannerPage() {
               type="button"
               onClick={() => setTab(item.id)}
               className={cn(
-                "inline-flex h-10 shrink-0 items-center gap-2 rounded-md px-4 text-sm font-semibold transition",
+                "inline-flex h-10 shrink-0 items-center gap-2 rounded-md px-4 text-sm font-semibold transition border",
                 active
-                  ? "bg-primary text-primary-foreground shadow-glow"
-                  : "text-muted-foreground hover:bg-secondary/70 hover:text-foreground"
+                  ? "border-primary/40 bg-primary/10 text-primary"
+                  : "border-transparent text-muted-soft hover:bg-surface-soft hover:text-ink"
               )}
             >
               <Icon className="h-4 w-4" />

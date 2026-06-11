@@ -47,9 +47,7 @@ export default function ComparePage() {
   return (
     <div className="pb-20 lg:pb-0">
       <SectionHeader
-        eyebrow="Compare"
-        title="Schedule Comparison"
-        description="Compare up to three timetables using the same theory and lab matrix as Results."
+        title="Compare"
         action={
           <div className="flex flex-wrap gap-2">
             <Select
@@ -76,25 +74,28 @@ export default function ComparePage() {
       />
 
       {allSchedules.length === 0 ? (
-        <Card className="flex min-h-96 items-center justify-center text-center">
-          <CardContent>
-            <GitCompare className="mx-auto mb-4 h-10 w-10 text-primary" />
-            <p className="text-lg font-semibold">No schedules to compare.</p>
+        <Card className="flex min-h-96 items-center justify-center text-center border-primary/20 bg-primary/5">
+          <CardContent className="max-w-md">
+            <GitCompare className="mx-auto mb-4 h-10 w-10 text-primary/70" />
+            <p className="text-lg font-semibold">No schedules to compare</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Generate schedules to begin comparing.
+            </p>
             <Link
               href="/planner"
-              className="mt-5 inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground shadow-glow"
+              className="mt-6 inline-flex h-10 items-center justify-center rounded-md bg-primary px-5 text-sm font-semibold text-on-primary shadow-sm hover:bg-primary-hover transition"
             >
-              Generate schedules
+              Open Planner
             </Link>
           </CardContent>
         </Card>
       ) : null}
 
       {selected.length === 0 && allSchedules.length > 0 ? (
-        <Card className="mb-5">
+        <Card className="mb-5 border-primary/20 bg-primary/5">
           <CardContent className="flex flex-col items-center justify-center gap-3 p-8 text-center">
-            <Plus className="h-8 w-8 text-primary" />
-            <p className="font-semibold">Choose schedules from the selector.</p>
+            <Plus className="h-8 w-8 text-primary/70" />
+            <p className="font-semibold">Choose schedules from the selector to begin comparing.</p>
           </CardContent>
         </Card>
       ) : null}

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { Clock3, FileSpreadsheet, Plus, Sparkles, Trash2 } from "lucide-react";
+import { Clock3, FileSpreadsheet, Plus, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -135,7 +135,7 @@ export function SlotBuilder() {
               variant="secondary"
               onClick={() => applySlotPreset("mon-fri-hourly")}
             >
-              <Sparkles className="h-4 w-4" />
+
               Mon-Fri Hourly
             </Button>
             <Button
@@ -143,7 +143,6 @@ export function SlotBuilder() {
               variant="secondary"
               onClick={() => applySlotPreset("mon-sat-hourly")}
             >
-              <Sparkles className="h-4 w-4" />
               Mon-Sat Hourly
             </Button>
             <Button
@@ -151,7 +150,7 @@ export function SlotBuilder() {
               variant="secondary"
               onClick={() => applySlotPreset("studio-grid")}
             >
-              <Sparkles className="h-4 w-4" />
+
               Classroom Grid
             </Button>
             <Button type="button" variant="destructive" onClick={clearSlots}>

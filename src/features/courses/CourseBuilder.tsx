@@ -639,9 +639,9 @@ function TheoryPicker({
                 onClick={() => onSelect(option.slotIds)}
                 className={cn(
                   "rounded-md border px-2.5 py-1.5 text-xs font-medium transition",
-                  active
-                    ? "border-primary bg-primary/15 text-primary"
-                    : "border-border bg-secondary/40 text-muted-foreground hover:text-foreground"
+                    active
+                      ? "border-primary/40 bg-primary/10 text-primary"
+                      : "border-hairline bg-transparent text-muted-soft hover:bg-surface-soft hover:text-ink"
                 )}
               >
                 {option.label}
@@ -680,9 +680,9 @@ function LabPicker({
                 onClick={() => onToggle(option.slotIds)}
                 className={cn(
                   "rounded-md border px-2.5 py-1.5 text-xs font-medium transition",
-                  active
-                    ? "border-primary bg-primary/15 text-primary"
-                    : "border-border bg-secondary/40 text-muted-foreground hover:text-foreground"
+                    active
+                      ? "border-primary/40 bg-primary/10 text-primary"
+                      : "border-hairline bg-transparent text-muted-soft hover:bg-surface-soft hover:text-ink"
                 )}
               >
                 {option.label}

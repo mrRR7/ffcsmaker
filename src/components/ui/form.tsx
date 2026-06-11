@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/utils/cn";
 
 export const inputClassName =
-  "h-10 w-full rounded-md border border-input bg-background/70 px-3 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60";
+  "h-10 w-full rounded-md border border-hairline bg-surface-card px-3 text-sm text-ink outline-none transition shadow-sm placeholder:text-muted-soft focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60";
 
 export const Input = React.forwardRef<
   HTMLInputElement,
@@ -19,7 +19,7 @@ export const Textarea = React.forwardRef<
   <textarea
     ref={ref}
     className={cn(
-      "min-h-24 w-full rounded-md border border-input bg-background/70 px-3 py-2 text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60",
+      "min-h-24 w-full rounded-md border border-hairline bg-surface-card px-3 py-2 text-sm text-ink outline-none transition shadow-sm placeholder:text-muted-soft focus:border-primary focus:ring-2 focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-60",
       className
     )}
     {...props}

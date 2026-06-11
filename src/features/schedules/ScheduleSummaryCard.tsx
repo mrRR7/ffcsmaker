@@ -9,8 +9,7 @@ import {
   FileJson,
   FileText,
   GitCompare,
-  Share2,
-  Sparkles
+  Share2
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -100,8 +99,7 @@ export function ScheduleSummaryCard({
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Sparkles className="h-4 w-4 text-primary" />
+            <CardTitle className="text-base font-medium">
               Score {schedule.score}
             </CardTitle>
             <p className="mt-1 text-sm text-muted-foreground">{insight}</p>
