@@ -10,29 +10,28 @@ export function CreditCounter({ courses }: { courses: Course[] }) {
   const isNear = totalCredits >= VIT_CREDIT_CAP - 3;
 
   return (
-    <div className="flex min-h-10 items-center gap-2 rounded-md border border-border bg-background/30 px-3">
+    <div className="inline-flex items-center gap-2 rounded-md border border-hairline bg-surface-card px-2 py-0.5 text-[12px] font-medium leading-tight text-ink">
       <span
         className={cn(
-          "text-sm font-medium",
           isOver
-            ? "text-destructive"
+            ? "text-error"
             : isNear
-              ? "text-amber-400"
-              : "text-muted-foreground"
+              ? "text-warning"
+              : "text-muted"
         )}
       >
-        {totalCredits} / {VIT_CREDIT_CAP} credits
+        {totalCredits} / {VIT_CREDIT_CAP} cr
       </span>
-      <div className="h-2 w-24 overflow-hidden rounded-full bg-muted">
+      <div className="h-1.5 w-16 overflow-hidden rounded-full bg-surface-soft border border-hairline-soft">
         <div
           className={cn(
             "h-full rounded-full transition-all",
-            isOver ? "bg-destructive" : isNear ? "bg-amber-400" : "bg-primary"
+            isOver ? "bg-error" : isNear ? "bg-warning" : "bg-primary"
           )}
           style={{ width: `${Math.min(percentage, 100)}%` }}
         />
       </div>
-      {isOver ? <span className="text-xs text-destructive">Over limit</span> : null}
+      {isOver ? <span className="text-[10px] font-medium text-error uppercase tracking-wider">Over</span> : null}
     </div>
   );
 }

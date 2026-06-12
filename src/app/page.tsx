@@ -9,12 +9,12 @@ import { Card, CardContent } from "@/components/ui/card";
 
 export default function LandingPage() {
   return (
-    <div className="pb-20 lg:pb-0">
+    <div className="pb-20 lg:pb-0 relative">
+      {/* Subtle engineering grid background */}
+      <div className="pointer-events-none absolute inset-0 -z-10 h-[80vh] w-full bg-engineering-grid [mask-image:linear-gradient(to_bottom,black_10%,transparent_100%)] opacity-[0.25] dark:opacity-[0.12]"></div>
+      
       <section className="grid min-h-[calc(100vh-96px)] items-center gap-8 py-10 lg:grid-cols-[0.92fr_1.08fr]">
         <div>
-          <Badge className="bg-surface-card border-hairline text-ink">
-            Client-side optimization engine
-          </Badge>
           <h1 className="mt-6 max-w-3xl font-display text-[48px] sm:text-[64px] font-semibold leading-[1.05] tracking-[-1.5px] sm:tracking-[-2px] text-ink">
             Generate your optimal college schedule
           </h1>

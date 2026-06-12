@@ -15,14 +15,14 @@
   --body: #334155;
   --muted: #64748b;
   --muted-soft: #94a3b8;
-  --primary: #22c55e;
-  --primary-hover: #16a34a;
+  --primary: #038433;
+  --primary-hover: #026a29;
   --on-primary: #ffffff;
   --on-dark: #ffffff;
   --on-dark-soft: #94a3b8;
   
-  --brand-accent: #22c55e;
-  --success: #10b981;
+  --brand-accent: #038433;
+  --success: #038433;
   --warning: #f59e0b;
   --error: #ef4444;
   --badge-orange: #fb923c;
@@ -44,15 +44,15 @@
   --body: #cbd5e1;
   --muted: #94a3b8;
   --muted-soft: #64748b;
-  --primary: #22c55e;
-  --primary-hover: #16a34a;
+  --primary: #038433;
+  --primary-hover: #04963a;
   --on-primary: #ffffff;
   --on-dark: #ffffff;
   --on-dark-soft: #94a3b8;
   
   /* Accents stay the same */
-  --brand-accent: #22c55e;
-  --success: #10b981;
+  --brand-accent: #038433;
+  --success: #038433;
   --warning: #f59e0b;
   --error: #ef4444;
   --badge-orange: #fb923c;
@@ -87,7 +87,7 @@ textarea {
 }
 
 ::selection {
-  background: rgba(34, 197, 94, 0.2);
+  background: rgba(3, 132, 51, 0.2); /* #038433 with opacity */
 }
 
 .timetable-scroll {
@@ -103,5 +103,14 @@ textarea {
 .timetable-scroll::-webkit-scrollbar-thumb {
   background: var(--surface-strong);
   border-radius: 9999px;
+}
+
+.bg-engineering-grid {
+  background-image: 
+    linear-gradient(to right, var(--hairline) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--hairline) 1px, transparent 1px),
+    linear-gradient(to right, var(--hairline-soft) 2px, transparent 2px),
+    linear-gradient(to bottom, var(--hairline-soft) 2px, transparent 2px);
+  background-size: 64px 64px, 64px 64px, 256px 256px, 256px 256px;
 }
 

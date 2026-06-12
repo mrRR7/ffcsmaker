@@ -154,17 +154,17 @@ export default function PlannerPage() {
                 type="button"
                 onClick={() => setUsePriorityRanking(!usePriorityRanking)}
                 className={cn(
-                  "mt-3 flex w-full items-center justify-between rounded-md border px-3 py-2 text-sm font-semibold transition",
+                  "mt-3 flex w-full items-center justify-between rounded-md border px-2 py-0.5 text-[12px] font-medium leading-tight transition",
                   usePriorityRanking
-                    ? "border-primary/40 bg-primary/10 text-primary"
-                    : "border-hairline bg-transparent text-muted-soft hover:bg-surface-soft hover:text-ink"
+                    ? "border-primary/30 bg-primary/10 text-primary"
+                    : "border-hairline bg-surface-card text-ink hover:bg-surface-soft"
                 )}
               >
                 Priority ranking
                 <span
                   className={cn(
-                    "h-2.5 w-2.5 rounded-full",
-                    usePriorityRanking ? "bg-primary" : "bg-muted-foreground/40"
+                    "h-2 w-2 rounded-full",
+                    usePriorityRanking ? "bg-primary" : "bg-muted/40"
                   )}
                 />
               </button>
@@ -205,7 +205,7 @@ export default function PlannerPage() {
         </motion.div>
       ) : null}
 
-      <div className="mb-5 flex gap-2 overflow-x-auto rounded-lg border border-border bg-card/70 p-2">
+      <div className="mb-5 flex flex-wrap gap-2">
         {tabs.map((item) => {
           const Icon = item.icon;
           const active = tab === item.id;
@@ -215,13 +215,13 @@ export default function PlannerPage() {
               type="button"
               onClick={() => setTab(item.id)}
               className={cn(
-                "inline-flex h-10 shrink-0 items-center gap-2 rounded-md px-4 text-sm font-semibold transition border",
+                "inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[12px] font-medium leading-tight transition",
                 active
-                  ? "border-primary/40 bg-primary/10 text-primary"
-                  : "border-transparent text-muted-soft hover:bg-surface-soft hover:text-ink"
+                  ? "border-primary/30 bg-primary/10 text-primary"
+                  : "border-hairline bg-surface-card text-ink hover:bg-surface-soft"
               )}
             >
-              <Icon className="h-4 w-4" />
+              <Icon className="h-3.5 w-3.5" />
               <span className="sm:hidden">{item.mobileLabel}</span>
               <span className="hidden sm:inline">
                 {item.id === "search" ? `${item.label} *` : item.label}
