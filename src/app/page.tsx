@@ -16,7 +16,7 @@ export default function LandingPage() {
       <section className="grid min-h-[calc(100vh-96px)] items-center gap-8 py-10 lg:grid-cols-[0.92fr_1.08fr]">
         <div>
           <h1 className="mt-6 max-w-3xl font-display text-[48px] sm:text-[64px] font-semibold leading-[1.05] tracking-[-1.5px] sm:tracking-[-2px] text-ink">
-            Generate your optimal college schedule
+            Your timetable, Your way.
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-[1.5] text-muted">
             Build clash-free timetables locally. Input your courses, define constraints, and let the engine rank hundreds of valid permutations.
