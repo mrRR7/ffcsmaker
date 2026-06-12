@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef } from "react";
 import toast, { Toaster } from "react-hot-toast";
@@ -74,13 +75,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-canvas text-body flex flex-col">
       <header className="sticky top-0 z-40 border-b border-hairline bg-canvas/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-md bg-primary text-on-primary shadow-soft">
-              <Table2 className="h-5 w-5" />
-            </span>
-            <span className="text-[15px] font-display font-semibold tracking-tight text-ink">
-              Ultimate FFCS
-            </span>
+          <Link href="/" className="flex items-center select-none">
+            <Image
+              src="/logo.png"
+              alt="Ultimate FFCS"
+              width={240}
+              height={32}
+              priority
+              className="h-7 w-auto sm:h-8"
+            />
           </Link>
           <nav className="hidden items-center gap-1 lg:flex">
             {navItems.map((item) => {
