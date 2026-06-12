@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
 import { cn } from "@/utils/cn";
+import { Analytics } from "@vercel/analytics/react";
 
 
 const inter = Inter({
@@ -34,6 +35,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={cn(inter.variable, calSansFallback.variable, "font-sans antialiased")}>
         <AppShell>{children}</AppShell>
+        <Analytics />
       </body>
     </html>
   );
