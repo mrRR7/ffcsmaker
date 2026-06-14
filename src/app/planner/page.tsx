@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { staggerContainer, fadeUp } from "@/utils/motion";
 import toast from "react-hot-toast";
@@ -30,8 +30,9 @@ import { CourseBuilder } from "@/features/courses/CourseBuilder";
 import { ImportManager } from "@/features/import/ImportManager";
 import { PasteImport } from "@/features/paste-import/PasteImport";
 import { getRankingProfiles } from "@/engine/ranking";
-import { RankingMode } from "@/engine/types";
+import { CAMPUS_LABELS, RankingMode } from "@/engine/types";
 import { useGenerator } from "@/hooks/useGenerator";
+import { prewarmCatalogCache } from "@/lib/catalogCache";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/utils/cn";
 
@@ -50,6 +51,7 @@ export default function PlannerPage() {
   const courses = useAppStore((state) => state.courses);
   const slots = useAppStore((state) => state.slots);
   const constraints = useAppStore((state) => state.constraints);
+  const campus = useAppStore((state) => state.campus);
   const generatedSchedules = useAppStore((state) => state.generatedSchedules);
   const rankingMode = useAppStore((state) => state.rankingMode);
   const usePriorityRanking = useAppStore(
@@ -66,7 +68,27 @@ export default function PlannerPage() {
     [courses]
   );
 
+  useEffect(() => {
+    if (campus) {
+      void prewarmCatalogCache(campus);
+    }
+  }, [campus]);
+
   function runGeneration() {
+    const slotIds = new Set(slots.map((slot) => slot.id));
+    const invalidCourses = courses.filter((course) =>
+      course.options.some((option) =>
+        [...option.theorySlotIds, ...option.labSlotIds].some(
+          (slotId) => !slotIds.has(slotId)
+        )
+      )
+    );
+    if (invalidCourses.length > 0) {
+      toast.error(
+        `${invalidCourses.length} course(s) have invalid slots for this campus. Re-add them from the catalog.`
+      );
+      return;
+    }
     generate({
       courses,
       slots,
@@ -174,6 +196,15 @@ export default function PlannerPage() {
           </Card>
         </motion.div>
       </motion.div>
+
+      {campus && slots.length === 0 ? (
+        <Card className="mb-5 border-amber-500/30 bg-amber-500/10 shadow-none">
+          <CardContent className="p-4 text-sm text-amber-200">
+            Slot data for {CAMPUS_LABELS[campus]} is not available yet. Check back
+            soon or contact the maintainers.
+          </CardContent>
+        </Card>
+      ) : null}
 
       {isGenerating || checked > 0 ? (
         <Card className="mb-5">

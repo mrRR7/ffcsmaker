@@ -2,17 +2,27 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE IF NOT EXISTS semesters (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  label TEXT NOT NULL UNIQUE,
+  label TEXT NOT NULL,
+  campus TEXT NOT NULL DEFAULT 'chennai'
+    CHECK (campus IN ('chennai', 'vellore', 'bhopal', 'ap')),
+  slot_variant TEXT NOT NULL DEFAULT 'standard'
+    CHECK (slot_variant IN ('standard', 'bhopal', 'ap')),
   is_active BOOLEAN NOT NULL DEFAULT false,
   start_date DATE,
   end_date DATE,
   ffcs_opens TIMESTAMPTZ,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  UNIQUE(label, campus)
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS semesters_one_active
-  ON semesters (is_active)
+DROP INDEX IF EXISTS semesters_one_active;
+
+CREATE UNIQUE INDEX IF NOT EXISTS semesters_one_active_per_campus
+  ON semesters (campus)
   WHERE is_active = true;
+
+CREATE INDEX IF NOT EXISTS semesters_campus_idx ON semesters(campus);
+CREATE INDEX IF NOT EXISTS semesters_campus_active_idx ON semesters(campus, is_active);
 
 CREATE TABLE IF NOT EXISTS courses (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

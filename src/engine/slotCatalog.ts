@@ -1,4 +1,4 @@
-import { DayOfWeek, DAYS, TimeSlot } from "./types";
+import { DayOfWeek, DAYS, SlotVariant, TimeSlot } from "./types";
 
 type SlotRow = [DayOfWeek, string, string, string];
 
@@ -98,14 +98,15 @@ function slug(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
-export const FIXED_SLOTS: TimeSlot[] = [
+const STANDARD_SLOTS: TimeSlot[] = [
   ...theoryRows.map(([day, startTime, endTime, label], index) => ({
     id: `theory-${slug(label)}-${slug(day)}-${index}`,
     label,
     day,
     startTime,
     endTime,
-    kind: "theory" as const
+    kind: "theory" as const,
+    duration: 50
   })),
   ...labRows.map(([day, startTime, endTime, label]) => ({
     id: `lab-${slug(label)}`,
@@ -113,9 +114,26 @@ export const FIXED_SLOTS: TimeSlot[] = [
     day,
     startTime,
     endTime,
-    kind: "lab" as const
+    kind: "lab" as const,
+    duration: 100
   }))
 ];
+
+const BHOPAL_SLOTS: TimeSlot[] = [];
+const AP_SLOTS: TimeSlot[] = [];
+
+export const SLOT_CATALOGS: Record<SlotVariant, TimeSlot[]> = {
+  standard: STANDARD_SLOTS,
+  bhopal: BHOPAL_SLOTS,
+  ap: AP_SLOTS
+};
+
+export function getSlotCatalog(variant: SlotVariant): TimeSlot[] {
+  return SLOT_CATALOGS[variant];
+}
+
+export const SLOT_CATALOG = STANDARD_SLOTS;
+export const FIXED_SLOTS = STANDARD_SLOTS;
 
 const baseLetters = ["A", "B", "C", "D", "E", "F", "G"] as const;
 

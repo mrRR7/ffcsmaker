@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
+import { CAMPUS_SLOT_VARIANT, Campus } from "@/engine/types";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 
 type AdminImportRow = {
@@ -59,12 +60,15 @@ export async function POST(request: Request) {
   try {
     const {
       semesterLabel,
+      campus = "chennai",
       isActive,
       ffcsOpens,
       startDate,
       endDate,
       rows
     } = await request.json();
+    const selectedCampus = campus as Campus;
+    const slotVariant = CAMPUS_SLOT_VARIANT[selectedCampus];
 
     if (!semesterLabel || typeof semesterLabel !== "string") {
       return NextResponse.json(
@@ -77,13 +81,18 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Rows must be an array" }, { status: 400 });
     }
 
+    if (!slotVariant) {
+      return NextResponse.json({ error: "Invalid campus" }, { status: 400 });
+    }
+
     const supabaseAdmin = createSupabaseAdminClient();
 
     if (isActive) {
       const { error: deactivateError } = await supabaseAdmin
         .from("semesters")
         .update({ is_active: false })
-        .eq("is_active", true);
+        .eq("is_active", true)
+        .eq("campus", selectedCampus);
 
       if (deactivateError) {
         return NextResponse.json(
@@ -98,12 +107,14 @@ export async function POST(request: Request) {
       .upsert(
         {
           label: semesterLabel.trim(),
+          campus: selectedCampus,
+          slot_variant: slotVariant,
           is_active: Boolean(isActive),
           ffcs_opens: ffcsOpens || null,
           start_date: startDate || null,
           end_date: endDate || null
         },
-        { onConflict: "label" }
+        { onConflict: "label,campus" }
       )
       .select("id")
       .single();
@@ -225,13 +236,16 @@ export async function POST(request: Request) {
       }
     }
 
-    return NextResponse.json({
-      ok: true,
-      semesterId: semester.id,
-      coursesCreated,
-      optionsCreated,
-      rowsSkipped
-    });
+    return NextResponse.json(
+      {
+        ok: true,
+        semesterId: semester.id,
+        coursesCreated,
+        optionsCreated,
+        rowsSkipped
+      },
+      { headers: { "Cache-Control": "no-store" } }
+    );
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Server error" },

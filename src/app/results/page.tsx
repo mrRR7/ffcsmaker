@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState, useCallback, Suspense } from "rea
 import { motion } from "framer-motion";
 import { staggerContainer, fadeUp } from "@/utils/motion";
 import toast from "react-hot-toast";
-import { BookmarkPlus, Check, Download, FileJson, FileText, Share2, Table2 } from "lucide-react";
+import { BookmarkPlus, Check, Download, FileJson, FileText, Image as ImageIcon, Share2, Table2 } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
 import { ResultDetailView } from "@/components/ResultDetailView";
 import { Button } from "@/components/ui/button";
@@ -16,6 +16,7 @@ import { ScheduleMetricsStrip } from "@/features/results/ScheduleMetricsStrip";
 import { CourseSummaryPanel } from "@/features/results/CourseSummaryPanel";
 import { BlockDetailPanel } from "@/features/results/BlockDetailPanel";
 import { IcalExportDialog } from "@/features/results/IcalExportDialog";
+import { ShareCardModal } from "@/features/results/ShareCardModal";
 import { ScheduleBrowser } from "@/features/results/ScheduleBrowser";
 import { SlotMatrixTimetable } from "@/features/results/SlotMatrixTimetable";
 import { ShapeNavigator } from "@/features/results/ShapeNavigator";
@@ -37,6 +38,7 @@ function ResultsContent() {
   const [activeCellId, setActiveCellId] = useState<string | null>(null);
   const [activeBlockAnchor, setActiveBlockAnchor] = useState<DOMRect | null>(null);
   const [highlightCourseCode, setHighlightCourseCode] = useState<string | null>(null);
+  const [shareCardOpen, setShareCardOpen] = useState(false);
 
   const slots = useAppStore((state) => state.slots);
   const courses = useAppStore((state) => state.courses);
@@ -47,6 +49,7 @@ function ResultsContent() {
   );
   const generatedSchedules = useAppStore((state) => state.generatedSchedules);
   const generatedShapeGroups = useAppStore((state) => state.generatedShapeGroups);
+  const generatedAt = useAppStore((state) => state.generatedAt);
   const activeShapeId = useAppStore((state) => state.activeShapeId);
   const activeVariantId = useAppStore((state) => state.activeVariantId);
   const setActiveShapeId = useAppStore((state) => state.setActiveShapeId);
@@ -129,6 +132,8 @@ function ResultsContent() {
     activeSchedule &&
       savedSchedules.some((saved) => saved.timetable.id === activeSchedule.id)
   );
+  const resultsAreStale =
+    generatedAt !== null && Date.now() - generatedAt > 24 * 60 * 60 * 1000;
 
   // --- Keyboard navigation (shapes) ---
 
@@ -361,6 +366,14 @@ function ResultsContent() {
       <Button
         type="button"
         variant="outline"
+        onClick={() => setShareCardOpen(true)}
+      >
+        <ImageIcon className="h-4 w-4" />
+        Share image
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
         onClick={() => exportScheduleJson(activeSchedule)}
       >
         <FileJson className="h-4 w-4" />
@@ -389,6 +402,20 @@ function ResultsContent() {
         onSortModeChange={setSortMode}
         actions={toolbarActions}
       />
+
+      {resultsAreStale ? (
+        <Card className="border-amber-500/30 bg-amber-500/10 shadow-none">
+          <CardContent className="flex flex-col gap-3 p-4 text-sm text-amber-100 sm:flex-row sm:items-center sm:justify-between">
+            <span>These results are over 24 hours old. Regenerate for the latest schedule.</span>
+            <Link
+              href="/planner"
+              className="inline-flex h-9 items-center justify-center rounded-md border border-amber-300/40 px-3 text-sm font-semibold transition hover:bg-amber-400/10"
+            >
+              Redo
+            </Link>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {/* Shape Navigator */}
       <ShapeNavigator
@@ -426,6 +453,15 @@ function ResultsContent() {
         anchorRect={activeBlockAnchor}
         mode="selected"
       />
+
+      {activeSchedule ? (
+        <ShareCardModal
+          open={shareCardOpen}
+          onClose={() => setShareCardOpen(false)}
+          schedule={activeSchedule}
+          slots={slots}
+        />
+      ) : null}
     </div>
   );
 }

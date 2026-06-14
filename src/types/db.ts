@@ -1,6 +1,8 @@
 export interface DBSemester {
   id: string;
   label: string;
+  campus: "chennai" | "vellore" | "bhopal" | "ap";
+  slot_variant: "standard" | "bhopal" | "ap";
   is_active: boolean;
   ffcs_opens: string | null;
   start_date: string | null;

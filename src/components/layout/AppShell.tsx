@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useRef } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import {
   CalendarCheck,
+  Check,
+  ChevronDown,
   GalleryVerticalEnd,
   Home,
   Layers3,
@@ -17,7 +19,9 @@ import {
 } from "lucide-react";
 import { MotionConfig } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { CampusSelector } from "@/components/CampusSelector";
 import { AppFooter } from "@/components/layout/AppFooter";
+import { CAMPUS_LABELS, Campus } from "@/engine/types";
 import { decodeSharedState } from "@/utils/share";
 import { cn } from "@/utils/cn";
 import { useAppStore } from "@/store/useAppStore";
@@ -33,15 +37,26 @@ const navItems = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const importedShareRef = useRef(false);
+  const [campusMenuOpen, setCampusMenuOpen] = useState(false);
+  const [pendingCampus, setPendingCampus] = useState<Campus | null>(null);
   const theme = useAppStore((state) => state.uiPreferences.theme);
   const setTheme = useAppStore((state) => state.setTheme);
   const applySharedState = useAppStore((state) => state.applySharedState);
+  const campus = useAppStore((state) => state.campus);
+  const setCampus = useAppStore((state) => state.setCampus);
+  const hasHydrated = useAppStore((state) => state.hasHydrated);
 
   const activeLabel = useMemo(
     () => navItems.find((item) => item.href === pathname)?.label ?? "Ultimate FFCS",
     [pathname]
   );
+  const bypassCampusGate =
+    pathname?.startsWith("/admin") ||
+    pathname === "/privacy" ||
+    pathname === "/terms" ||
+    pathname === "/disclaimer";
 
   useEffect(() => {
     const root = document.documentElement;
@@ -70,6 +85,24 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     window.history.replaceState(null, "", nextUrl);
     toast.success("Imported shared planner state.");
   }, [applySharedState]);
+
+  function confirmCampusSwitch() {
+    if (!pendingCampus) {
+      return;
+    }
+    setCampus(pendingCampus);
+    setPendingCampus(null);
+    setCampusMenuOpen(false);
+    router.push("/planner");
+  }
+
+  const mainContent = !hasHydrated ? (
+    <div className="mx-auto mt-20 h-32 max-w-lg animate-pulse rounded-lg border border-hairline bg-surface-card" />
+  ) : !campus && !bypassCampusGate ? (
+    <CampusSelector />
+  ) : (
+    children
+  );
 
   return (
     <div className="min-h-screen bg-canvas text-body flex flex-col">
@@ -104,21 +137,71 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
-          <Button
-            type="button"
-            variant="outline"
-            size="icon"
-            title="Toggle theme"
-            aria-label="Toggle theme"
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          >
-            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </Button>
+          <div className="flex items-center gap-2">
+            {campus ? (
+              <div className="relative">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCampusMenuOpen((current) => !current)}
+                  className="hidden sm:inline-flex"
+                >
+                  {CAMPUS_LABELS[campus]}
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+                {campusMenuOpen ? (
+                  <div className="absolute right-0 mt-2 w-56 rounded-md border border-hairline bg-surface-card p-1 shadow-card">
+                    {(Object.keys(CAMPUS_LABELS) as Campus[]).map((option) => {
+                      const available = option === "chennai" || option === "vellore";
+                      const active = option === campus;
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          disabled={!available}
+                          onClick={() => {
+                            if (active) {
+                              setCampusMenuOpen(false);
+                              return;
+                            }
+                            setPendingCampus(option);
+                          }}
+                          className={cn(
+                            "flex w-full items-center justify-between rounded px-3 py-2 text-left text-sm transition",
+                            available
+                              ? "text-ink hover:bg-surface-soft"
+                              : "cursor-not-allowed text-muted-foreground opacity-50"
+                          )}
+                        >
+                          <span>
+                            {CAMPUS_LABELS[option]}
+                            {!available ? " (coming soon)" : ""}
+                          </span>
+                          {active ? <Check className="h-4 w-4 text-primary" /> : null}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              title="Toggle theme"
+              aria-label="Toggle theme"
+              onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            >
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+          </div>
         </div>
       </header>
       <main className="mx-auto max-w-7xl flex-1 w-full px-4 py-8 pb-28 sm:px-6 lg:px-8 lg:pb-12">
         <MotionConfig reducedMotion="user">
-          {children}
+          {mainContent}
         </MotionConfig>
       </main>
       <AppFooter />
@@ -153,6 +236,31 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           }
         }}
       />
+      {pendingCampus ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-lg border border-hairline bg-surface-card p-5 shadow-card">
+            <h2 className="text-lg font-semibold text-foreground">
+              Switch to {CAMPUS_LABELS[pendingCampus]}?
+            </h2>
+            <p className="mt-3 text-sm text-muted-foreground">
+              This will clear your current course list and generated timetables. Your
+              saved timetables will stay.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setPendingCampus(null)}
+              >
+                Cancel
+              </Button>
+              <Button type="button" onClick={confirmCampusSwitch}>
+                Switch campus
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

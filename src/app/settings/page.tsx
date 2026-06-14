@@ -1,6 +1,8 @@
 "use client";
 
-import { Download, Moon, RotateCcw, Settings2, Sun } from "lucide-react";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { Database, Download, MapPin, Moon, RotateCcw, Settings2, Sun } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,14 +12,21 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Select } from "@/components/ui/form";
+import { CAMPUS_LABELS } from "@/engine/types";
 import { getRankingProfiles } from "@/engine/ranking";
 import { RankingMode } from "@/engine/types";
+import { clearAllCache } from "@/lib/catalogCache";
+import { checkStorageCapacity, formatBytes } from "@/lib/storageUtils";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/utils/cn";
 
 export default function SettingsPage() {
+  const [confirmCampusReset, setConfirmCampusReset] = useState(false);
+  const [storage, setStorage] = useState(checkStorageCapacity());
   const uiPreferences = useAppStore((state) => state.uiPreferences);
   const rankingMode = useAppStore((state) => state.rankingMode);
+  const campus = useAppStore((state) => state.campus);
+  const generatedAt = useAppStore((state) => state.generatedAt);
   const setTheme = useAppStore((state) => state.setTheme);
   const setCompactMode = useAppStore((state) => state.setCompactMode);
   const setUsePriorityRanking = useAppStore(
@@ -25,13 +34,106 @@ export default function SettingsPage() {
   );
   const setRankingMode = useAppStore((state) => state.setRankingMode);
   const setExportPreference = useAppStore((state) => state.setExportPreference);
+  const resetCampus = useAppStore((state) => state.resetCampus);
+  const setGeneratedSchedules = useAppStore((state) => state.setGeneratedSchedules);
   const resetAll = useAppStore((state) => state.resetAll);
+
+  useEffect(() => {
+    setStorage(checkStorageCapacity());
+  }, [generatedAt]);
+
+  function clearCatalogCache() {
+    clearAllCache();
+    toast.success("Course catalog cache cleared.");
+  }
+
+  function clearSavedResults() {
+    setGeneratedSchedules([]);
+    setStorage(checkStorageCapacity());
+    toast.success("Generated results cleared.");
+  }
+
+  function changeCampus() {
+    resetCampus();
+    setConfirmCampusReset(false);
+    toast.success("Choose your campus again.");
+  }
 
   return (
     <div className="pb-20 lg:pb-0">
       <SectionHeader title="Settings" />
 
       <div className="grid gap-5 lg:grid-cols-2">
+        <Card className="bg-canvas shadow-none">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-primary" />
+              Campus
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between gap-4 rounded-md border border-hairline bg-background/30 p-4">
+              <div>
+                <p className="text-sm font-semibold">Current campus</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {campus ? CAMPUS_LABELS[campus] : "Not selected"}
+                </p>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setConfirmCampusReset(true)}
+              >
+                Change
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Changing campus clears your current course list and generated timetables.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-canvas shadow-none">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Database className="h-5 w-5 text-primary" />
+              Data & Cache
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <CacheRow
+              label="Course catalog cache"
+              detail="Active, refreshes every 10min"
+              action="Clear"
+              onClick={clearCatalogCache}
+            />
+            <CacheRow
+              label="Saved results"
+              detail={
+                generatedAt
+                  ? `Last generated: ${new Date(generatedAt).toLocaleString()}`
+                  : "No generated results"
+              }
+              action="Clear"
+              onClick={clearSavedResults}
+            />
+            <div className="rounded-md border border-hairline bg-background/30 p-4">
+              <div className="flex items-center justify-between gap-4 text-sm">
+                <span className="font-semibold">Local storage used</span>
+                <span className="text-muted-foreground">
+                  {formatBytes(storage.usedBytes)} / ~5 MB
+                </span>
+              </div>
+              <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-soft">
+                <div
+                  className="h-full rounded-full bg-primary"
+                  style={{ width: `${storage.percentUsed}%` }}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card className="bg-canvas shadow-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -169,6 +271,53 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
       </div>
+      {confirmCampusReset ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-lg border border-hairline bg-surface-card p-5 shadow-card">
+            <h2 className="text-lg font-semibold text-foreground">Change campus?</h2>
+            <p className="mt-3 text-sm text-muted-foreground">
+              This will clear your current course list and generated timetables. Your
+              saved timetables will stay.
+            </p>
+            <div className="mt-5 flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setConfirmCampusReset(false)}
+              >
+                Cancel
+              </Button>
+              <Button type="button" onClick={changeCampus}>
+                Change campus
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function CacheRow({
+  label,
+  detail,
+  action,
+  onClick
+}: {
+  label: string;
+  detail: string;
+  action: string;
+  onClick: () => void;
+}) {
+  return (
+    <div className="flex items-center justify-between gap-4 rounded-md border border-hairline bg-background/30 p-4">
+      <div>
+        <p className="text-sm font-semibold">{label}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
+      </div>
+      <Button type="button" variant="outline" size="sm" onClick={onClick}>
+        {action}
+      </Button>
     </div>
   );
 }

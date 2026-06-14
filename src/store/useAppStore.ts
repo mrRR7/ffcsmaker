@@ -1,10 +1,13 @@
 "use client";
 
 import { nanoid } from "nanoid";
+import toast from "react-hot-toast";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import {
   BlockedWindow,
+  CAMPUS_SLOT_VARIANT,
+  Campus,
   Constraints,
   Course,
   CourseOption,
@@ -16,7 +19,9 @@ import {
   TimetableShapeGroup,
   UiPreferences
 } from "@/engine/types";
-import { FIXED_SLOTS } from "@/engine/slotCatalog";
+import { clearCampusCache } from "@/lib/catalogCache";
+import { checkStorageCapacity } from "@/lib/storageUtils";
+import { getSlotCatalog } from "@/engine/slotCatalog";
 import { groupSchedulesByShape } from "@/engine/consolidation";
 import { mapLegacyRankingMode } from "@/engine/ranking";
 
@@ -31,7 +36,9 @@ const courseColors = [
   "#f97316"
 ];
 
-export const defaultSlots = FIXED_SLOTS;
+const GENERATION_TTL_MS = 24 * 60 * 60 * 1000;
+
+export const defaultSlots = getSlotCatalog("standard");
 
 export const defaultConstraints: Constraints = {
   blockedWindows: [],
@@ -110,8 +117,10 @@ export interface UniTimeStore {
   slots: TimeSlot[];
   courses: Course[];
   constraints: Constraints;
+  campus: Campus | null;
   generatedSchedules: ScoredTimetable[];
   generatedShapeGroups: TimetableShapeGroup[];
+  generatedAt: number | null;
   activeShapeId: string | null;
   activeVariantId: string | null;
   savedSchedules: SavedSchedule[];
@@ -120,6 +129,8 @@ export interface UniTimeStore {
   uiPreferences: UiPreferences;
   hasHydrated: boolean;
   setHasHydrated: (value: boolean) => void;
+  setCampus: (campus: Campus) => void;
+  resetCampus: () => void;
   setRankingMode: (mode: RankingMode) => void;
   setTheme: (theme: UiPreferences["theme"]) => void;
   setCompactMode: (compactMode: boolean) => void;
@@ -185,8 +196,10 @@ export const useAppStore = create<UniTimeStore>()(
       slots: defaultSlots,
       courses: [],
       constraints: defaultConstraints,
+      campus: null,
       generatedSchedules: [],
       generatedShapeGroups: [],
+      generatedAt: null,
       activeShapeId: null,
       activeVariantId: null,
       savedSchedules: [],
@@ -195,6 +208,53 @@ export const useAppStore = create<UniTimeStore>()(
       uiPreferences: defaultUiPreferences,
       hasHydrated: false,
       setHasHydrated: (value) => set({ hasHydrated: value }),
+      setCampus: (campus) =>
+        set((state) => {
+          if (state.campus) {
+            clearCampusCache(state.campus);
+          }
+          const variant = CAMPUS_SLOT_VARIANT[campus];
+          return {
+            campus,
+            slots: getSlotCatalog(variant),
+            courses: [],
+            generatedSchedules: [],
+            generatedShapeGroups: [],
+            generatedAt: null,
+            activeShapeId: null,
+            activeVariantId: null,
+            compareScheduleIds: [],
+            constraints: {
+              ...state.constraints,
+              professorLocks: [],
+              facultyRanking: {},
+              avoidedFacultyByCourse: {}
+            }
+          };
+        }),
+      resetCampus: () =>
+        set((state) => {
+          if (state.campus) {
+            clearCampusCache(state.campus);
+          }
+          return {
+            campus: null,
+            slots: getSlotCatalog("standard"),
+            courses: [],
+            generatedSchedules: [],
+            generatedShapeGroups: [],
+            generatedAt: null,
+            activeShapeId: null,
+            activeVariantId: null,
+            compareScheduleIds: [],
+            constraints: {
+              ...state.constraints,
+              professorLocks: [],
+              facultyRanking: {},
+              avoidedFacultyByCourse: {}
+            }
+          };
+        }),
       setRankingMode: (mode) => {
         const mapped = mapLegacyRankingMode(mode);
         set((state) => ({
@@ -269,6 +329,11 @@ export const useAppStore = create<UniTimeStore>()(
           delete newAvoided[courseId];
           return {
             courses: state.courses.filter((course) => course.id !== courseId),
+            generatedSchedules: [],
+            generatedShapeGroups: [],
+            generatedAt: null,
+            activeShapeId: null,
+            activeVariantId: null,
             constraints: {
               ...state.constraints,
               professorLocks: state.constraints.professorLocks.filter(
@@ -308,6 +373,7 @@ export const useAppStore = create<UniTimeStore>()(
           courses: [],
           generatedSchedules: [],
           generatedShapeGroups: [],
+          generatedAt: null,
           activeShapeId: null,
           activeVariantId: null,
           compareScheduleIds: [],
@@ -519,6 +585,7 @@ export const useAppStore = create<UniTimeStore>()(
           return {
             generatedSchedules: schedules,
             generatedShapeGroups,
+            generatedAt: schedules.length > 0 ? Date.now() : null,
             activeShapeId: generatedShapeGroups[0]?.shapeId ?? null,
             activeVariantId: generatedShapeGroups[0]?.representative.id ?? null,
             compareScheduleIds: schedules.slice(0, 2).map((schedule) => schedule.id)
@@ -528,6 +595,13 @@ export const useAppStore = create<UniTimeStore>()(
       setActiveVariantId: (variantId) => set({ activeVariantId: variantId }),
       saveSchedule: (schedule, name) =>
         set((state) => {
+          const { isNearLimit } = checkStorageCapacity();
+          if (isNearLimit) {
+            toast.error(
+              "Storage nearly full. Consider deleting old saved timetables.",
+              { duration: 6000 }
+            );
+          }
           const existing = state.savedSchedules.find(
             (saved) => saved.timetable.id === schedule.id
           );
@@ -590,9 +664,12 @@ export const useAppStore = create<UniTimeStore>()(
       clearCompare: () => set({ compareScheduleIds: [] }),
       applySharedState: (sharedState) =>
         set((state) => {
-          const generatedShapeGroups = sharedState.activeSchedule ? groupSchedulesByShape([sharedState.activeSchedule], defaultSlots) : [];
+          const slots = state.campus
+            ? getSlotCatalog(CAMPUS_SLOT_VARIANT[state.campus])
+            : defaultSlots;
+          const generatedShapeGroups = sharedState.activeSchedule ? groupSchedulesByShape([sharedState.activeSchedule], slots) : [];
           return {
-            slots: defaultSlots,
+            slots,
             courses: sharedState.courses.map((course) => ({
               ...course,
               options: course.options.map(cleanOption)
@@ -601,6 +678,7 @@ export const useAppStore = create<UniTimeStore>()(
             rankingMode: mapLegacyRankingMode(sharedState.rankingMode),
             generatedSchedules: sharedState.activeSchedule ? [sharedState.activeSchedule] : [],
             generatedShapeGroups,
+            generatedAt: sharedState.activeSchedule ? Date.now() : null,
             activeShapeId: generatedShapeGroups[0]?.shapeId ?? null,
             activeVariantId: sharedState.activeSchedule?.id ?? null,
             uiPreferences: {
@@ -615,8 +693,10 @@ export const useAppStore = create<UniTimeStore>()(
           slots: defaultSlots,
           courses: [],
           constraints: defaultConstraints,
+          campus: null,
           generatedSchedules: [],
           generatedShapeGroups: [],
+          generatedAt: null,
           activeShapeId: null,
           activeVariantId: null,
           savedSchedules: [],
@@ -627,30 +707,59 @@ export const useAppStore = create<UniTimeStore>()(
     }),
     {
       name: "unitime-pro-state",
-      version: 3,
+      version: 4,
       storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({
-        courses: state.courses,
-        constraints: state.constraints,
-        savedSchedules: state.savedSchedules,
-        rankingMode: state.rankingMode,
-        uiPreferences: state.uiPreferences
-      }),
-      migrate: (persistedState) => {
-        const state = persistedState as Partial<UniTimeStore> | undefined;
+      partialize: (state) => {
+        const generationIsRecent =
+          state.generatedAt !== null && Date.now() - state.generatedAt < GENERATION_TTL_MS;
+
         return {
-          slots: defaultSlots,
+          courses: state.courses,
+          constraints: state.constraints,
+          savedSchedules: state.savedSchedules,
+          rankingMode: state.rankingMode,
+          uiPreferences: state.uiPreferences,
+          campus: state.campus,
+          generatedAt: generationIsRecent ? state.generatedAt : null,
+          generatedSchedules: generationIsRecent ? state.generatedSchedules : [],
+          generatedShapeGroups: generationIsRecent ? state.generatedShapeGroups : [],
+          activeShapeId: generationIsRecent ? state.activeShapeId : null,
+          activeVariantId: generationIsRecent ? state.activeVariantId : null,
+          compareScheduleIds: generationIsRecent ? state.compareScheduleIds : []
+        };
+      },
+      migrate: (persistedState, version) => {
+        const state = persistedState as Partial<UniTimeStore> | undefined;
+        const campus = version >= 4 ? state?.campus ?? null : null;
+        const slots = campus
+          ? getSlotCatalog(CAMPUS_SLOT_VARIANT[campus])
+          : defaultSlots;
+        const generationIsRecent =
+          typeof state?.generatedAt === "number" &&
+          Date.now() - state.generatedAt < GENERATION_TTL_MS;
+        const generatedSchedules = generationIsRecent
+          ? state?.generatedSchedules ?? []
+          : [];
+        const generatedShapeGroups =
+          generationIsRecent && state?.generatedShapeGroups?.length
+            ? state.generatedShapeGroups
+            : groupSchedulesByShape(generatedSchedules, slots);
+
+        return {
+          slots,
           courses: (state?.courses ?? []).map((course) => ({
             ...course,
             options: course.options.map(cleanOption)
           })),
           constraints: normalizeImportedConstraints(state?.constraints),
-          generatedSchedules: [],
-          generatedShapeGroups: [],
-          activeShapeId: null,
-          activeVariantId: null,
+          campus,
+          generatedSchedules,
+          generatedShapeGroups,
+          generatedAt: generationIsRecent ? state?.generatedAt ?? null : null,
+          activeShapeId: generationIsRecent ? state?.activeShapeId ?? generatedShapeGroups[0]?.shapeId ?? null : null,
+          activeVariantId: generationIsRecent ? state?.activeVariantId ?? generatedShapeGroups[0]?.representative.id ?? null : null,
           savedSchedules: state?.savedSchedules ?? [],
-          compareScheduleIds: [],
+          compareScheduleIds: generationIsRecent ? state?.compareScheduleIds ?? [] : [],
           rankingMode: mapLegacyRankingMode(state?.rankingMode),
           uiPreferences: {
             ...defaultUiPreferences,
@@ -667,8 +776,32 @@ export const useAppStore = create<UniTimeStore>()(
       },
       onRehydrateStorage: () => (state) => {
         if (state) {
-          state.slots = defaultSlots;
+          state.slots = state.campus
+            ? getSlotCatalog(CAMPUS_SLOT_VARIANT[state.campus])
+            : defaultSlots;
           state.constraints = normalizeImportedConstraints(state.constraints);
+          const generationIsRecent =
+            typeof state.generatedAt === "number" &&
+            Date.now() - state.generatedAt < GENERATION_TTL_MS;
+          if (!generationIsRecent) {
+            state.generatedSchedules = [];
+            state.generatedShapeGroups = [];
+            state.generatedAt = null;
+            state.activeShapeId = null;
+            state.activeVariantId = null;
+            state.compareScheduleIds = [];
+          } else {
+            state.generatedShapeGroups = groupSchedulesByShape(
+              state.generatedSchedules,
+              state.slots
+            );
+            state.activeShapeId =
+              state.activeShapeId ?? state.generatedShapeGroups[0]?.shapeId ?? null;
+            state.activeVariantId =
+              state.activeVariantId ??
+              state.generatedShapeGroups[0]?.representative.id ??
+              null;
+          }
           state.setHasHydrated(true);
         }
       }

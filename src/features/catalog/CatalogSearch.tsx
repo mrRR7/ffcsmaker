@@ -7,8 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input, Select } from "@/components/ui/form";
+import { SlotVariant } from "@/engine/types";
 import { DBCourse, DBCourseOption, DBSemester } from "@/types/db";
 import { mergeCourseOptions } from "@/features/courses/mergeCourseOptions";
+import { getCached, setCache } from "@/lib/catalogCache";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/utils/cn";
 
@@ -16,6 +18,7 @@ type SearchResponse = {
   courses: DBCourse[];
   semester: DBSemester | null;
   semesterId: string | null;
+  slotVariant: SlotVariant | null;
   error?: string;
 };
 
@@ -40,6 +43,7 @@ export function CatalogSearch() {
 
   const coursesInPlanner = useAppStore((state) => state.courses);
   const slots = useAppStore((state) => state.slots);
+  const campus = useAppStore((state) => state.campus) ?? "chennai";
   const setCourses = useAppStore((state) => state.setCourses);
 
   const activeSemester = useMemo(() => {
@@ -55,7 +59,7 @@ export function CatalogSearch() {
 
     async function loadSemesters() {
       try {
-        const response = await fetch("/api/catalog/semesters");
+        const response = await fetch(`/api/catalog/semesters?campus=${campus}`);
         const json = (await response.json()) as SemesterResponse;
         if (cancelled) {
           return;
@@ -66,7 +70,7 @@ export function CatalogSearch() {
         }
         setSemesters(json.semesters ?? []);
         const active = json.semesters?.find((semester) => semester.is_active);
-        setSemesterId((current) => current || active?.id || json.semesters?.[0]?.id || "");
+        setSemesterId(active?.id || json.semesters?.[0]?.id || "");
       } catch (error) {
         if (!cancelled) {
           setCatalogError(
@@ -80,7 +84,7 @@ export function CatalogSearch() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [campus]);
 
   useEffect(() => {
     if (query.trim().length < 2 || !semesterId) {
@@ -93,9 +97,17 @@ export function CatalogSearch() {
       setIsLoading(true);
       setCatalogError("");
       try {
+        const trimmedQuery = query.trim();
+        const cached = getCached(trimmedQuery, campus, semesterId);
+        if (cached) {
+          setCoursesResult(cached.data);
+          setIsLoading(false);
+          return;
+        }
         const params = new URLSearchParams({
-          q: query.trim(),
-          semester: semesterId
+          q: trimmedQuery,
+          semester: semesterId,
+          campus
         });
         const response = await fetch(`/api/catalog/search?${params.toString()}`);
         const json = (await response.json()) as SearchResponse;
@@ -104,6 +116,14 @@ export function CatalogSearch() {
           setCoursesResult([]);
           return;
         }
+        setCache(
+          trimmedQuery,
+          campus,
+          json.courses ?? [],
+          json.semesterId ?? null,
+          json.slotVariant ?? null,
+          semesterId
+        );
         setCoursesResult(json.courses ?? []);
       } catch (error) {
         setCatalogError(
@@ -116,7 +136,7 @@ export function CatalogSearch() {
     }, 300);
 
     return () => window.clearTimeout(handle);
-  }, [query, semesterId]);
+  }, [query, semesterId, campus]);
 
   function toggleOption(optionId: string) {
     setSelectedOptions((current) => ({

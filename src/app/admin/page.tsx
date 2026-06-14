@@ -12,8 +12,9 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
-import { Input, Label, Textarea } from "@/components/ui/form";
-import { FIXED_SLOTS } from "@/engine/slotCatalog";
+import { Input, Label, Select, Textarea } from "@/components/ui/form";
+import { getSlotCatalog } from "@/engine/slotCatalog";
+import { CAMPUS_LABELS, CAMPUS_SLOT_VARIANT, Campus } from "@/engine/types";
 import { ImportRow, ParsedImportRow } from "@/features/import/importTypes";
 import { parseCsvFile } from "@/features/import/importCsv";
 import { parseXlsxFile } from "@/features/import/importXlsx";
@@ -35,13 +36,16 @@ function pastedOptionToImportRow(option: ReturnType<typeof parsePastedText>[numb
   };
 }
 
-function validateRows(rows: ImportRow[]) {
-  return rows.map((row) => validateAndParseRow(row, FIXED_SLOTS));
+function validateRows(rows: ImportRow[], campus: Campus) {
+  return rows.map((row) =>
+    validateAndParseRow(row, getSlotCatalog(CAMPUS_SLOT_VARIANT[campus]))
+  );
 }
 
 export default function AdminPage() {
   const router = useRouter();
   const [mode, setMode] = useState<InputMode>("file");
+  const [campus, setCampus] = useState<Campus>("chennai");
   const [semesterLabel, setSemesterLabel] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [ffcsOpens, setFfcsOpens] = useState("");
@@ -62,6 +66,7 @@ export default function AdminPage() {
     const errorCount = rows.filter((row) => !row.isValid).length;
     return { courseCount, errorCount };
   }, [rows]);
+  const slotVariant = CAMPUS_SLOT_VARIANT[campus];
 
   async function signOut() {
     await fetch("/api/admin/auth", { method: "DELETE" });
@@ -97,7 +102,7 @@ export default function AdminPage() {
         file.name.toLowerCase().endsWith(".xls")
           ? await parseXlsxFile(file)
           : await parseCsvFile(file);
-      const nextRows = validateRows(parsed);
+      const nextRows = validateRows(parsed, campus);
       setRows(nextRows);
       toast.success(`${nextRows.length} rows parsed from file.`);
     } catch (err) {
@@ -107,7 +112,7 @@ export default function AdminPage() {
 
   function parsePaste() {
     const pastedRows = parsePastedText(pasteText).map(pastedOptionToImportRow);
-    const nextRows = validateRows(pastedRows);
+    const nextRows = validateRows(pastedRows, campus);
     setRows(nextRows);
     toast.success(`${nextRows.length} rows parsed from pasted text.`);
   }
@@ -132,6 +137,7 @@ export default function AdminPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         semesterLabel,
+        campus,
         isActive,
         ffcsOpens: ffcsOpens ? new Date(ffcsOpens).toISOString() : null,
         startDate: startDate || null,
@@ -180,6 +186,27 @@ export default function AdminPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="semester-campus">Campus</Label>
+            <Select
+              id="semester-campus"
+              value={campus}
+              onChange={(event) => {
+                setCampus(event.target.value as Campus);
+                setRows([]);
+              }}
+            >
+              {(Object.keys(CAMPUS_LABELS) as Campus[]).map((option) => (
+                <option key={option} value={option}>
+                  {CAMPUS_LABELS[option]}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="slot-variant">Slot variant</Label>
+            <Input id="slot-variant" value={slotVariant} readOnly />
+          </div>
           <div className="space-y-2 md:col-span-2">
             <Label htmlFor="semester-label">Label</Label>
             <Input

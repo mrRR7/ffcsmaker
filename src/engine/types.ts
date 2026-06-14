@@ -8,6 +8,23 @@ export const DAYS = [
 
 export type DayOfWeek = (typeof DAYS)[number];
 
+export type Campus = "chennai" | "vellore" | "bhopal" | "ap";
+export type SlotVariant = "standard" | "bhopal" | "ap";
+
+export const CAMPUS_SLOT_VARIANT: Record<Campus, SlotVariant> = {
+  chennai: "standard",
+  vellore: "standard",
+  bhopal: "bhopal",
+  ap: "ap"
+};
+
+export const CAMPUS_LABELS: Record<Campus, string> = {
+  chennai: "VIT Chennai",
+  vellore: "VIT Vellore",
+  bhopal: "VIT Bhopal",
+  ap: "VIT AP"
+};
+
 export interface TimeSlot {
   id: string;
   label: string;
@@ -15,6 +32,7 @@ export interface TimeSlot {
   startTime: string;
   endTime: string;
   kind?: "theory" | "lab";
+  duration?: number;
 }
 
 export interface CourseOption {
@@ -116,6 +134,24 @@ export interface ScoredTimetable {
   score: number;
   rankingMode: RankingMode | string;
   scoreBreakdown: Record<string, number>;
+}
+
+export type ShareCardSize = "square" | "story";
+
+export const SHARE_CARD_DIMENSIONS: Record<
+  ShareCardSize,
+  { width: number; height: number }
+> = {
+  square: { width: 1080, height: 1080 },
+  story: { width: 1080, height: 1920 }
+};
+
+export interface ShareCardConfig {
+  size: ShareCardSize;
+  schedule: ScoredTimetable;
+  slots: TimeSlot[];
+  campus: Campus;
+  semesterLabel: string;
 }
 
 export interface TimetableShapeGroup {
