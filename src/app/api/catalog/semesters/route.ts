@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const supabase = createServerSupabaseClient();
     let query = supabase
       .from("semesters")
-      .select("id, label, campus, slot_variant, is_active, ffcs_opens, start_date, end_date")
+      .select("id, label, campus, is_active, ffcs_opens, start_date, end_date")
       .eq("campus", campus)
       .order("created_at", { ascending: false });
 
