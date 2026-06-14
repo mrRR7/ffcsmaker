@@ -7,3 +7,25 @@
 
  ✓ Starting...
  ✓ Ready in 4s
+ ○ Compiling / ...
+ ✓ Compiled / in 7.4s (1409 modules)
+ GET / 200 in 8004ms
+ GET / 200 in 142ms
+ ○ Compiling /settings ...
+ ✓ Compiled /settings in 2.4s (1429 modules)
+ GET /settings 200 in 3008ms
+ ✓ Compiled in 1345ms (1429 modules)
+ GET / 200 in 251ms
+ GET / 200 in 72ms
+ ○ Compiling /favicon.ico ...
+ ✓ Compiled /favicon.ico in 818ms (761 modules)
+ GET /favicon.ico 200 in 1029ms
+ ○ Compiling /planner ...
+ ✓ Compiled /planner in 3.7s (1639 modules)
+ ○ Compiling /api/catalog/search ...
+ ✓ Compiled /api/catalog/search in 1965ms (940 modules)
+ ✓ Compiled (942 modules)
+ GET /api/catalog/semesters?campus=chennai 500 in 2714ms
+ GET /api/catalog/search?q=&campus=chennai 500 in 2726ms
+ GET /api/catalog/semesters?campus=chennai 500 in 33ms
+ GET /api/catalog/search?q=&campus=chennai 500 in 45ms

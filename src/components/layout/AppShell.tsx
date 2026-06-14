@@ -116,6 +116,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               height={32}
               priority
               className="h-7 w-auto sm:h-8"
+              style={{ width: "auto" }}
             />
           </Link>
           <nav className="hidden items-center gap-1 lg:flex">
