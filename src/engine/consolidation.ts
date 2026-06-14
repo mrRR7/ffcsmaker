@@ -1,6 +1,16 @@
 import { DAYS, ScoredTimetable, TimeSlot, TimetableShapeGroup } from "./types";
 import { indexSlots } from "./conflict";
 
+function hashString(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = (hash << 5) - hash + char;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return 'shape_' + Math.abs(hash).toString(16);
+}
+
 export function getTimetableShapeFingerprint(
   schedule: ScoredTimetable,
   slotMap: Map<string, TimeSlot>
@@ -111,6 +121,7 @@ export function groupSchedulesByShape(
     const isMeaningfulImprovement = bestFacultyScore > repFacultyScore * 1.1 && bestFacultyScore > repFacultyScore + 1;
 
     result.push({
+      shapeId: hashString(fingerprint),
       shapeFingerprint: fingerprint,
       representative,
       bestFacultyVariant: isMeaningfulImprovement && bestFaculty.id !== representative.id ? bestFaculty : null,

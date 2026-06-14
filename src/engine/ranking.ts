@@ -23,27 +23,7 @@ const profiles: Record<RankingMode, Weights> = {
     balancedLoad: 8,
     facultyPreference: 10
   },
-  Compact: {
-    freeDays: 0,
-    halfDays: 8,
-    compactness: 24,
-    lowGaps: 20,
-    earlyFinish: 4,
-    lateStart: 3,
-    balancedLoad: 8,
-    facultyPreference: 8
-  },
-  "Free-Day Focused": {
-    freeDays: 0,
-    halfDays: 8,
-    compactness: 8,
-    lowGaps: 8,
-    earlyFinish: 6,
-    lateStart: 4,
-    balancedLoad: 4,
-    facultyPreference: 8
-  },
-  "Half-Day Focused": {
+  "Half Days": {
     freeDays: 0,
     halfDays: 26,
     compactness: 10,
@@ -51,6 +31,16 @@ const profiles: Record<RankingMode, Weights> = {
     earlyFinish: 10,
     lateStart: 5,
     balancedLoad: 4,
+    facultyPreference: 8
+  },
+  "Minimize Gaps": {
+    freeDays: 0,
+    halfDays: 8,
+    compactness: 18,
+    lowGaps: 28,
+    earlyFinish: 6,
+    lateStart: 3,
+    balancedLoad: 8,
     facultyPreference: 8
   },
   "Early Finish": {
@@ -63,17 +53,7 @@ const profiles: Record<RankingMode, Weights> = {
     balancedLoad: 4,
     facultyPreference: 8
   },
-  "Low Gaps": {
-    freeDays: 0,
-    halfDays: 8,
-    compactness: 18,
-    lowGaps: 28,
-    earlyFinish: 6,
-    lateStart: 3,
-    balancedLoad: 8,
-    facultyPreference: 8
-  },
-  Relaxed: {
+  "Late Start": {
     freeDays: 0,
     halfDays: 13,
     compactness: 7,
@@ -112,10 +92,32 @@ function facultyDecayScore(position: number, rankLength: number): number {
   return Math.max(0, 1 - Math.pow(t, 0.8));
 }
 
-export function getRankingProfiles() {
-  return (Object.keys(profiles) as RankingMode[]).filter(
-    (profile) => profile !== "Free-Day Focused"
-  );
+export function getRankingProfiles(): RankingMode[] {
+  return ["Balanced", "Half Days", "Minimize Gaps", "Early Finish", "Late Start"];
+}
+
+export function mapLegacyRankingMode(mode?: string | null): RankingMode {
+  if (!mode) return "Balanced";
+  switch (mode) {
+    case "Balanced":
+      return "Balanced";
+    case "Compact":
+    case "Low Gaps":
+    case "Minimize Gaps":
+      return "Minimize Gaps";
+    case "Half-Day Focused":
+    case "Half Days":
+      return "Half Days";
+    case "Early Finish":
+      return "Early Finish";
+    case "Relaxed":
+    case "Late Start":
+      return "Late Start";
+    case "Custom":
+      return "Custom";
+    default:
+      return "Balanced";
+  }
 }
 
 export function scoreSchedule(

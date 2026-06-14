@@ -18,6 +18,7 @@ import {
 } from "@/engine/types";
 import { FIXED_SLOTS } from "@/engine/slotCatalog";
 import { groupSchedulesByShape } from "@/engine/consolidation";
+import { mapLegacyRankingMode } from "@/engine/ranking";
 
 const courseColors = [
   "#14b8a6",
@@ -111,7 +112,8 @@ export interface UniTimeStore {
   constraints: Constraints;
   generatedSchedules: ScoredTimetable[];
   generatedShapeGroups: TimetableShapeGroup[];
-  activeScheduleId: string | null;
+  activeShapeId: string | null;
+  activeVariantId: string | null;
   savedSchedules: SavedSchedule[];
   compareScheduleIds: string[];
   rankingMode: RankingMode;
@@ -164,7 +166,8 @@ export interface UniTimeStore {
   setFacultyRanking: (courseId: string, optionIds: string[]) => void;
   setAvoidedFaculty: (courseId: string, optionIds: string[]) => void;
   setGeneratedSchedules: (schedules: ScoredTimetable[]) => void;
-  setActiveScheduleId: (scheduleId: string | null) => void;
+  setActiveShapeId: (shapeId: string | null) => void;
+  setActiveVariantId: (variantId: string | null) => void;
   saveSchedule: (schedule: ScoredTimetable, name?: string) => void;
   deleteSavedSchedule: (savedId: string) => void;
   renameSavedSchedule: (savedId: string, name: string) => void;
@@ -184,21 +187,24 @@ export const useAppStore = create<UniTimeStore>()(
       constraints: defaultConstraints,
       generatedSchedules: [],
       generatedShapeGroups: [],
-      activeScheduleId: null,
+      activeShapeId: null,
+      activeVariantId: null,
       savedSchedules: [],
       compareScheduleIds: [],
       rankingMode: "Balanced",
       uiPreferences: defaultUiPreferences,
       hasHydrated: false,
       setHasHydrated: (value) => set({ hasHydrated: value }),
-      setRankingMode: (mode) =>
+      setRankingMode: (mode) => {
+        const mapped = mapLegacyRankingMode(mode);
         set((state) => ({
-          rankingMode: mode,
+          rankingMode: mapped,
           uiPreferences: {
             ...state.uiPreferences,
-            defaultRankingMode: mode
+            defaultRankingMode: mapped
           }
-        })),
+        }));
+      },
       setTheme: (theme) =>
         set((state) => ({
           uiPreferences: {
@@ -302,7 +308,8 @@ export const useAppStore = create<UniTimeStore>()(
           courses: [],
           generatedSchedules: [],
           generatedShapeGroups: [],
-          activeScheduleId: null,
+          activeShapeId: null,
+          activeVariantId: null,
           compareScheduleIds: [],
           constraints: {
             ...state.constraints,
@@ -507,13 +514,18 @@ export const useAppStore = create<UniTimeStore>()(
           }
         })),
       setGeneratedSchedules: (schedules) =>
-        set((state) => ({
-          generatedSchedules: schedules,
-          generatedShapeGroups: groupSchedulesByShape(schedules, state.slots),
-          activeScheduleId: schedules[0]?.id ?? null,
-          compareScheduleIds: schedules.slice(0, 2).map((schedule) => schedule.id)
-        })),
-      setActiveScheduleId: (scheduleId) => set({ activeScheduleId: scheduleId }),
+        set((state) => {
+          const generatedShapeGroups = groupSchedulesByShape(schedules, state.slots);
+          return {
+            generatedSchedules: schedules,
+            generatedShapeGroups,
+            activeShapeId: generatedShapeGroups[0]?.shapeId ?? null,
+            activeVariantId: generatedShapeGroups[0]?.representative.id ?? null,
+            compareScheduleIds: schedules.slice(0, 2).map((schedule) => schedule.id)
+          };
+        }),
+      setActiveShapeId: (shapeId) => set({ activeShapeId: shapeId }),
+      setActiveVariantId: (variantId) => set({ activeVariantId: variantId }),
       saveSchedule: (schedule, name) =>
         set((state) => {
           const existing = state.savedSchedules.find(
@@ -577,26 +589,27 @@ export const useAppStore = create<UniTimeStore>()(
         })),
       clearCompare: () => set({ compareScheduleIds: [] }),
       applySharedState: (sharedState) =>
-        set((state) => ({
-          slots: defaultSlots,
-          courses: sharedState.courses.map((course) => ({
-            ...course,
-            options: course.options.map(cleanOption)
-          })),
-          constraints: normalizeImportedConstraints(sharedState.constraints),
-          rankingMode:
-            sharedState.rankingMode === "Free-Day Focused"
-              ? "Balanced"
-              : sharedState.rankingMode,
-          generatedSchedules: sharedState.activeSchedule ? [sharedState.activeSchedule] : [],
-          generatedShapeGroups: sharedState.activeSchedule ? groupSchedulesByShape([sharedState.activeSchedule], defaultSlots) : [],
-          activeScheduleId: sharedState.activeSchedule?.id ?? null,
-          uiPreferences: {
-            ...state.uiPreferences,
-            usePriorityRanking:
-              sharedState.usePriorityRanking ?? state.uiPreferences.usePriorityRanking
-          }
-        })),
+        set((state) => {
+          const generatedShapeGroups = sharedState.activeSchedule ? groupSchedulesByShape([sharedState.activeSchedule], defaultSlots) : [];
+          return {
+            slots: defaultSlots,
+            courses: sharedState.courses.map((course) => ({
+              ...course,
+              options: course.options.map(cleanOption)
+            })),
+            constraints: normalizeImportedConstraints(sharedState.constraints),
+            rankingMode: mapLegacyRankingMode(sharedState.rankingMode),
+            generatedSchedules: sharedState.activeSchedule ? [sharedState.activeSchedule] : [],
+            generatedShapeGroups,
+            activeShapeId: generatedShapeGroups[0]?.shapeId ?? null,
+            activeVariantId: sharedState.activeSchedule?.id ?? null,
+            uiPreferences: {
+              ...state.uiPreferences,
+              usePriorityRanking:
+                sharedState.usePriorityRanking ?? state.uiPreferences.usePriorityRanking
+            }
+          };
+        }),
       resetAll: () =>
         set({
           slots: defaultSlots,
@@ -604,7 +617,8 @@ export const useAppStore = create<UniTimeStore>()(
           constraints: defaultConstraints,
           generatedSchedules: [],
           generatedShapeGroups: [],
-          activeScheduleId: null,
+          activeShapeId: null,
+          activeVariantId: null,
           savedSchedules: [],
           compareScheduleIds: [],
           rankingMode: "Balanced",
@@ -633,16 +647,17 @@ export const useAppStore = create<UniTimeStore>()(
           constraints: normalizeImportedConstraints(state?.constraints),
           generatedSchedules: [],
           generatedShapeGroups: [],
-          activeScheduleId: null,
+          activeShapeId: null,
+          activeVariantId: null,
           savedSchedules: state?.savedSchedules ?? [],
           compareScheduleIds: [],
-          rankingMode:
-            state?.rankingMode === "Free-Day Focused"
-              ? "Balanced"
-              : state?.rankingMode ?? "Balanced",
+          rankingMode: mapLegacyRankingMode(state?.rankingMode),
           uiPreferences: {
             ...defaultUiPreferences,
             ...state?.uiPreferences,
+            defaultRankingMode: mapLegacyRankingMode(
+              state?.uiPreferences?.defaultRankingMode ?? state?.rankingMode
+            ),
             usePriorityRanking:
               state?.uiPreferences?.usePriorityRanking ??
               defaultUiPreferences.usePriorityRanking

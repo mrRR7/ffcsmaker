@@ -8,13 +8,15 @@ import { cn } from "@/utils/cn";
 type SortMode = "score" | "lowGaps" | "earlyFinish";
 
 export function ResultsControlBar({
-  count,
+  schedulesCount,
+  shapesCount,
   sortMode,
   onSortModeChange,
   actions,
   className
 }: {
-  count: number;
+  schedulesCount: number;
+  shapesCount: number;
   sortMode: SortMode;
   onSortModeChange: (value: SortMode) => void;
   actions?: ReactNode;
@@ -29,7 +31,7 @@ export function ResultsControlBar({
               Results
             </h1>
             <Badge variant="primary">
-              {count} {count === 1 ? 'schedule' : 'schedules'}
+              {schedulesCount} schedules • {shapesCount} {shapesCount === 1 ? 'shape' : 'shapes'}
             </Badge>
           </div>
         </div>

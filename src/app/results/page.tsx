@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
+import { useEffect, useMemo, useRef, useState, useCallback, Suspense } from "react";
 import { motion } from "framer-motion";
 import { staggerContainer, fadeUp } from "@/utils/motion";
 import toast from "react-hot-toast";
@@ -17,6 +18,7 @@ import { BlockDetailPanel } from "@/features/results/BlockDetailPanel";
 import { IcalExportDialog } from "@/features/results/IcalExportDialog";
 import { ScheduleBrowser } from "@/features/results/ScheduleBrowser";
 import { SlotMatrixTimetable } from "@/features/results/SlotMatrixTimetable";
+import { ShapeNavigator } from "@/features/results/ShapeNavigator";
 import { VariantSwitcher } from "@/features/results/VariantSwitcher";
 import { buildMatrixCells, MatrixCell } from "@/features/results/timetableMatrix";
 import { ScoredTimetable } from "@/engine/types";
@@ -26,8 +28,11 @@ import { useAppStore } from "@/store/useAppStore";
 
 type SortMode = "score" | "lowGaps" | "earlyFinish";
 
-export default function ResultsPage() {
+function ResultsContent() {
   const exportRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [sortMode, setSortMode] = useState<SortMode>("score");
   const [activeCellId, setActiveCellId] = useState<string | null>(null);
   const [activeBlockAnchor, setActiveBlockAnchor] = useState<DOMRect | null>(null);
@@ -42,12 +47,16 @@ export default function ResultsPage() {
   );
   const generatedSchedules = useAppStore((state) => state.generatedSchedules);
   const generatedShapeGroups = useAppStore((state) => state.generatedShapeGroups);
-  const activeScheduleId = useAppStore((state) => state.activeScheduleId);
-  const setActiveScheduleId = useAppStore((state) => state.setActiveScheduleId);
+  const activeShapeId = useAppStore((state) => state.activeShapeId);
+  const activeVariantId = useAppStore((state) => state.activeVariantId);
+  const setActiveShapeId = useAppStore((state) => state.setActiveShapeId);
+  const setActiveVariantId = useAppStore((state) => state.setActiveVariantId);
   const saveSchedule = useAppStore((state) => state.saveSchedule);
   const toggleFavoriteSchedule = useAppStore((state) => state.toggleFavoriteSchedule);
   const addCompareSchedule = useAppStore((state) => state.addCompareSchedule);
   const savedSchedules = useAppStore((state) => state.savedSchedules);
+
+  // --- Derived state ---
 
   const filteredGroups = useMemo(() => {
     return [...generatedShapeGroups].sort((a, b) => {
@@ -63,29 +72,34 @@ export default function ResultsPage() {
     });
   }, [generatedShapeGroups, sortMode]);
 
+  // Resolve active shape group from shapeId
   const activeShapeGroup = useMemo(() => {
     return (
-      filteredGroups.find(
-        (g) =>
-          g.representative.id === activeScheduleId ||
-          g.alternatives.some((alt) => alt.id === activeScheduleId)
-      ) ??
+      filteredGroups.find((g) => g.shapeId === activeShapeId) ??
       filteredGroups[0] ??
       null
     );
-  }, [filteredGroups, activeScheduleId]);
+  }, [filteredGroups, activeShapeId]);
 
+  // All variants within the active shape, sorted by score
+  const allVariants = useMemo(() => {
+    if (!activeShapeGroup) return [];
+    const map = new Map<string, ScoredTimetable>();
+    map.set(activeShapeGroup.representative.id, activeShapeGroup.representative);
+    activeShapeGroup.alternatives.forEach(alt => map.set(alt.id, alt));
+    return Array.from(map.values()).sort((a, b) => b.score - a.score);
+  }, [activeShapeGroup]);
+
+  // Resolve active schedule from variantId
   const activeSchedule = useMemo(() => {
-    if (!activeShapeGroup) return null;
-    if (activeShapeGroup.representative.id === activeScheduleId) return activeShapeGroup.representative;
-    return activeShapeGroup.alternatives.find(a => a.id === activeScheduleId) ?? activeShapeGroup.representative;
-  }, [activeShapeGroup, activeScheduleId]);
+    if (allVariants.length === 0) return null;
+    return allVariants.find((v) => v.id === activeVariantId) ?? allVariants[0];
+  }, [allVariants, activeVariantId]);
 
-  const activeIndex = useMemo(() => {
-    if (!activeShapeGroup) {
-      return -1;
-    }
-    return filteredGroups.findIndex((group) => group.shapeFingerprint === activeShapeGroup.shapeFingerprint);
+  // Compute shape index for display
+  const activeShapeIndex = useMemo(() => {
+    if (!activeShapeGroup) return -1;
+    return filteredGroups.findIndex((g) => g.shapeId === activeShapeGroup.shapeId);
   }, [activeShapeGroup, filteredGroups]);
 
   const activeCells = useMemo(
@@ -116,6 +130,8 @@ export default function ResultsPage() {
       savedSchedules.some((saved) => saved.timetable.id === activeSchedule.id)
   );
 
+  // --- Keyboard navigation (shapes) ---
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
@@ -133,30 +149,32 @@ export default function ResultsPage() {
         return;
       }
 
-      const currentIndex = activeIndex >= 0 ? activeIndex : 0;
+      const currentShapeIndex = activeShapeIndex >= 0 ? activeShapeIndex : 0;
 
       if (event.key === "ArrowRight" || event.key === "ArrowDown") {
         event.preventDefault();
-        const nextIndex = Math.min(currentIndex + 1, filteredGroups.length - 1);
-        setActiveScheduleId(filteredGroups[nextIndex].representative.id);
+        const nextIndex = Math.min(currentShapeIndex + 1, filteredGroups.length - 1);
+        const nextGroup = filteredGroups[nextIndex];
+        setActiveShapeId(nextGroup.shapeId);
+        setActiveVariantId(nextGroup.representative.id);
       } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
         event.preventDefault();
-        const previousIndex = Math.max(currentIndex - 1, 0);
-        setActiveScheduleId(filteredGroups[previousIndex].representative.id);
+        const previousIndex = Math.max(currentShapeIndex - 1, 0);
+        const prevGroup = filteredGroups[previousIndex];
+        setActiveShapeId(prevGroup.shapeId);
+        setActiveVariantId(prevGroup.representative.id);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activeIndex, filteredGroups, setActiveScheduleId]);
+  }, [activeShapeIndex, filteredGroups, setActiveShapeId, setActiveVariantId]);
+
+  // --- Reset cell focus when schedule changes ---
 
   useEffect(() => {
     if (!activeSchedule) {
       return;
-    }
-
-    if (activeScheduleId !== activeSchedule.id) {
-      setActiveScheduleId(activeSchedule.id);
     }
 
     setActiveCellId(null);
@@ -166,7 +184,61 @@ export default function ResultsPage() {
         ? current
         : null
     );
-  }, [activeSchedule, activeScheduleId, setActiveScheduleId]);
+  }, [activeSchedule]);
+
+  // --- URL Sync: Load shape/variant from URL on mount ---
+
+  useEffect(() => {
+    const urlShapeId = searchParams.get("shape");
+    const urlVariantId = searchParams.get("variant");
+
+    if (urlShapeId && urlShapeId !== activeShapeId) {
+      const groupExists = generatedShapeGroups.some(g => g.shapeId === urlShapeId);
+      if (groupExists) {
+        setActiveShapeId(urlShapeId);
+        if (urlVariantId) {
+          setActiveVariantId(urlVariantId);
+        }
+      }
+    } else if (urlVariantId && urlVariantId !== activeVariantId) {
+      setActiveVariantId(urlVariantId);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
+  // --- URL Sync: Update URL when active shape/variant changes ---
+
+  useEffect(() => {
+    if (!activeShapeGroup || !activeSchedule) return;
+
+    const currentShape = searchParams.get("shape");
+    const currentVariant = searchParams.get("variant");
+
+    if (currentShape !== activeShapeGroup.shapeId || currentVariant !== activeSchedule.id) {
+      const newParams = new URLSearchParams(searchParams.toString());
+      newParams.set("shape", activeShapeGroup.shapeId);
+      newParams.set("variant", activeSchedule.id);
+      router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
+    }
+  }, [activeShapeGroup, activeSchedule, pathname, router, searchParams]);
+
+  // --- Handlers ---
+
+  function selectShape(shapeId: string) {
+    const group = filteredGroups.find(g => g.shapeId === shapeId);
+    if (group) {
+      setActiveShapeId(group.shapeId);
+      setActiveVariantId(group.representative.id);
+      setActiveCellId(null);
+      setActiveBlockAnchor(null);
+    }
+  }
+
+  function selectVariant(variantId: string) {
+    setActiveVariantId(variantId);
+    setActiveCellId(null);
+    setActiveBlockAnchor(null);
+  }
 
   async function shareActive(schedule: ScoredTimetable) {
     try {
@@ -202,12 +274,6 @@ export default function ResultsPage() {
     }
   }
 
-  function selectSchedule(scheduleId: string) {
-    setActiveScheduleId(scheduleId);
-    setActiveCellId(null);
-    setActiveBlockAnchor(null);
-  }
-
   function selectCell(cell: MatrixCell, anchor: DOMRect) {
     setActiveCellId(cell.id);
     setActiveBlockAnchor(anchor);
@@ -225,6 +291,8 @@ export default function ResultsPage() {
     saveSchedule(schedule);
     toast.success(isSaved ? "Saved timetable updated." : "Timetable saved locally.");
   }
+
+  // --- Empty states ---
 
   if (generatedSchedules.length === 0) {
     return (
@@ -253,7 +321,8 @@ export default function ResultsPage() {
     return (
       <div className="space-y-4 pb-20 lg:pb-0">
         <ResultsControlBar
-          count={0}
+          schedulesCount={generatedSchedules.length}
+          shapesCount={0}
           sortMode={sortMode}
           onSortModeChange={setSortMode}
         />
@@ -268,6 +337,8 @@ export default function ResultsPage() {
       </div>
     );
   }
+
+  // --- Toolbar actions ---
 
   const toolbarActions = activeSchedule ? (
     <>
@@ -307,21 +378,32 @@ export default function ResultsPage() {
     </>
   ) : null;
 
+  // --- Main render ---
+
   return (
     <div className="space-y-4 pb-20 lg:pb-0">
       <ResultsControlBar
-        count={filteredGroups.length}
+        schedulesCount={generatedSchedules.length}
+        shapesCount={filteredGroups.length}
         sortMode={sortMode}
         onSortModeChange={setSortMode}
         actions={toolbarActions}
       />
 
-      {activeShapeGroup && activeShapeGroup.alternatives.length > 0 && (
+      {/* Shape Navigator */}
+      <ShapeNavigator
+        groups={filteredGroups}
+        activeShapeId={activeShapeGroup?.shapeId ?? ""}
+        onSelect={selectShape}
+      />
+
+      {/* Variant Switcher */}
+      {activeShapeGroup && allVariants.length > 1 && (
         <VariantSwitcher
           group={activeShapeGroup}
-          activeScheduleId={activeSchedule!.id}
+          activeVariantId={activeSchedule?.id ?? ""}
           courses={courses}
-          onSelect={selectSchedule}
+          onSelectVariant={selectVariant}
         />
       )}
 
@@ -345,5 +427,13 @@ export default function ResultsPage() {
         mode="selected"
       />
     </div>
+  );
+}
+
+export default function ResultsPage() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center text-muted-foreground">Loading results...</div>}>
+      <ResultsContent />
+    </Suspense>
   );
 }

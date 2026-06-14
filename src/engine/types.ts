@@ -103,12 +103,10 @@ export interface TimetableSelection {
 
 export type RankingMode =
   | "Balanced"
-  | "Compact"
-  | "Free-Day Focused"
-  | "Half-Day Focused"
+  | "Half Days"
+  | "Minimize Gaps"
   | "Early Finish"
-  | "Low Gaps"
-  | "Relaxed"
+  | "Late Start"
   | "Custom";
 
 export interface ScoredTimetable {
@@ -121,6 +119,7 @@ export interface ScoredTimetable {
 }
 
 export interface TimetableShapeGroup {
+  shapeId: string;
   shapeFingerprint: string;
   representative: ScoredTimetable;
   bestFacultyVariant: ScoredTimetable | null;

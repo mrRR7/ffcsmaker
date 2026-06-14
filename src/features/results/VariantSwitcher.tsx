@@ -1,19 +1,21 @@
 "use client";
 
 import { useMemo } from "react";
-import { Check, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import { Course, ScoredTimetable, TimetableShapeGroup } from "@/engine/types";
 import { cn } from "@/utils/cn";
 import { Badge } from "@/components/ui/badge";
+import { Select } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
 
 interface VariantSwitcherProps {
   group: TimetableShapeGroup;
-  activeScheduleId: string;
+  activeVariantId: string;
   courses: Course[];
-  onSelect: (scheduleId: string) => void;
+  onSelectVariant: (variantId: string) => void;
 }
 
-export function VariantSwitcher({ group, activeScheduleId, courses, onSelect }: VariantSwitcherProps) {
+export function VariantSwitcher({ group, activeVariantId, courses, onSelectVariant }: VariantSwitcherProps) {
   const allSchedules = useMemo(() => {
     // representative is always first, followed by alternatives
     const map = new Map<string, ScoredTimetable>();
@@ -22,84 +24,134 @@ export function VariantSwitcher({ group, activeScheduleId, courses, onSelect }: 
     return Array.from(map.values()).sort((a, b) => b.score - a.score);
   }, [group]);
 
+  const activeIndex = useMemo(() => {
+    return allSchedules.findIndex(s => s.id === activeVariantId);
+  }, [allSchedules, activeVariantId]);
+
+  const activeSchedule = allSchedules[activeIndex] ?? allSchedules[0];
+
   const diffs = useMemo(() => {
-    return allSchedules.map(schedule => {
-      const changed: { courseCode: string; from: string; to: string }[] = [];
-      
-      // Compare to representative
-      schedule.selections.forEach(sel => {
-        const repSel = group.representative.selections.find(s => s.courseId === sel.courseId);
-        if (repSel && repSel.optionId !== sel.optionId) {
-          changed.push({
-            courseCode: sel.courseCode,
-            from: repSel.professorName,
-            to: sel.professorName
-          });
-        }
-      });
-      
-      return { schedule, changed };
+    if (!activeSchedule) return [];
+    
+    const changed: { courseCode: string; from: string; to: string }[] = [];
+    
+    // Compare to representative
+    activeSchedule.selections.forEach(sel => {
+      const repSel = group.representative.selections.find(s => s.courseId === sel.courseId);
+      if (repSel && repSel.optionId !== sel.optionId) {
+        changed.push({
+          courseCode: sel.courseCode,
+          from: repSel.professorName,
+          to: sel.professorName
+        });
+      }
     });
-  }, [allSchedules, group.representative]);
+    
+    return changed;
+  }, [activeSchedule, group.representative]);
 
   if (allSchedules.length <= 1) {
     return null;
   }
 
-  return (
-    <div className="w-full overflow-x-auto pb-4">
-      <div className="flex gap-3 min-w-max px-1">
-        {diffs.map(({ schedule, changed }, index) => {
-          const isActive = schedule.id === activeScheduleId;
-          const isBestFaculty = group.bestFacultyVariant?.id === schedule.id;
+  const handlePrevious = () => {
+    const prevIndex = Math.max(0, activeIndex - 1);
+    onSelectVariant(allSchedules[prevIndex].id);
+  };
 
-          return (
-            <button
-              key={schedule.id}
-              onClick={() => onSelect(schedule.id)}
-              className={cn(
-                "flex flex-col text-left rounded-xl border p-3 transition-all",
-                isActive
-                  ? "border-primary bg-primary/10 shadow-sm"
-                  : "border-border bg-card hover:bg-secondary/60 hover:border-border/80"
-              )}
+  const handleNext = () => {
+    const nextIndex = Math.min(allSchedules.length - 1, activeIndex + 1);
+    onSelectVariant(allSchedules[nextIndex].id);
+  };
+
+  return (
+    <div className="w-full rounded-2xl border border-border/80 bg-card/80 p-4 shadow-sm backdrop-blur mb-6">
+      <div className="flex flex-col gap-4">
+        
+        {/* Top Header: Select + Badges */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <Select
+              value={activeSchedule.id}
+              onChange={(e) => onSelectVariant(e.target.value)}
+              className="w-[180px] font-medium bg-background"
             >
-              <div className="flex items-center justify-between gap-4 mb-2">
-                <span className={cn("text-sm font-semibold", isActive ? "text-primary" : "text-foreground")}>
-                  Variant {index + 1}
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <Badge className="text-xs bg-background text-muted-foreground border-border/70 hover:bg-background">
-                    Score {schedule.score}
-                  </Badge>
-                  {isBestFaculty && (
-                    <Badge className="bg-amber-500/15 text-amber-600 border-amber-500/20 hover:bg-amber-500/20">
-                      Best Faculty
-                    </Badge>
-                  )}
-                  {isActive && <Check className="w-3.5 h-3.5 text-primary ml-1" />}
-                </div>
-              </div>
-              
-              <div className="text-xs space-y-1 mt-auto">
-                {changed.length === 0 ? (
-                  <span className="text-muted-foreground italic">Representative schedule</span>
-                ) : (
-                  changed.map((change, i) => (
-                    <div key={i} className="flex items-center gap-1.5 text-muted-foreground">
-                      <span className="font-medium text-foreground">{change.courseCode}</span>
-                      <span className="max-w-[120px] truncate">{change.from}</span>
-                      <ChevronRight className="w-3 h-3 shrink-0" />
-                      <span className={cn("font-medium max-w-[120px] truncate", isActive ? "text-primary" : "text-foreground")}>
-                        {change.to}
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </button>
-          );
-        })}
+              {allSchedules.map((schedule, idx) => (
+                <option key={schedule.id} value={schedule.id}>
+                  Variant {idx + 1} of {allSchedules.length}
+                </option>
+              ))}
+            </Select>
+            
+            <div className="flex items-center gap-2">
+              <Badge className="bg-background text-foreground border border-border/70 shadow-none hover:bg-background">
+                Score {activeSchedule.score}
+              </Badge>
+              {activeSchedule.scoreBreakdown?.facultyPreference !== undefined && (
+                <Badge className="bg-background text-muted-foreground border border-border/70 shadow-none hover:bg-background">
+                  Faculty Score {Math.round(activeSchedule.scoreBreakdown.facultyPreference)}
+                </Badge>
+              )}
+              {group.bestFacultyVariant?.id === activeSchedule.id && (
+                <Badge className="bg-amber-500/15 text-amber-600 border-amber-500/20 hover:bg-amber-500/20">
+                  Best Faculty
+                </Badge>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Diff Content */}
+        <div className="rounded-lg bg-background border border-border/50 p-4">
+          <h4 className="text-sm font-semibold text-foreground mb-2">Faculty Changes</h4>
+          {diffs.length === 0 ? (
+            <p className="text-sm text-muted-foreground italic">
+              This is the reference variant. No faculty changes.
+            </p>
+          ) : (
+            <ul className="space-y-1.5">
+              {diffs.map((change, i) => (
+                <li key={i} className="text-sm flex items-center gap-2 text-muted-foreground">
+                  <span className="w-1.5 h-1.5 rounded-full bg-primary/40 shrink-0" />
+                  <span className="font-medium text-foreground">{change.courseCode}:</span>
+                  <span className="truncate">{change.from}</span>
+                  <ChevronRight className="w-3.5 h-3.5 shrink-0" />
+                  <span className="font-medium text-primary truncate">{change.to}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Navigation Controls */}
+        <div className="flex items-center justify-between pt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handlePrevious}
+            disabled={activeIndex <= 0}
+            className="w-28 bg-background"
+          >
+            <ChevronLeft className="w-4 h-4 mr-1" />
+            Previous
+          </Button>
+          
+          <span className="text-xs font-medium text-muted-foreground">
+            {activeIndex + 1} / {allSchedules.length}
+          </span>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleNext}
+            disabled={activeIndex >= allSchedules.length - 1}
+            className="w-28 bg-background"
+          >
+            Next
+            <ChevronRight className="w-4 h-4 ml-1" />
+          </Button>
+        </div>
+
       </div>
     </div>
   );

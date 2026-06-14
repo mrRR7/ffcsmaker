@@ -40,7 +40,9 @@ export function ScheduleSummaryCard({
   );
   const saveSchedule = useAppStore((state) => state.saveSchedule);
   const addCompareSchedule = useAppStore((state) => state.addCompareSchedule);
-  const setActiveScheduleId = useAppStore((state) => state.setActiveScheduleId);
+  const setActiveShapeId = useAppStore((state) => state.setActiveShapeId);
+  const setActiveVariantId = useAppStore((state) => state.setActiveVariantId);
+  const generatedShapeGroups = useAppStore((state) => state.generatedShapeGroups);
 
   const insight = useMemo(() => {
     const best = Object.entries(schedule.scoreBreakdown).sort((a, b) => b[1] - a[1])[0];
@@ -50,6 +52,17 @@ export function ScheduleSummaryCard({
     (sum, selection) => sum + selection.credits,
     0
   );
+
+  function openSchedule() {
+    const group = generatedShapeGroups.find(g =>
+      g.representative.id === schedule.id ||
+      g.alternatives.some(a => a.id === schedule.id)
+    );
+    if (group) {
+      setActiveShapeId(group.shapeId);
+    }
+    setActiveVariantId(schedule.id);
+  }
 
   async function shareSchedule() {
     try {
@@ -120,7 +133,7 @@ export function ScheduleSummaryCard({
           <Button
             type="button"
             size="sm"
-            onClick={() => setActiveScheduleId(schedule.id)}
+            onClick={openSchedule}
           >
             Open
           </Button>
