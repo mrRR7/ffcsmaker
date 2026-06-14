@@ -11,6 +11,11 @@ import {
   TimeSlot
 } from "@/engine/types";
 
+import {
+  buildMatrixCells,
+  buildMatrixColumns,
+} from "@/features/results/timetableMatrix";
+
 const COURSE_COLORS = [
   "#3b82f6",
   "#10b981",
@@ -65,10 +70,12 @@ export function ShareCard({ id, size, schedule, slots, campus, semesterLabel }: 
 
   const root: CSSProperties = {
     position: "fixed",
-    left: "-9999px",
+    left: 0,
     top: 0,
     width,
     height,
+    zIndex: -1,
+    pointerEvents: "none",
     padding: isStory ? 72 : 56,
     boxSizing: "border-box",
     overflow: "hidden",
