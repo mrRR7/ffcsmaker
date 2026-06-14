@@ -54,6 +54,19 @@ export function ScheduleMetricsStrip({ schedule }: { schedule: ScoredTimetable }
         <MetricPill label="Half days" value={schedule.metrics.halfDays} />
         <MetricPill label="Earliest start" value={schedule.metrics.earliestStartTime} />
         <MetricPill label="Latest end" value={schedule.metrics.latestEndTime} />
+        {schedule.metrics.facultyMatchPercentage > 0 && (
+          <MetricPill
+            label="Faculty match"
+            value={`${schedule.metrics.facultyMatchPercentage}%`}
+            semantic={
+              schedule.metrics.facultyMatchPercentage >= 80
+                ? "success"
+                : schedule.metrics.facultyMatchPercentage >= 50
+                ? "warning"
+                : "neutral"
+            }
+          />
+        )}
       </div>
     </Card>
   );

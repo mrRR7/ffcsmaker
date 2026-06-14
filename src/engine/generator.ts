@@ -17,7 +17,6 @@ import {
 } from "./conflict";
 import { computeScheduleMetrics } from "./metrics";
 import { scoreSchedule } from "./ranking";
-import { consolidateSchedulesByShape } from "./consolidation";
 
 type ProgressCallback = (progress: {
   checked: number;
@@ -128,12 +127,14 @@ export function generateTimetables(
       checked += 1;
       if (!hasCompleteHardViolations(selections, slots, payload)) {
         const metrics = computeScheduleMetrics(selections, slots);
-        const { score, scoreBreakdown } = scoreSchedule(
+        const { score, scoreBreakdown, rawFacultyScore } = scoreSchedule(
           metrics,
           selections,
           rankingMode,
           constraints
         );
+        metrics.facultyMatchPercentage = Math.max(0, Math.min(100, Math.round(rawFacultyScore * 100)));
+
         const priority = priorityScore(
           selections,
           courses,
@@ -192,13 +193,10 @@ export function generateTimetables(
   // Initial sort by score
   schedules.sort((a, b) => b.score - a.score);
   
-  // Consolidate schedules by actual timetable shape
-  const consolidatedSchedules = consolidateSchedulesByShape(schedules, slots);
-  
   emitProgress(true);
 
   return {
-    schedules: consolidatedSchedules,
+    schedules,
     checked
   };
 }

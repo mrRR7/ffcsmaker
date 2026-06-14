@@ -9,7 +9,7 @@ type Weights = {
   earlyFinish: number;
   lateStart: number;
   balancedLoad: number;
-  professorPreference: number;
+  facultyPreference: number;
 };
 
 const profiles: Record<RankingMode, Weights> = {
@@ -21,7 +21,7 @@ const profiles: Record<RankingMode, Weights> = {
     earlyFinish: 8,
     lateStart: 6,
     balancedLoad: 8,
-    professorPreference: 9
+    facultyPreference: 10
   },
   Compact: {
     freeDays: 0,
@@ -31,7 +31,7 @@ const profiles: Record<RankingMode, Weights> = {
     earlyFinish: 4,
     lateStart: 3,
     balancedLoad: 8,
-    professorPreference: 5
+    facultyPreference: 8
   },
   "Free-Day Focused": {
     freeDays: 0,
@@ -41,7 +41,7 @@ const profiles: Record<RankingMode, Weights> = {
     earlyFinish: 6,
     lateStart: 4,
     balancedLoad: 4,
-    professorPreference: 5
+    facultyPreference: 8
   },
   "Half-Day Focused": {
     freeDays: 0,
@@ -51,7 +51,7 @@ const profiles: Record<RankingMode, Weights> = {
     earlyFinish: 10,
     lateStart: 5,
     balancedLoad: 4,
-    professorPreference: 6
+    facultyPreference: 8
   },
   "Early Finish": {
     freeDays: 0,
@@ -61,7 +61,7 @@ const profiles: Record<RankingMode, Weights> = {
     earlyFinish: 28,
     lateStart: 2,
     balancedLoad: 4,
-    professorPreference: 5
+    facultyPreference: 8
   },
   "Low Gaps": {
     freeDays: 0,
@@ -71,7 +71,7 @@ const profiles: Record<RankingMode, Weights> = {
     earlyFinish: 6,
     lateStart: 3,
     balancedLoad: 8,
-    professorPreference: 5
+    facultyPreference: 8
   },
   Relaxed: {
     freeDays: 0,
@@ -81,7 +81,7 @@ const profiles: Record<RankingMode, Weights> = {
     earlyFinish: 7,
     lateStart: 15,
     balancedLoad: 5,
-    professorPreference: 8
+    facultyPreference: 10
   },
   Custom: {
     freeDays: 0,
@@ -91,7 +91,7 @@ const profiles: Record<RankingMode, Weights> = {
     earlyFinish: 10,
     lateStart: 8,
     balancedLoad: 8,
-    professorPreference: 10
+    facultyPreference: 12
   }
 };
 
@@ -104,6 +104,12 @@ function normalize(value: number, max: number) {
 
 function inverted(value: number, max: number) {
   return 1 - normalize(value, max);
+}
+
+function facultyDecayScore(position: number, rankLength: number): number {
+  if (rankLength <= 1) return 1;
+  const t = position / (rankLength - 1);
+  return Math.max(0, 1 - Math.pow(t, 0.8));
 }
 
 export function getRankingProfiles() {
@@ -119,13 +125,29 @@ export function scoreSchedule(
   constraints: Constraints
 ) {
   const weights = profiles[mode] ?? profiles.Balanced;
-  const preferredProfessorMatches = selections.filter((selection) =>
-    constraints.preferredProfessors.some(
-      (professor) =>
-        professor.trim().length > 0 &&
-        selection.professorName.toLowerCase().includes(professor.toLowerCase())
-    )
-  ).length;
+  
+  let facultyPrefScore = 0;
+  let coursesWithRanking = 0;
+
+  for (const selection of selections) {
+    const ranking = constraints.facultyRanking[selection.courseId];
+    if (!ranking || ranking.length === 0) continue;
+
+    coursesWithRanking++;
+    const position = ranking.indexOf(selection.optionId);
+
+    if (position >= 0) {
+      facultyPrefScore += facultyDecayScore(position, ranking.length);
+    }
+
+    const avoided = constraints.avoidedFacultyByCourse[selection.courseId];
+    if (avoided?.includes(selection.optionId)) {
+      facultyPrefScore -= 1; // Heavy penalty
+    }
+  }
+
+  // Allowed to go negative if avoided penalties outweigh preferences
+  const rawFacultyScore = coursesWithRanking > 0 ? (facultyPrefScore / coursesWithRanking) : 0;
 
   const latestEndMinutes = parseTime(metrics.latestEndTime);
   const earliestStartMinutes = parseTime(metrics.earliestStartTime);
@@ -139,13 +161,12 @@ export function scoreSchedule(
     lateStart: normalize(earliestStartMinutes - 8 * 60, 3 * 60) * weights.lateStart,
     balancedLoad:
       inverted(metrics.dailyLoadVariance, 4) * weights.balancedLoad,
-    professorPreference:
-      normalize(preferredProfessorMatches, Math.max(1, selections.length)) *
-      weights.professorPreference
+    facultyPreference: rawFacultyScore * weights.facultyPreference
   };
 
   const score = Object.values(breakdown).reduce((sum, value) => sum + value, 0);
   return {
+    rawFacultyScore,
     score: Number(score.toFixed(1)),
     scoreBreakdown: Object.fromEntries(
       Object.entries(breakdown).map(([key, value]) => [key, Number(value.toFixed(1))])

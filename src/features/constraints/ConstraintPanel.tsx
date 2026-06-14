@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { staggerContainer, fadeUp } from "@/utils/motion";
-import { Clock4, Plus, Settings2, SlidersHorizontal, Trash2 } from "lucide-react";
+import { Clock4, Hourglass, Plus, Settings2, SlidersHorizontal, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input, Label, Select } from "@/components/ui/form";
@@ -61,6 +61,7 @@ export function ConstraintPanel() {
 
   const sections = [
     { id: "time-preferences", label: "Time Preferences", icon: <Settings2 className="h-4 w-4" /> },
+    { id: "time-limits", label: "Time Limits", icon: <Hourglass className="h-4 w-4" /> },
     { id: "end-before", label: "Early Finish", icon: <SlidersHorizontal className="h-4 w-4" /> },
     { id: "blocked-windows", label: "Blocked Windows", icon: <Clock4 className="h-4 w-4" /> }
   ];
@@ -147,6 +148,79 @@ export function ConstraintPanel() {
                   label="Avoid last period"
                   onClick={() => setConstraint("avoidLastPeriod", !constraints.avoidLastPeriod)}
                 />
+              </div>
+            </CardContent>
+          </Card>
+        </motion.section>
+
+        <motion.section variants={fadeUp} id="time-limits" className="scroll-mt-24 space-y-4">
+          <div>
+            <h2 className="text-xl font-bold tracking-tight">Time Limits</h2>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Global and day-specific hard bounds. Schedules violating these will be rejected.
+            </p>
+          </div>
+          <Card>
+            <CardContent className="space-y-6 p-6">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <Field label="Earliest Start">
+                  <Input
+                    type="time"
+                    value={constraints.earliestStart ?? ""}
+                    onChange={(event) =>
+                      setConstraint("earliestStart", event.target.value || null)
+                    }
+                  />
+                </Field>
+                <Field label="Latest End">
+                  <Input
+                    type="time"
+                    value={constraints.latestEnd ?? ""}
+                    onChange={(event) =>
+                      setConstraint("latestEnd", event.target.value || null)
+                    }
+                  />
+                </Field>
+              </div>
+
+              <div className="pt-4 border-t border-border">
+                <h3 className="text-sm font-semibold mb-3">Day-specific overrides</h3>
+                <div className="space-y-2">
+                  {DAYS.map((day) => (
+                    <div
+                      key={day}
+                      className="grid gap-2 rounded-md border border-border bg-background/35 p-3 sm:grid-cols-[100px_1fr_1fr]"
+                    >
+                      <div className="flex items-center">
+                        <span className="text-sm font-medium">{day}</span>
+                      </div>
+                      <Field label="Earliest Start">
+                        <Input
+                          type="time"
+                          value={constraints.startAfterByDay[day] ?? ""}
+                          onChange={(event) =>
+                            setConstraint("startAfterByDay", {
+                              ...constraints.startAfterByDay,
+                              [day]: event.target.value || null
+                            })
+                          }
+                        />
+                      </Field>
+                      <Field label="Latest End">
+                        <Input
+                          type="time"
+                          value={constraints.latestEndByDay[day] ?? ""}
+                          onChange={(event) =>
+                            setConstraint("latestEndByDay", {
+                              ...constraints.latestEndByDay,
+                              [day]: event.target.value || null
+                            })
+                          }
+                        />
+                      </Field>
+                    </div>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>

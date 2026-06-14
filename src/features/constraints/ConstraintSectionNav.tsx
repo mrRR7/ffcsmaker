@@ -60,7 +60,7 @@ export function ConstraintSectionNav({
               className={cn(
                 "flex items-center gap-2 whitespace-nowrap rounded-full xl:rounded-md px-4 py-2 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-primary text-primary-foreground xl:bg-primary/10 xl:text-primary"
+                  ? "bg-primary text-primary-foreground xl:bg-primary/10 xl:text-white"
                   : "bg-secondary/40 text-muted-foreground hover:bg-secondary/60 hover:text-foreground xl:bg-transparent"
               )}
             >

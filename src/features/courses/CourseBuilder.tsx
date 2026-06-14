@@ -33,6 +33,7 @@ import {
 import { CourseOption, TimeSlot } from "@/engine/types";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/utils/cn";
+import { FacultyPreferences } from "./FacultyPreferences";
 
 function sameIds(left: string[], right: string[]) {
   return (
@@ -603,6 +604,10 @@ function CourseCard({
                   Add Option
                 </Button>
               </div>
+
+              {course.options.length >= 2 ? (
+                <FacultyPreferences courseId={course.id} />
+              ) : null}
             </CardContent>
           </motion.div>
         ) : null}

@@ -133,6 +133,15 @@ export function violatesSlotHardConstraints(
   slot: TimeSlot,
   constraints: Constraints
 ) {
+  if (constraints.earliestStart && parseTime(slot.startTime) < parseTime(constraints.earliestStart)) return true;
+  if (constraints.latestEnd && parseTime(slot.endTime) > parseTime(constraints.latestEnd)) return true;
+
+  const dayStart = constraints.startAfterByDay[slot.day];
+  if (dayStart && parseTime(slot.startTime) < parseTime(dayStart)) return true;
+
+  const dayEnd = constraints.latestEndByDay[slot.day];
+  if (dayEnd && parseTime(slot.endTime) > parseTime(dayEnd)) return true;
+
   if (
     constraints.noAfterTime &&
     parseTime(slot.endTime) > parseTime(constraints.noAfterTime)

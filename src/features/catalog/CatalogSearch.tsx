@@ -207,7 +207,7 @@ export function CatalogSearch() {
   }
 
   return (
-    <Card>
+    <Card className="bg-canvas shadow-none">
       <CardContent className="space-y-4 p-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-center">
           <div className="relative flex-1">

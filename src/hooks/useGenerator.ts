@@ -63,7 +63,8 @@ export function useGenerator() {
           if (event.data.schedules.length === 0) {
             toast.error("No clash-free schedules matched the hard constraints.");
           } else {
-            toast.success(`Generated ${event.data.schedules.length} ranked schedules.`);
+            const groups = useAppStore.getState().generatedShapeGroups;
+            toast.success(`Generated ${event.data.schedules.length} schedules across ${groups.length} unique shapes.`);
           }
           return;
         }

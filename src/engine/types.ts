@@ -47,6 +47,12 @@ export interface BlockedWindow {
 export interface Constraints {
   blockedWindows: BlockedWindow[];
   noAfterTime: string | null;
+  earliestStart: string | null;
+  latestEnd: string | null;
+  startAfterByDay: Partial<Record<DayOfWeek, string | null>>;
+  latestEndByDay: Partial<Record<DayOfWeek, string | null>>;
+  facultyRanking: Record<string, string[]>;
+  avoidedFacultyByCourse: Record<string, string[]>;
   avoidFirstPeriod: boolean;
   avoidLastPeriod: boolean;
   preferredDaysOff: DayOfWeek[];
@@ -79,6 +85,7 @@ export interface ScheduleMetrics {
   totalClasses: number;
   activeDays: number;
   dailyLoadVariance: number;
+  facultyMatchPercentage: number;
 }
 
 export interface TimetableSelection {
@@ -111,6 +118,14 @@ export interface ScoredTimetable {
   score: number;
   rankingMode: RankingMode | string;
   scoreBreakdown: Record<string, number>;
+}
+
+export interface TimetableShapeGroup {
+  shapeFingerprint: string;
+  representative: ScoredTimetable;
+  bestFacultyVariant: ScoredTimetable | null;
+  alternatives: ScoredTimetable[];
+  variantCount: number;
 }
 
 export interface SavedSchedule {

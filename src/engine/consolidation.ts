@@ -1,4 +1,4 @@
-import { DAYS, ScoredTimetable, TimeSlot } from "./types";
+import { DAYS, ScoredTimetable, TimeSlot, TimetableShapeGroup } from "./types";
 import { indexSlots } from "./conflict";
 
 export function getTimetableShapeFingerprint(
@@ -76,4 +76,49 @@ export function consolidateSchedulesByShape(
   consolidated.sort((a, b) => b.score - a.score);
 
   return consolidated;
+}
+
+export function groupSchedulesByShape(
+  schedules: ScoredTimetable[],
+  slots: TimeSlot[]
+): TimetableShapeGroup[] {
+  const slotMap = indexSlots(slots);
+  const groups = new Map<string, ScoredTimetable[]>();
+
+  for (const schedule of schedules) {
+    const shape = getTimetableShapeFingerprint(schedule, slotMap);
+    if (!groups.has(shape)) {
+      groups.set(shape, []);
+    }
+    groups.get(shape)!.push(schedule);
+  }
+
+  const result: TimetableShapeGroup[] = [];
+
+  for (const [fingerprint, group] of groups) {
+    group.sort((a, b) => b.score - a.score);
+    const representative = group[0];
+    const alternatives = group.slice(1);
+
+    const repFacultyScore = representative.scoreBreakdown.facultyPreference ?? 0;
+    
+    // Find best faculty variant (must exceed representative by a meaningful threshold, e.g., >10% improvement and >1 absolute score diff)
+    const bestFaculty = group.reduce((best, s) =>
+      (s.scoreBreakdown.facultyPreference ?? 0) > (best.scoreBreakdown.facultyPreference ?? 0) ? s : best
+    , representative);
+
+    const bestFacultyScore = bestFaculty.scoreBreakdown.facultyPreference ?? 0;
+    const isMeaningfulImprovement = bestFacultyScore > repFacultyScore * 1.1 && bestFacultyScore > repFacultyScore + 1;
+
+    result.push({
+      shapeFingerprint: fingerprint,
+      representative,
+      bestFacultyVariant: isMeaningfulImprovement && bestFaculty.id !== representative.id ? bestFaculty : null,
+      alternatives,
+      variantCount: group.length,
+    });
+  }
+
+  result.sort((a, b) => b.representative.score - a.representative.score);
+  return result;
 }

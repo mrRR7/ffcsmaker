@@ -120,6 +120,7 @@ export default function PlannerPage() {
             value={courses.length}
             detail={`${optionCount} professor options`}
             icon={ClipboardCheck}
+            className="bg-canvas shadow-none"
           />
         </motion.div>
         <motion.div variants={fadeUp}>
@@ -128,10 +129,11 @@ export default function PlannerPage() {
             value={generatedSchedules.length}
             detail={generatedSchedules[0] ? `Best score ${generatedSchedules[0].score}` : "No run yet"}
             icon={GitBranch}
+            className="bg-canvas shadow-none"
           />
         </motion.div>
         <motion.div variants={fadeUp} className="flex flex-col h-full">
-          <Card className="h-full">
+          <Card className="h-full bg-canvas shadow-none">
             <CardContent className="p-4 flex flex-col h-full">
               <div className="flex items-center justify-between gap-3">
                 <div>
@@ -157,7 +159,7 @@ export default function PlannerPage() {
                   "mt-3 flex w-full items-center justify-between rounded-md border px-2 py-0.5 text-[12px] font-medium leading-tight transition",
                   usePriorityRanking
                     ? "border-primary/30 bg-primary/10 text-primary"
-                    : "border-hairline bg-surface-card text-ink hover:bg-surface-soft"
+                    : "border-hairline bg-canvas text-ink hover:bg-surface-soft"
                 )}
               >
                 Priority ranking
@@ -205,7 +207,7 @@ export default function PlannerPage() {
         </motion.div>
       ) : null}
 
-      <div className="mb-5 flex flex-wrap gap-2">
+      <div className="mb-5 flex flex-wrap gap-1 rounded-lg border border-hairline bg-canvas/30 p-1">
         {tabs.map((item) => {
           const Icon = item.icon;
           const active = tab === item.id;
@@ -215,10 +217,10 @@ export default function PlannerPage() {
               type="button"
               onClick={() => setTab(item.id)}
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-[12px] font-medium leading-tight transition",
+                "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[12px] font-medium leading-tight transition",
                 active
                   ? "border-primary/30 bg-primary/10 text-primary"
-                  : "border-hairline bg-surface-card text-ink hover:bg-surface-soft"
+                  : "border-transparent bg-transparent text-muted hover:bg-surface-soft/40 hover:text-ink"
               )}
             >
               <Icon className="h-3.5 w-3.5" />

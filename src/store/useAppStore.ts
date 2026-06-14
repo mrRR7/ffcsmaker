@@ -13,9 +13,11 @@ import {
   ScoredTimetable,
   SharedPlannerState,
   TimeSlot,
+  TimetableShapeGroup,
   UiPreferences
 } from "@/engine/types";
 import { FIXED_SLOTS } from "@/engine/slotCatalog";
+import { groupSchedulesByShape } from "@/engine/consolidation";
 
 const courseColors = [
   "#14b8a6",
@@ -47,7 +49,13 @@ export const defaultConstraints: Constraints = {
   avoidDays: [],
   avoidProfessors: [],
   endBeforeByDay: {},
-  preferredProfessors: []
+  preferredProfessors: [],
+  earliestStart: null,
+  latestEnd: null,
+  startAfterByDay: {},
+  latestEndByDay: {},
+  facultyRanking: {},
+  avoidedFacultyByCourse: {}
 };
 
 const defaultUiPreferences: UiPreferences = {
@@ -80,7 +88,13 @@ function normalizeImportedConstraints(constraints?: Partial<Constraints>): Const
         ? Math.round(
             Number((constraints as { maxGapMinutes?: number }).maxGapMinutes) / 55
           )
-        : null)
+        : null),
+    earliestStart: constraints?.earliestStart ?? null,
+    latestEnd: constraints?.latestEnd ?? null,
+    startAfterByDay: constraints?.startAfterByDay ?? {},
+    latestEndByDay: constraints?.latestEndByDay ?? {},
+    facultyRanking: constraints?.facultyRanking ?? {},
+    avoidedFacultyByCourse: constraints?.avoidedFacultyByCourse ?? {}
   };
 }
 
@@ -96,6 +110,7 @@ export interface UniTimeStore {
   courses: Course[];
   constraints: Constraints;
   generatedSchedules: ScoredTimetable[];
+  generatedShapeGroups: TimetableShapeGroup[];
   activeScheduleId: string | null;
   savedSchedules: SavedSchedule[];
   compareScheduleIds: string[];
@@ -146,6 +161,8 @@ export interface UniTimeStore {
   ) => void;
   deleteBlockedWindow: (blockedWindowId: string) => void;
   resetConstraints: () => void;
+  setFacultyRanking: (courseId: string, optionIds: string[]) => void;
+  setAvoidedFaculty: (courseId: string, optionIds: string[]) => void;
   setGeneratedSchedules: (schedules: ScoredTimetable[]) => void;
   setActiveScheduleId: (scheduleId: string | null) => void;
   saveSchedule: (schedule: ScoredTimetable, name?: string) => void;
@@ -161,11 +178,12 @@ export interface UniTimeStore {
 
 export const useAppStore = create<UniTimeStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       slots: defaultSlots,
       courses: [],
       constraints: defaultConstraints,
       generatedSchedules: [],
+      generatedShapeGroups: [],
       activeScheduleId: null,
       savedSchedules: [],
       compareScheduleIds: [],
@@ -238,15 +256,23 @@ export const useAppStore = create<UniTimeStore>()(
           )
         })),
       deleteCourse: (courseId) =>
-        set((state) => ({
-          courses: state.courses.filter((course) => course.id !== courseId),
-          constraints: {
-            ...state.constraints,
-            professorLocks: state.constraints.professorLocks.filter(
-              (lock) => !lock.startsWith(`${courseId}:`)
-            )
-          }
-        })),
+        set((state) => {
+          const newRanking = { ...state.constraints.facultyRanking };
+          const newAvoided = { ...state.constraints.avoidedFacultyByCourse };
+          delete newRanking[courseId];
+          delete newAvoided[courseId];
+          return {
+            courses: state.courses.filter((course) => course.id !== courseId),
+            constraints: {
+              ...state.constraints,
+              professorLocks: state.constraints.professorLocks.filter(
+                (lock) => !lock.startsWith(`${courseId}:`)
+              ),
+              facultyRanking: newRanking,
+              avoidedFacultyByCourse: newAvoided
+            }
+          };
+        }),
       duplicateCourse: (courseId) =>
         set((state) => {
           const course = state.courses.find((item) => item.id === courseId);
@@ -275,11 +301,14 @@ export const useAppStore = create<UniTimeStore>()(
         set((state) => ({
           courses: [],
           generatedSchedules: [],
+          generatedShapeGroups: [],
           activeScheduleId: null,
           compareScheduleIds: [],
           constraints: {
             ...state.constraints,
-            professorLocks: []
+            professorLocks: [],
+            facultyRanking: {},
+            avoidedFacultyByCourse: {}
           }
         })),
       moveCourse: (courseId, direction) =>
@@ -295,19 +324,31 @@ export const useAppStore = create<UniTimeStore>()(
           return { courses };
         }),
       addOption: (courseId, option) =>
-        set((state) => ({
-          courses: state.courses.map((course) =>
-            course.id === courseId
-              ? {
-                  ...course,
-                  options: [
-                    ...course.options,
-                    { ...cleanOption(option as CourseOption), id: nanoid() }
-                  ]
-                }
-              : course
-          )
-        })),
+        set((state) => {
+          const newOptionId = nanoid();
+          const existingRanking = state.constraints.facultyRanking[courseId];
+          const newRanking = { ...state.constraints.facultyRanking };
+          if (existingRanking && existingRanking.length > 0) {
+            newRanking[courseId] = [...existingRanking, newOptionId];
+          }
+          return {
+            courses: state.courses.map((course) =>
+              course.id === courseId
+                ? {
+                    ...course,
+                    options: [
+                      ...course.options,
+                      { ...cleanOption(option as CourseOption), id: newOptionId }
+                    ]
+                  }
+                : course
+            ),
+            constraints: {
+              ...state.constraints,
+              facultyRanking: newRanking
+            }
+          };
+        }),
       updateOption: (courseId, optionId, patch) =>
         set((state) => ({
           courses: state.courses.map((course) =>
@@ -324,22 +365,36 @@ export const useAppStore = create<UniTimeStore>()(
           )
         })),
       deleteOption: (courseId, optionId) =>
-        set((state) => ({
-          courses: state.courses.map((course) =>
-            course.id === courseId
-              ? {
-                  ...course,
-                  options: course.options.filter((option) => option.id !== optionId)
-                }
-              : course
-          ),
-          constraints: {
-            ...state.constraints,
-            professorLocks: state.constraints.professorLocks.filter(
-              (lock) => lock !== `${courseId}:${optionId}`
-            )
+        set((state) => {
+          const existingRanking = state.constraints.facultyRanking[courseId];
+          const newRanking = { ...state.constraints.facultyRanking };
+          if (existingRanking) {
+            newRanking[courseId] = existingRanking.filter((id) => id !== optionId);
           }
-        })),
+          const existingAvoided = state.constraints.avoidedFacultyByCourse[courseId];
+          const newAvoided = { ...state.constraints.avoidedFacultyByCourse };
+          if (existingAvoided) {
+            newAvoided[courseId] = existingAvoided.filter((id) => id !== optionId);
+          }
+          return {
+            courses: state.courses.map((course) =>
+              course.id === courseId
+                ? {
+                    ...course,
+                    options: course.options.filter((option) => option.id !== optionId)
+                  }
+                : course
+            ),
+            constraints: {
+              ...state.constraints,
+              professorLocks: state.constraints.professorLocks.filter(
+                (lock) => lock !== `${courseId}:${optionId}`
+              ),
+              facultyRanking: newRanking,
+              avoidedFacultyByCourse: newAvoided
+            }
+          };
+        }),
       duplicateOption: (courseId, optionId) =>
         set((state) => ({
           courses: state.courses.map((course) => {
@@ -431,12 +486,33 @@ export const useAppStore = create<UniTimeStore>()(
           }
         })),
       resetConstraints: () => set({ constraints: defaultConstraints }),
+      setFacultyRanking: (courseId, optionIds) =>
+        set((state) => ({
+          constraints: {
+            ...state.constraints,
+            facultyRanking: {
+              ...state.constraints.facultyRanking,
+              [courseId]: optionIds
+            }
+          }
+        })),
+      setAvoidedFaculty: (courseId, optionIds) =>
+        set((state) => ({
+          constraints: {
+            ...state.constraints,
+            avoidedFacultyByCourse: {
+              ...state.constraints.avoidedFacultyByCourse,
+              [courseId]: optionIds
+            }
+          }
+        })),
       setGeneratedSchedules: (schedules) =>
-        set({
+        set((state) => ({
           generatedSchedules: schedules,
+          generatedShapeGroups: groupSchedulesByShape(schedules, state.slots),
           activeScheduleId: schedules[0]?.id ?? null,
           compareScheduleIds: schedules.slice(0, 2).map((schedule) => schedule.id)
-        }),
+        })),
       setActiveScheduleId: (scheduleId) => set({ activeScheduleId: scheduleId }),
       saveSchedule: (schedule, name) =>
         set((state) => {
@@ -513,6 +589,7 @@ export const useAppStore = create<UniTimeStore>()(
               ? "Balanced"
               : sharedState.rankingMode,
           generatedSchedules: sharedState.activeSchedule ? [sharedState.activeSchedule] : [],
+          generatedShapeGroups: sharedState.activeSchedule ? groupSchedulesByShape([sharedState.activeSchedule], defaultSlots) : [],
           activeScheduleId: sharedState.activeSchedule?.id ?? null,
           uiPreferences: {
             ...state.uiPreferences,
@@ -526,6 +603,7 @@ export const useAppStore = create<UniTimeStore>()(
           courses: [],
           constraints: defaultConstraints,
           generatedSchedules: [],
+          generatedShapeGroups: [],
           activeScheduleId: null,
           savedSchedules: [],
           compareScheduleIds: [],
@@ -535,7 +613,7 @@ export const useAppStore = create<UniTimeStore>()(
     }),
     {
       name: "unitime-pro-state",
-      version: 2,
+      version: 3,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         courses: state.courses,
@@ -554,6 +632,7 @@ export const useAppStore = create<UniTimeStore>()(
           })),
           constraints: normalizeImportedConstraints(state?.constraints),
           generatedSchedules: [],
+          generatedShapeGroups: [],
           activeScheduleId: null,
           savedSchedules: state?.savedSchedules ?? [],
           compareScheduleIds: [],

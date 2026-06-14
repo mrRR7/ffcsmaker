@@ -17,6 +17,7 @@ import { BlockDetailPanel } from "@/features/results/BlockDetailPanel";
 import { IcalExportDialog } from "@/features/results/IcalExportDialog";
 import { ScheduleBrowser } from "@/features/results/ScheduleBrowser";
 import { SlotMatrixTimetable } from "@/features/results/SlotMatrixTimetable";
+import { VariantSwitcher } from "@/features/results/VariantSwitcher";
 import { buildMatrixCells, MatrixCell } from "@/features/results/timetableMatrix";
 import { ScoredTimetable } from "@/engine/types";
 import { exportElementPng, exportScheduleJson, exportTimetablePdf } from "@/utils/export";
@@ -40,6 +41,7 @@ export default function ResultsPage() {
     (state) => state.uiPreferences.usePriorityRanking
   );
   const generatedSchedules = useAppStore((state) => state.generatedSchedules);
+  const generatedShapeGroups = useAppStore((state) => state.generatedShapeGroups);
   const activeScheduleId = useAppStore((state) => state.activeScheduleId);
   const setActiveScheduleId = useAppStore((state) => state.setActiveScheduleId);
   const saveSchedule = useAppStore((state) => state.saveSchedule);
@@ -47,29 +49,44 @@ export default function ResultsPage() {
   const addCompareSchedule = useAppStore((state) => state.addCompareSchedule);
   const savedSchedules = useAppStore((state) => state.savedSchedules);
 
-  const filteredSchedules = useMemo(() => {
-    return [...generatedSchedules].sort((a, b) => {
+  const filteredGroups = useMemo(() => {
+    return [...generatedShapeGroups].sort((a, b) => {
+      const repA = a.representative;
+      const repB = b.representative;
       if (sortMode === "lowGaps") {
-        return a.metrics.totalGapSlots - b.metrics.totalGapSlots || b.score - a.score;
+        return repA.metrics.totalGapSlots - repB.metrics.totalGapSlots || repB.score - repA.score;
       }
       if (sortMode === "earlyFinish") {
-        return a.metrics.latestEndTime.localeCompare(b.metrics.latestEndTime) || b.score - a.score;
+        return repA.metrics.latestEndTime.localeCompare(repB.metrics.latestEndTime) || repB.score - repA.score;
       }
-      return b.score - a.score;
+      return repB.score - repA.score;
     });
-  }, [generatedSchedules, sortMode]);
+  }, [generatedShapeGroups, sortMode]);
 
-  const activeSchedule =
-    filteredSchedules.find((schedule) => schedule.id === activeScheduleId) ??
-    filteredSchedules[0] ??
-    null;
+  const activeShapeGroup = useMemo(() => {
+    return (
+      filteredGroups.find(
+        (g) =>
+          g.representative.id === activeScheduleId ||
+          g.alternatives.some((alt) => alt.id === activeScheduleId)
+      ) ??
+      filteredGroups[0] ??
+      null
+    );
+  }, [filteredGroups, activeScheduleId]);
+
+  const activeSchedule = useMemo(() => {
+    if (!activeShapeGroup) return null;
+    if (activeShapeGroup.representative.id === activeScheduleId) return activeShapeGroup.representative;
+    return activeShapeGroup.alternatives.find(a => a.id === activeScheduleId) ?? activeShapeGroup.representative;
+  }, [activeShapeGroup, activeScheduleId]);
 
   const activeIndex = useMemo(() => {
-    if (!activeSchedule) {
+    if (!activeShapeGroup) {
       return -1;
     }
-    return filteredSchedules.findIndex((schedule) => schedule.id === activeSchedule.id);
-  }, [activeSchedule, filteredSchedules]);
+    return filteredGroups.findIndex((group) => group.shapeFingerprint === activeShapeGroup.shapeFingerprint);
+  }, [activeShapeGroup, filteredGroups]);
 
   const activeCells = useMemo(
     () => (activeSchedule ? buildMatrixCells(activeSchedule, slots, courses) : null),
@@ -112,7 +129,7 @@ export default function ResultsPage() {
         return;
       }
 
-      if (filteredSchedules.length === 0) {
+      if (filteredGroups.length === 0) {
         return;
       }
 
@@ -120,18 +137,18 @@ export default function ResultsPage() {
 
       if (event.key === "ArrowRight" || event.key === "ArrowDown") {
         event.preventDefault();
-        const nextIndex = Math.min(currentIndex + 1, filteredSchedules.length - 1);
-        setActiveScheduleId(filteredSchedules[nextIndex].id);
+        const nextIndex = Math.min(currentIndex + 1, filteredGroups.length - 1);
+        setActiveScheduleId(filteredGroups[nextIndex].representative.id);
       } else if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
         event.preventDefault();
         const previousIndex = Math.max(currentIndex - 1, 0);
-        setActiveScheduleId(filteredSchedules[previousIndex].id);
+        setActiveScheduleId(filteredGroups[previousIndex].representative.id);
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activeIndex, filteredSchedules, setActiveScheduleId]);
+  }, [activeIndex, filteredGroups, setActiveScheduleId]);
 
   useEffect(() => {
     if (!activeSchedule) {
@@ -232,7 +249,7 @@ export default function ResultsPage() {
     );
   }
 
-  if (filteredSchedules.length === 0) {
+  if (filteredGroups.length === 0) {
     return (
       <div className="space-y-4 pb-20 lg:pb-0">
         <ResultsControlBar
@@ -293,11 +310,20 @@ export default function ResultsPage() {
   return (
     <div className="space-y-4 pb-20 lg:pb-0">
       <ResultsControlBar
-        count={filteredSchedules.length}
+        count={filteredGroups.length}
         sortMode={sortMode}
         onSortModeChange={setSortMode}
         actions={toolbarActions}
       />
+
+      {activeShapeGroup && activeShapeGroup.alternatives.length > 0 && (
+        <VariantSwitcher
+          group={activeShapeGroup}
+          activeScheduleId={activeSchedule!.id}
+          courses={courses}
+          onSelect={selectSchedule}
+        />
+      )}
 
       <ResultDetailView
         snapshot={{

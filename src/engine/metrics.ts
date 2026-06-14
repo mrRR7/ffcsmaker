@@ -106,6 +106,7 @@ export function computeScheduleMetrics(
     eveningClassCount,
     totalClasses: scheduledSlots.length,
     activeDays: activeDays.length,
-    dailyLoadVariance: Number(variance(activeClassCounts).toFixed(2))
+    dailyLoadVariance: Number(variance(activeClassCounts).toFixed(2)),
+    facultyMatchPercentage: 0
   };
 }
