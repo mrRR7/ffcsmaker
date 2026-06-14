@@ -217,13 +217,13 @@ export default function PlannerPage() {
               type="button"
               onClick={() => setTab(item.id)}
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[12px] font-medium leading-tight transition",
+                "inline-flex items-center gap-2 rounded-md border px-4 py-2 text-sm font-medium leading-tight transition",
                 active
                   ? "border-primary/30 bg-primary/10 text-primary"
                   : "border-transparent bg-transparent text-muted hover:bg-surface-soft/40 hover:text-ink"
               )}
             >
-              <Icon className="h-3.5 w-3.5" />
+              <Icon className="h-4 w-4" />
               <span className="sm:hidden">{item.mobileLabel}</span>
               <span className="hidden sm:inline">
                 {item.id === "search" ? `${item.label} *` : item.label}
