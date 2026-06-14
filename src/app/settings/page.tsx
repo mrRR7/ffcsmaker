@@ -32,7 +32,7 @@ export default function SettingsPage() {
       <SectionHeader title="Settings" />
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <Card>
+        <Card className="bg-canvas shadow-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Settings2 className="h-5 w-5 text-primary" />
@@ -114,7 +114,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-canvas shadow-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Download className="h-5 w-5 text-primary" />
@@ -155,7 +155,7 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 bg-canvas shadow-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <RotateCcw className="h-5 w-5 text-destructive" />
