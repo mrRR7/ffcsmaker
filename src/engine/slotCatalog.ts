@@ -1,5 +1,6 @@
 import { DayOfWeek, DAYS, SlotVariant, TimeSlot } from "./types";
 import { AP_DAYS, AP_SLOTS } from "./apSlotCatalog";
+import { BHOPAL_DAYS, BHOPAL_SLOTS } from "./bhopalSlotCatalog";
 
 type SlotRow = [DayOfWeek, string, string, string];
 
@@ -120,8 +121,6 @@ const STANDARD_SLOTS: TimeSlot[] = [
   }))
 ];
 
-const BHOPAL_SLOTS: TimeSlot[] = [];
-
 export const SLOT_CATALOGS: Record<SlotVariant, TimeSlot[]> = {
   standard: STANDARD_SLOTS,
   bhopal: BHOPAL_SLOTS,
@@ -130,7 +129,7 @@ export const SLOT_CATALOGS: Record<SlotVariant, TimeSlot[]> = {
 
 export const SLOT_CATALOG_DAYS: Record<SlotVariant, readonly DayOfWeek[]> = {
   standard: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-  bhopal: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+  bhopal: BHOPAL_DAYS,
   ap: AP_DAYS
 };
 
@@ -152,7 +151,7 @@ export function getSlotDaysForSlots(slots: TimeSlot[]): readonly DayOfWeek[] {
 
 export const SLOT_CATALOG = STANDARD_SLOTS;
 export const FIXED_SLOTS = STANDARD_SLOTS;
-export { AP_DAYS };
+export { AP_DAYS, BHOPAL_DAYS };
 
 const baseLetters = ["A", "B", "C", "D", "E", "F", "G"] as const;
 
@@ -218,7 +217,7 @@ export function getTheoryCombinationOptions(slots: TimeSlot[]): SlotNameOption[]
   }
 
   const specialOptions = Array.from(labels)
-    .filter((label) => label.startsWith("S"))
+    .filter((label) => label.startsWith("S") || /^[A-Z]\d{2}$/.test(label)) // Support Bhopal A11, F24 etc.
     .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
     .map((label) => ({
       label,

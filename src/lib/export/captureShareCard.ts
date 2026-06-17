@@ -1,11 +1,10 @@
 "use client";
 
 import { toPng } from "html-to-image";
-import { SHARE_CARD_DIMENSIONS, ShareCardSize } from "@/engine/types";
+import { SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from "@/features/results/ShareCard";
 
 export async function captureShareCard(
   elementId: string,
-  size: ShareCardSize,
   filename = "ffcs-timetable"
 ) {
   const element = document.getElementById(elementId);
@@ -13,10 +12,9 @@ export async function captureShareCard(
     throw new Error(`Share card element #${elementId} not found`);
   }
 
-  const { width, height } = SHARE_CARD_DIMENSIONS[size];
   const dataUrl = await toPng(element, {
-    width,
-    height,
+    width: SHARE_CARD_WIDTH,
+    height: SHARE_CARD_HEIGHT,
     pixelRatio: 1,
     cacheBust: true,
     skipFonts: false,
@@ -32,24 +30,24 @@ export async function captureShareCard(
   }
 
   const link = document.createElement("a");
-  link.download = `${filename}-${size}.png`;
+  link.download = `${filename}.png`;
   link.href = dataUrl;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
 }
 
-export async function copyShareCardToClipboard(
-  elementId: string,
-  size: ShareCardSize
-) {
+export async function copyShareCardToClipboard(elementId: string) {
   const element = document.getElementById(elementId);
   if (!element) {
     throw new Error("Share card element not found");
   }
 
-  const { width, height } = SHARE_CARD_DIMENSIONS[size];
-  const dataUrl = await toPng(element, { width, height, pixelRatio: 1 });
+  const dataUrl = await toPng(element, {
+    width: SHARE_CARD_WIDTH,
+    height: SHARE_CARD_HEIGHT,
+    pixelRatio: 1
+  });
   const response = await fetch(dataUrl);
   const blob = await response.blob();
 

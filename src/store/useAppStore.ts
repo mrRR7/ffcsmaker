@@ -169,6 +169,7 @@ export interface UniTimeStore {
     optionId: string,
     direction: "up" | "down"
   ) => void;
+  reorderOptions: (courseId: string, newOrderedIds: string[]) => void;
   toggleProfessorLock: (courseId: string, optionId: string) => void;
   setConstraint: <K extends keyof Constraints>(key: K, value: Constraints[K]) => void;
   addBlockedWindow: (blockedWindow: Omit<BlockedWindow, "id">) => void;
@@ -506,6 +507,33 @@ export const useAppStore = create<UniTimeStore>()(
             return { ...course, options };
           })
         })),
+      reorderOptions: (courseId, newOrderedIds) =>
+        set((state) => {
+          const course = state.courses.find((c) => c.id === courseId);
+          if (!course) return state;
+          // Reorder options array to match the new ID order
+          const optionMap = new Map(course.options.map((o) => [o.id, o]));
+          const reordered = newOrderedIds
+            .map((id) => optionMap.get(id))
+            .filter((o): o is CourseOption => Boolean(o));
+          // Sync facultyRanking to the same order so scoreSchedule stays consistent
+          const existingRanking = state.constraints.facultyRanking[courseId];
+          const newRankingOrder = existingRanking
+            ? newOrderedIds.filter((id) => existingRanking.includes(id))
+            : newOrderedIds;
+          return {
+            courses: state.courses.map((c) =>
+              c.id === courseId ? { ...c, options: reordered } : c
+            ),
+            constraints: {
+              ...state.constraints,
+              facultyRanking: {
+                ...state.constraints.facultyRanking,
+                [courseId]: newRankingOrder
+              }
+            }
+          };
+        }),
       toggleProfessorLock: (courseId, optionId) =>
         set((state) => {
           const value = `${courseId}:${optionId}`;
@@ -668,7 +696,9 @@ export const useAppStore = create<UniTimeStore>()(
           const slotVariant = state.campus
             ? CAMPUS_SLOT_VARIANT[state.campus]
             : "standard";
-          const generatedShapeGroups = sharedState.activeSchedule ? groupSchedulesByShape([sharedState.activeSchedule], slots) : [];
+          const generatedShapeGroups = sharedState.activeSchedule
+            ? groupSchedulesByShape([sharedState.activeSchedule], slots)
+            : [];
           return {
             slotVariant,
             slots,
@@ -678,7 +708,9 @@ export const useAppStore = create<UniTimeStore>()(
             })),
             constraints: normalizeImportedConstraints(sharedState.constraints),
             rankingMode: mapLegacyRankingMode(sharedState.rankingMode),
-            generatedSchedules: sharedState.activeSchedule ? [sharedState.activeSchedule] : [],
+            generatedSchedules: sharedState.activeSchedule
+              ? [sharedState.activeSchedule]
+              : [],
             generatedShapeGroups,
             generatedAt: sharedState.activeSchedule ? Date.now() : null,
             activeShapeId: generatedShapeGroups[0]?.shapeId ?? null,
@@ -762,10 +794,18 @@ export const useAppStore = create<UniTimeStore>()(
           generatedSchedules,
           generatedShapeGroups,
           generatedAt: generationIsRecent ? state?.generatedAt ?? null : null,
-          activeShapeId: generationIsRecent ? state?.activeShapeId ?? generatedShapeGroups[0]?.shapeId ?? null : null,
-          activeVariantId: generationIsRecent ? state?.activeVariantId ?? generatedShapeGroups[0]?.representative.id ?? null : null,
+          activeShapeId: generationIsRecent
+            ? state?.activeShapeId ?? generatedShapeGroups[0]?.shapeId ?? null
+            : null,
+          activeVariantId: generationIsRecent
+            ? state?.activeVariantId ??
+              generatedShapeGroups[0]?.representative.id ??
+              null
+            : null,
           savedSchedules: state?.savedSchedules ?? [],
-          compareScheduleIds: generationIsRecent ? state?.compareScheduleIds ?? [] : [],
+          compareScheduleIds: generationIsRecent
+            ? state?.compareScheduleIds ?? []
+            : [],
           rankingMode: mapLegacyRankingMode(state?.rankingMode),
           uiPreferences: {
             ...defaultUiPreferences,

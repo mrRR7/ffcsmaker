@@ -154,7 +154,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 {campusMenuOpen ? (
                   <div className="absolute right-0 mt-2 w-56 rounded-md border border-hairline bg-surface-card p-1 shadow-card">
                     {(Object.keys(CAMPUS_LABELS) as Campus[]).map((option) => {
-                      const available = option === "chennai" || option === "vellore" || option === "ap";
+                      const available = option === "chennai" || option === "vellore" || option === "ap" || option === "bhopal";
                       const active = option === campus;
                       return (
                         <button

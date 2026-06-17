@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { ClipboardList, Plus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -125,17 +124,13 @@ export function PasteImport() {
                   <th className="p-3">Theory</th>
                   <th className="p-3">Lab</th>
                   <th className="p-3">Credits</th>
-                  <th className="p-3">Confidence</th>
                 </tr>
               </thead>
               <tbody>
                 {rows.map((row, index) => (
                   <tr
                     key={`${row.rawLine}-${index}`}
-                    className={cn(
-                      "border-b border-border/60",
-                      row.confidence === "low" && "bg-destructive/10"
-                    )}
+                    className="border-b border-border/60"
                   >
                     <td className="p-3 font-semibold">{row.courseCode ?? "Unknown"}</td>
                     <td className="p-3">{row.courseName ?? "Unknown"}</td>
@@ -143,18 +138,6 @@ export function PasteImport() {
                     <td className="p-3">{row.theorySlotRaw ?? "None"}</td>
                     <td className="p-3">{row.labSlotRaw ?? "None"}</td>
                     <td className="p-3">{row.credits ?? 3}</td>
-                    <td className="p-3">
-                      <div className="flex flex-col gap-1">
-                        <Badge className={confidenceClass(row.confidence)}>
-                          {row.confidence}
-                        </Badge>
-                        {row.errors.length > 0 ? (
-                          <span className="text-xs text-muted-foreground">
-                            {row.errors.join("; ")}
-                          </span>
-                        ) : null}
-                      </div>
-                    </td>
                   </tr>
                 ))}
               </tbody>

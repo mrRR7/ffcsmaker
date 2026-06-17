@@ -1,18 +1,35 @@
 "use client";
 
+import {
+  DndContext,
+  DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useMemo, useState } from "react";
 import { staggerContainer, fadeUp } from "@/utils/motion";
 import toast from "react-hot-toast";
 import {
-  ArrowDown,
-  ArrowUp,
-  Copy,
   ChevronDown,
+  ChevronRight,
+  Copy,
+  GripVertical,
   LockKeyhole,
   Plus,
   Trash2,
-  UserRoundPlus
+  UserRoundPlus,
+  XCircle
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -33,7 +50,6 @@ import {
 import { CourseOption, TimeSlot } from "@/engine/types";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/utils/cn";
-import { FacultyPreferences } from "./FacultyPreferences";
 
 function sameIds(left: string[], right: string[]) {
   return (
@@ -152,7 +168,7 @@ export function CourseBuilder() {
           <div>
             <CardTitle>Courses</CardTitle>
             <CardDescription>
-              Collapse individual courses to scan the list, or clear the planner's
+              Collapse individual courses to scan the list, or clear the planner&apos;s
               course data in one step.
             </CardDescription>
           </div>
@@ -161,10 +177,10 @@ export function CourseBuilder() {
             variant="outline"
             onClick={() => setIsDeleteAllOpen(true)}
             disabled={courses.length === 0}
-            className="border-border text-muted-foreground hover:text-foreground"
+            className="border-border text-muted-foreground hover:text-foreground shrink-0"
           >
             <Trash2 className="h-4 w-4" />
-            Delete All Courses
+            Delete All
           </Button>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -241,6 +257,215 @@ export function CourseBuilder() {
   );
 }
 
+// ─── Sortable option row wrapper ─────────────────────────────────────────────
+
+function SortableOptionRow({
+  optionId,
+  courseId,
+  optionIndex,
+  option,
+  locked,
+  slots,
+  theoryOptions,
+  labOptions,
+  onUpdate,
+  onDelete,
+  onDuplicate,
+  onToggleLock,
+  onToggleAvoided,
+  avoided
+}: {
+  optionId: string;
+  courseId: string;
+  optionIndex: number;
+  option: CourseOption;
+  locked: boolean;
+  slots: TimeSlot[];
+  theoryOptions: SlotNameOption[];
+  labOptions: SlotNameOption[];
+  onUpdate: (patch: Partial<CourseOption>) => void;
+  onDelete: () => void;
+  onDuplicate: () => void;
+  onToggleLock: () => void;
+  onToggleAvoided: () => void;
+  avoided: boolean;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: optionId });
+
+  const [expanded, setExpanded] = useState(false);
+
+  const theoryLabels = getLabelsForSlotIds(slots, option.theorySlotIds);
+  const labLabels = getLabelsForSlotIds(slots, option.labSlotIds);
+
+  const summaryParts: string[] = [];
+  if (theoryLabels.length > 0) summaryParts.push(`Theory: ${theoryLabels.join(", ")}`);
+  if (labLabels.length > 0) summaryParts.push(`Lab: ${labLabels.join(", ")}`);
+  const slotSummary = summaryParts.join(" · ") || "No slots";
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="rounded-md border border-border bg-background/35"
+    >
+      {/* ── Compact summary row ── */}
+      <div className="flex items-center gap-2 px-3 py-2.5">
+        {/* Drag handle */}
+        <button
+          type="button"
+          className="shrink-0 cursor-grab touch-none text-muted-foreground/50 hover:text-muted-foreground active:cursor-grabbing"
+          aria-label="Drag to reorder"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="h-4 w-4" />
+        </button>
+
+        {/* Summary text */}
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="flex min-w-0 flex-1 items-start gap-2 text-left"
+        >
+          <span className="mt-0.5 shrink-0">
+            {expanded ? (
+              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+            ) : (
+              <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+            )}
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+              <span className="text-xs font-semibold text-muted-foreground">
+                #{optionIndex + 1}
+              </span>
+              <span className="truncate text-sm font-medium text-foreground">
+                {option.professorName || <span className="italic text-muted-foreground">Unnamed</span>}
+              </span>
+              {locked && (
+                <span className="inline-flex items-center gap-0.5 rounded-sm border border-primary/25 bg-primary/10 px-1 py-0.5 text-[10px] font-semibold text-primary">
+                  Locked
+                </span>
+              )}
+              {avoided && (
+                <span className="inline-flex items-center gap-0.5 rounded-sm border border-destructive/30 bg-destructive/10 px-1 py-0.5 text-[10px] font-semibold text-destructive">
+                  Avoided
+                </span>
+              )}
+            </span>
+            <span className="mt-0.5 block truncate text-xs text-muted-foreground">
+              {slotSummary}
+            </span>
+          </span>
+        </button>
+
+        {/* Action buttons — always visible */}
+        <div className="flex shrink-0 items-center gap-1">
+          <Button
+            type="button"
+            variant={locked ? "default" : "ghost"}
+            size="icon"
+            className="h-7 w-7"
+            title="Lock professor into generated schedules"
+            onClick={onToggleLock}
+          >
+            <LockKeyhole className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            type="button"
+            variant={avoided ? "destructive" : "ghost"}
+            size="icon"
+            className="h-7 w-7"
+            title={avoided ? "Stop avoiding this professor" : "Avoid this professor"}
+            onClick={onToggleAvoided}
+          >
+            <XCircle className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            title="Duplicate option"
+            onClick={onDuplicate}
+          >
+            <Copy className="h-3.5 w-3.5" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-destructive hover:text-destructive"
+            title="Delete option"
+            onClick={onDelete}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </Button>
+        </div>
+      </div>
+
+      {/* ── Expanded detail section ── */}
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            key="detail"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="overflow-hidden"
+          >
+            <div className="border-t border-border/60 px-3 pb-3 pt-3 space-y-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Professor Name</Label>
+                <Input
+                  value={option.professorName}
+                  onChange={(e) => onUpdate({ professorName: e.target.value })}
+                  className="h-8 text-sm"
+                />
+              </div>
+              <TheoryPicker
+                slots={slots}
+                options={theoryOptions}
+                selected={option.theorySlotIds}
+                onSelect={(slotIds) =>
+                  onUpdate({
+                    theorySlotIds: sameIds(option.theorySlotIds, slotIds) ? [] : slotIds
+                  })
+                }
+              />
+              <LabPicker
+                options={labOptions}
+                selected={option.labSlotIds}
+                onToggle={(slotIds) =>
+                  onUpdate({ labSlotIds: toggleIds(option.labSlotIds, slotIds) })
+                }
+              />
+              {option.notes !== undefined && (
+                <Textarea
+                  value={option.notes}
+                  onChange={(e) => onUpdate({ notes: e.target.value })}
+                  className="text-sm"
+                  placeholder="Notes (optional)"
+                />
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ─── Course Card ──────────────────────────────────────────────────────────────
+
 function CourseCard({
   courseId,
   index,
@@ -263,8 +488,9 @@ function CourseCard({
   const updateOption = useAppStore((state) => state.updateOption);
   const deleteOption = useAppStore((state) => state.deleteOption);
   const duplicateOption = useAppStore((state) => state.duplicateOption);
-  const moveOption = useAppStore((state) => state.moveOption);
   const toggleProfessorLock = useAppStore((state) => state.toggleProfessorLock);
+  const setAvoidedFaculty = useAppStore((state) => state.setAvoidedFaculty);
+  const reorderOptions = useAppStore((state) => state.reorderOptions);
   const course = courses.find((item) => item.id === courseId);
   const theoryOptions = useMemo(() => getTheoryCombinationOptions(slots), [slots]);
   const labOptions = useMemo(() => getLabPairOptions(slots), [slots]);
@@ -276,6 +502,11 @@ function CourseCard({
     notes: ""
   });
 
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
+
   if (!course) {
     return null;
   }
@@ -283,6 +514,22 @@ function CourseCard({
   const lockedOptionCount = course.options.filter((option) =>
     constraints.professorLocks.includes(`${course.id}:${option.id}`)
   ).length;
+
+  const avoided = constraints.avoidedFacultyByCourse[courseId] || [];
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = course!.options.findIndex((o) => o.id === active.id);
+    const newIndex = course!.options.findIndex((o) => o.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newOrder = [...course!.options.map((o) => o.id)];
+    const [moved] = newOrder.splice(oldIndex, 1);
+    newOrder.splice(newIndex, 0, moved);
+    reorderOptions(courseId, newOrder);
+  }
 
   function submitOption() {
     if (!draft.professorName.trim()) {
@@ -318,7 +565,7 @@ function CourseCard({
             className="flex flex-1 items-start gap-3 rounded-lg text-left transition hover:bg-secondary/40"
           >
             <span
-              className="mt-1.5 h-3 w-3 rounded-full border border-border shadow-sm"
+              className="mt-1.5 h-3 w-3 shrink-0 rounded-full border border-border shadow-sm"
               style={{ backgroundColor: course.color ?? "#14b8a6" }}
             />
             <div className="min-w-0 flex-1">
@@ -327,13 +574,12 @@ function CourseCard({
                   {course.courseCode || "Untitled course"}
                 </p>
                 <Badge>{course.credits} credits</Badge>
-                <Badge>{course.options.length} professors</Badge>
+                <Badge>{course.options.length} prof{course.options.length !== 1 ? "s" : ""}</Badge>
                 {lockedOptionCount > 0 ? (
                   <Badge className="border-primary/25 bg-primary/10 text-primary">
                     {lockedOptionCount} locked
                   </Badge>
                 ) : null}
-                <Badge>Priority {index + 1}</Badge>
               </div>
               <p className="mt-1 truncate text-sm text-muted-foreground">
                 {course.courseName}
@@ -368,6 +614,7 @@ function CourseCard({
             transition={{ duration: 0.2, ease: "easeOut" }}
           >
             <CardContent className="space-y-5">
+              {/* Course edit row */}
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div className="grid flex-1 gap-3 sm:grid-cols-[140px_minmax(0,1fr)_96px_64px]">
                   <Input
@@ -408,24 +655,6 @@ function CourseCard({
                     type="button"
                     variant="outline"
                     size="icon"
-                    title="Move up"
-                    onClick={() => moveCourse(course.id, "up")}
-                  >
-                    <ArrowUp className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    title="Move down"
-                    onClick={() => moveCourse(course.id, "down")}
-                  >
-                    <ArrowDown className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
                     title="Duplicate course"
                     onClick={() => duplicateCourse(course.id)}
                   >
@@ -442,117 +671,70 @@ function CourseCard({
                   </Button>
                 </div>
               </div>
-              <div className="grid gap-3 lg:grid-cols-2">
-                {course.options.map((option, optionIndex) => {
-                  const lockValue = `${course.id}:${option.id}`;
-                  const locked = constraints.professorLocks.includes(lockValue);
-                  return (
-                    <div
-                      key={option.id}
-                      className="rounded-md border border-border bg-background/35 p-4"
-                    >
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="flex-1 space-y-2">
-                          <Label>Professor</Label>
-                          <Input
-                            value={option.professorName}
-                            onChange={(event) =>
-                              updateOption(course.id, option.id, {
-                                professorName: event.target.value
-                              })
-                            }
-                          />
-                        </div>
-                        <div className="flex flex-wrap gap-2">
-                          <Button
-                            type="button"
-                            variant={locked ? "default" : "outline"}
-                            size="icon"
-                            title="Lock professor into generated schedules"
-                            onClick={() => toggleProfessorLock(course.id, option.id)}
-                          >
-                            <LockKeyhole className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            title="Move option up"
-                            onClick={() => moveOption(course.id, option.id, "up")}
-                          >
-                            <ArrowUp className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            title="Move option down"
-                            onClick={() => moveOption(course.id, option.id, "down")}
-                          >
-                            <ArrowDown className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            title="Duplicate option"
-                            onClick={() => duplicateOption(course.id, option.id)}
-                          >
-                            <Copy className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="icon"
-                            title="Delete option"
-                            onClick={() => deleteOption(course.id, option.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <Badge>Option {optionIndex + 1}</Badge>
-                        {locked ? (
-                          <Badge className="border-primary/25 bg-primary/10 text-primary">
-                            Locked
-                          </Badge>
-                        ) : null}
-                        {getLabelsForSlotIds(slots, option.theorySlotIds).map((label) => (
-                          <Badge key={label}>Theory {label}</Badge>
-                        ))}
-                        {getLabelsForSlotIds(slots, option.labSlotIds).map((label) => (
-                          <Badge key={label}>Lab {label}</Badge>
-                        ))}
-                      </div>
-                      <div className="mt-3 space-y-3">
-                        <TheoryPicker
-                          slots={slots}
-                          options={theoryOptions}
-                          selected={option.theorySlotIds}
-                          onSelect={(slotIds) =>
-                            updateOption(course.id, option.id, {
-                              theorySlotIds: sameIds(option.theorySlotIds, slotIds)
-                                ? []
-                                : slotIds
-                            })
-                          }
-                        />
-                        <LabPicker
-                          options={labOptions}
-                          selected={option.labSlotIds}
-                          onToggle={(slotIds) =>
-                            updateOption(course.id, option.id, {
-                              labSlotIds: toggleIds(option.labSlotIds, slotIds)
-                            })
-                          }
-                        />
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
 
+              {/* Professor options — drag-and-drop list */}
+              {course.options.length > 0 && (
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Professors
+                    <span className="ml-2 font-normal normal-case text-muted-foreground/60">
+                      drag to reorder preference
+                    </span>
+                  </p>
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={course.options.map((o) => o.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <div className="space-y-2">
+                        {course.options.map((option, optionIndex) => {
+                          const lockValue = `${course.id}:${option.id}`;
+                          const locked = constraints.professorLocks.includes(lockValue);
+                          const isAvoided = avoided.includes(option.id);
+                          return (
+                            <SortableOptionRow
+                              key={option.id}
+                              optionId={option.id}
+                              courseId={course.id}
+                              optionIndex={optionIndex}
+                              option={option}
+                              locked={locked}
+                              slots={slots}
+                              theoryOptions={theoryOptions}
+                              labOptions={labOptions}
+                              avoided={isAvoided}
+                              onUpdate={(patch) =>
+                                updateOption(course.id, option.id, patch)
+                              }
+                              onDelete={() => deleteOption(course.id, option.id)}
+                              onDuplicate={() => duplicateOption(course.id, option.id)}
+                              onToggleLock={() =>
+                                toggleProfessorLock(course.id, option.id)
+                              }
+                              onToggleAvoided={() => {
+                                if (isAvoided) {
+                                  setAvoidedFaculty(
+                                    courseId,
+                                    avoided.filter((id) => id !== option.id)
+                                  );
+                                } else {
+                                  setAvoidedFaculty(courseId, [...avoided, option.id]);
+                                }
+                              }}
+                            />
+                          );
+                        })}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                </div>
+              )}
+
+              {/* Add professor option form */}
               <div className="rounded-md border border-dashed border-primary/40 bg-primary/5 p-4">
                 <div className="mb-3 flex items-center gap-2">
                   <UserRoundPlus className="h-4 w-4 text-primary" />
@@ -560,6 +742,7 @@ function CourseCard({
                 </div>
                 <Input
                   value={draft.professorName}
+                  placeholder="Professor name"
                   onChange={(event) =>
                     setDraft((current) => ({
                       ...current,
@@ -594,6 +777,7 @@ function CourseCard({
                 </div>
                 <Textarea
                   className="mt-3"
+                  placeholder="Notes (optional)"
                   value={draft.notes}
                   onChange={(event) =>
                     setDraft((current) => ({ ...current, notes: event.target.value }))
@@ -604,10 +788,6 @@ function CourseCard({
                   Add Option
                 </Button>
               </div>
-
-              {course.options.length >= 2 ? (
-                <FacultyPreferences courseId={course.id} />
-              ) : null}
             </CardContent>
           </motion.div>
         ) : null}
@@ -615,6 +795,8 @@ function CourseCard({
     </Card>
   );
 }
+
+// ─── Theory Picker ────────────────────────────────────────────────────────────
 
 function TheoryPicker({
   slots,
@@ -658,6 +840,8 @@ function TheoryPicker({
     </div>
   );
 }
+
+// ─── Lab Picker ───────────────────────────────────────────────────────────────
 
 function LabPicker({
   options,

@@ -13,7 +13,7 @@ const campusOptions: Array<{
 }> = [
   { campus: "chennai", active: true, detail: "Standard FFCS slots" },
   { campus: "vellore", active: true, detail: "Standard FFCS slots" },
-  { campus: "bhopal", active: false, detail: "Coming soon" },
+  { campus: "bhopal", active: true, detail: "Bhopal slot catalog" },
   { campus: "ap", active: false, detail: "AP slot catalog" }
 ];
 

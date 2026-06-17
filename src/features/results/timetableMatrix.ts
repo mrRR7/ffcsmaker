@@ -104,15 +104,37 @@ function addLunchColumn(columns: MatrixColumn[]) {
 }
 
 function buildTheoryColumns(slots: TimeSlot[]): MatrixColumn[] {
-  return addLunchColumn(
-    getTimeBands(slots, "theory").map((slot) => ({
-      kind: "slot" as const,
-      track: "THEORY" as const,
-      slotLabel: slot.label,
-      startTime: slot.startTime,
-      endTime: slot.endTime
-    }))
+  const columns: MatrixColumn[] = getTimeBands(slots, "theory").map((slot) => ({
+    kind: "slot",
+    track: "THEORY",
+    slotLabel: slot.label,
+    startTime: slot.startTime,
+    endTime: slot.endTime
+  }));
+
+  const isBhopal = columns.some(
+    (column) => /^[A-F]\d{2}$/.test(column.slotLabel ?? "")
   );
+
+  if (isBhopal) {
+    const lunchIndex = columns.findIndex(
+      (column) => column.startTime === "13:15"
+    );
+
+    if (
+      lunchIndex >= 0 &&
+      !columns.some((column) => column.kind === "lunch")
+    ) {
+      columns.splice(lunchIndex, 0, {
+        kind: "lunch",
+        track: "THEORY"
+      });
+    }
+
+    return columns;
+  }
+
+  return addLunchColumn(columns);
 }
 
 function buildLabColumns(slots: TimeSlot[]): MatrixColumn[] {

@@ -14,7 +14,7 @@ const COURSE_CODE_RE = /\b([A-Z]{2,4}\d{2,4}[A-Z]?)\b/i;
 const CREDIT_RE = /\b([1-9])\s*(?:cr|credit|credits)?\b/i;
 const LAB_RE = /\bL\d{1,2}(?:\s*\+\s*L\d{1,2})*\b/gi;
 const THEORY_RE =
-  /\b(?:T?[A-G]{1,2}[1-9]|S\d{1,2})(?:\s*\+\s*(?:T?[A-G]{1,2}[1-9]|S\d{1,2}))*\b/gi;
+  /\b(?:T?[A-G]{1,2}\d{1,2}|S\d{1,2})(?:\s*\+\s*(?:T?[A-G]{1,2}\d{1,2}|S\d{1,2}))*\b/gi;
 const LAB_TEST_RE = /\bL\d{1,2}(?:\s*\+\s*L\d{1,2})*\b/i;
 const THEORY_TEST_RE =
   /\b(?:T?[A-G]{1,2}[1-9]|S\d{1,2})(?:\s*\+\s*(?:T?[A-G]{1,2}[1-9]|S\d{1,2}))*\b/i;
