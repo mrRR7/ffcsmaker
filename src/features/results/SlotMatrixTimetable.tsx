@@ -4,7 +4,7 @@ import { useMemo, Fragment } from "react";
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Course, DAYS, ScoredTimetable, TimeSlot } from "@/engine/types";
+import { Course, ScoredTimetable, TimeSlot } from "@/engine/types";
 import { cn } from "@/utils/cn";
 import { buildMatrixCells, buildMatrixColumns, MatrixCell } from "./timetableMatrix";
 
@@ -29,6 +29,10 @@ export function SlotMatrixTimetable({
   }, [schedule, slots, courses]);
 
   const columns = useMemo(() => buildMatrixColumns(slots), [slots]);
+  const days = useMemo(
+  () => [...new Set(slots.map((slot) => slot.day))],
+  [slots]
+);
   const totalCredits = schedule?.selections.reduce((sum, selection) => sum + selection.credits, 0) ?? 0;
 
   if (!schedule || !matrix) {
@@ -148,7 +152,7 @@ export function SlotMatrixTimetable({
               </tr>
             </thead>
             <tbody>
-              {DAYS.map((day, dayIndex) => (
+              {days.map((day, dayIndex) => (
                 <Fragment key={day}>
                   {/* THEORY ROW */}
                   <tr>
@@ -200,7 +204,7 @@ export function SlotMatrixTimetable({
                     <td className="border border-border/60 bg-secondary/10 px-1 py-1 text-[9px] font-semibold uppercase tracking-wider text-muted-foreground/60">
                       LAB
                     </td>
-                    {matrix.lab[dayIndex].map((cell, i) => {
+                    {(matrix.lab[dayIndex] ?? []).map((cell, i) => {
                       const isLunch = cell.slotLabel === "Lunch";
                       const isActive = activeCellId === cell.id;
                       const isMatched = Boolean(highlightCourseCode && cell.courseCode === highlightCourseCode);

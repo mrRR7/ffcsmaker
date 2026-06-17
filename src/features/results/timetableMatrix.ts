@@ -1,18 +1,18 @@
-import { Course, ScoredTimetable, TimeSlot, TimetableSelection } from "@/engine/types";
-import { DayOfWeek, DAYS } from "@/engine/types";
+import { Course, DayOfWeek, ScoredTimetable, TimeSlot, TimetableSelection } from "@/engine/types";
 import { formatMinutes, parseTime } from "@/engine/conflict";
+import { getSlotDaysForSlots } from "@/engine/slotCatalog";
 
 export type MatrixTrack = "THEORY" | "LAB";
 
 export type MatrixColumn = {
   kind: "slot" | "lunch";
   track: MatrixTrack;
-  slotIndex?: number;
-  slotIndexByDay?: Partial<Record<DayOfWeek, number | null>>;
   partIndex?: number;
   slotLabel?: string;
   startTime?: string;
   endTime?: string;
+  sourceStartTime?: string;
+  sourceEndTime?: string;
 };
 
 export type MatrixCell = {
@@ -51,160 +51,133 @@ export type CourseSummaryRow = {
 };
 
 function sortSlots(slots: TimeSlot[]) {
-  return [...slots].sort((a, b) => parseTime(a.startTime) - parseTime(b.startTime));
+  return [...slots].sort((a, b) => {
+    const startDiff = parseTime(a.startTime) - parseTime(b.startTime);
+    return startDiff || parseTime(a.endTime) - parseTime(b.endTime);
+  });
 }
 
 function getDaySlots(slots: TimeSlot[], day: DayOfWeek, kind: "theory" | "lab") {
   return sortSlots(slots.filter((slot) => slot.day === day && slot.kind === kind));
 }
 
-function buildColumns(slots: TimeSlot[], kind: "theory" | "lab"): MatrixColumn[] {
-  const templateDay = DAYS[0];
-  const templateSlots = getDaySlots(slots, templateDay, kind);
+function getTimeBands(slots: TimeSlot[], kind: "theory" | "lab") {
+  return Array.from(
+    new Map(
+      sortSlots(slots.filter((slot) => slot.kind === kind)).map((slot) => [
+        `${slot.startTime}-${slot.endTime}`,
+        slot
+      ])
+    ).values()
+  );
+}
 
-  if (kind === "theory") {
-    const morning = templateSlots.slice(0, 5);
-    const preLunchSpecial = templateSlots[5];
-    const afternoon = templateSlots.slice(6, 11);
-    const finalSpecial = templateSlots[11];
-
-    return [
-      ...morning.map((slot, slotIndex) => ({
-        kind: "slot" as const,
-        track: "THEORY" as MatrixTrack,
-        slotIndexByDay: {
-          Monday: slotIndex,
-          Tuesday: slotIndex,
-          Wednesday: slotIndex,
-          Thursday: slotIndex,
-          Friday: slotIndex
-        },
-        slotLabel: slot.label,
-        startTime: slot.startTime,
-        endTime: slot.endTime
-      })),
-      {
-        kind: "slot" as const,
-        track: "THEORY" as MatrixTrack,
-        slotIndexByDay: {
-          Monday: 5,
-          Tuesday: null,
-          Wednesday: null,
-          Thursday: null,
-          Friday: 5
-        },
-        slotLabel: preLunchSpecial?.label ?? "",
-        startTime: preLunchSpecial?.startTime ?? "",
-        endTime: preLunchSpecial?.endTime ?? ""
-      },
-      {
-        kind: "lunch" as const,
-        track: "THEORY" as MatrixTrack
-      },
-      ...afternoon.map((slot, offset) => ({
-        kind: "slot" as const,
-        track: "THEORY" as MatrixTrack,
-        slotIndexByDay: {
-          Monday: 6 + offset,
-          Tuesday: 5 + offset,
-          Wednesday: 5 + offset,
-          Thursday: 5 + offset,
-          Friday: 6 + offset
-        },
-        slotLabel: slot.label,
-        startTime: slot.startTime,
-        endTime: slot.endTime
-      })),
-      {
-        kind: "slot" as const,
-        track: "THEORY" as MatrixTrack,
-        slotIndexByDay: {
-          Monday: 11,
-          Tuesday: 10,
-          Wednesday: 10,
-          Thursday: 10,
-          Friday: null
-        },
-        slotLabel: finalSpecial?.label ?? "",
-        startTime: finalSpecial?.startTime ?? "",
-        endTime: finalSpecial?.endTime ?? ""
-      }
-    ];
+function addLunchColumn(columns: MatrixColumn[]) {
+  if (columns.length < 2) {
+    return columns;
   }
 
-  const morning = templateSlots.slice(0, 3);
-  const afternoon = templateSlots.slice(3, 6);
+  let largestGap = 0;
+  let insertAfter = -1;
+  for (let index = 0; index < columns.length - 1; index += 1) {
+    const currentEnd = columns[index].sourceEndTime ?? columns[index].endTime;
+    const nextStart = columns[index + 1].sourceStartTime ?? columns[index + 1].startTime;
+    if (!currentEnd || !nextStart) {
+      continue;
+    }
+    const gap = parseTime(nextStart) - parseTime(currentEnd);
+    if (gap > largestGap) {
+      largestGap = gap;
+      insertAfter = index;
+    }
+  }
+
+  if (largestGap < 25 || insertAfter < 0) {
+    return columns;
+  }
 
   return [
-    ...morning.map((slot, slotIndex) => ({
+    ...columns.slice(0, insertAfter + 1),
+    { kind: "lunch" as const, track: columns[0].track },
+    ...columns.slice(insertAfter + 1)
+  ];
+}
+
+function buildTheoryColumns(slots: TimeSlot[]): MatrixColumn[] {
+  return addLunchColumn(
+    getTimeBands(slots, "theory").map((slot) => ({
       kind: "slot" as const,
-      track: "LAB" as MatrixTrack,
-      slotIndex,
-      slotLabel: slot.label,
-      startTime: slot.startTime,
-      endTime: slot.endTime
-    })),
-    {
-      kind: "lunch" as const,
-      track: "LAB" as MatrixTrack
-    },
-    ...afternoon.map((slot, offset) => ({
-      kind: "slot" as const,
-      track: "LAB" as MatrixTrack,
-      slotIndex: 6 + offset,
+      track: "THEORY" as const,
       slotLabel: slot.label,
       startTime: slot.startTime,
       endTime: slot.endTime
     }))
-  ];
+  );
 }
 
 function buildLabColumns(slots: TimeSlot[]): MatrixColumn[] {
-  const templateSlots = getDaySlots(slots, DAYS[0], "lab");
-  const buildPairColumns = (labSlots: TimeSlot[], offset: number) =>
-    labSlots.flatMap((slot, index) => {
-      const labels = slot.label.split("+").map((label) => label.trim());
-      const midpoint = formatMinutes(
-        parseTime(slot.startTime) + (parseTime(slot.endTime) - parseTime(slot.startTime)) / 2
-      );
+  const columns = getTimeBands(slots, "lab").flatMap((slot) => {
+    const labels = slot.label.split("+").map((label) => label.trim());
+    const midpoint = formatMinutes(
+      parseTime(slot.startTime) +
+        (parseTime(slot.endTime) - parseTime(slot.startTime)) / 2
+    );
 
-      return [
-        {
-          kind: "slot" as const,
-          track: "LAB" as const,
-          slotIndex: offset + index,
-          partIndex: 0,
-          slotLabel: labels[0] ?? slot.label,
-          startTime: slot.startTime,
-          endTime: midpoint
-        },
-        {
-          kind: "slot" as const,
-          track: "LAB" as const,
-          slotIndex: offset + index,
-          partIndex: 1,
-          slotLabel: labels[1] ?? slot.label,
-          startTime: midpoint,
-          endTime: slot.endTime
-        }
-      ];
-    });
+    return [
+      {
+        kind: "slot" as const,
+        track: "LAB" as const,
+        partIndex: 0,
+        slotLabel: labels[0] ?? slot.label,
+        startTime: slot.startTime,
+        endTime: midpoint,
+        sourceStartTime: slot.startTime,
+        sourceEndTime: slot.endTime
+      },
+      {
+        kind: "slot" as const,
+        track: "LAB" as const,
+        partIndex: 1,
+        slotLabel: labels[1] ?? slot.label,
+        startTime: midpoint,
+        endTime: slot.endTime,
+        sourceStartTime: slot.startTime,
+        sourceEndTime: slot.endTime
+      }
+    ];
+  });
 
-  const morning = templateSlots.slice(0, 3);
-  const afternoon = templateSlots.slice(3, 6);
-
-  return [
-    ...buildPairColumns(morning, 0),
-    { kind: "lunch", track: "LAB" },
-    ...buildPairColumns(afternoon, 3)
-  ];
+  return addLunchColumn(columns);
 }
 
 export function buildMatrixColumns(slots: TimeSlot[]) {
   return {
-    theory: buildColumns(slots, "theory"),
+    theory: buildTheoryColumns(slots),
     lab: buildLabColumns(slots)
   };
+}
+
+function formatSlotGroups(slotIds: string[], slotMap: Map<string, TimeSlot>) {
+  const groups = new Map<string, TimeSlot[]>();
+  const days = getSlotDaysForSlots(Array.from(slotMap.values()));
+  for (const slotId of slotIds) {
+    const slot = slotMap.get(slotId);
+    if (!slot) {
+      continue;
+    }
+    groups.set(slot.label, [...(groups.get(slot.label) ?? []), slot]);
+  }
+
+  return Array.from(groups.entries()).map(([label, group]) => {
+    const details = [...group]
+      .sort((a, b) => {
+        const dayDiff = days.indexOf(a.day) - days.indexOf(b.day);
+        return dayDiff || parseTime(a.startTime) - parseTime(b.startTime);
+      })
+      .map((slot) => `${slot.day} ${slot.startTime}-${slot.endTime}`)
+      .join("; ");
+    return `${label} (${details})`;
+  });
 }
 
 export function buildCourseSummaryRows(
@@ -223,16 +196,6 @@ export function buildCourseSummaryRows(
           ? "Lab"
           : "Theory";
 
-    const theorySlots = selection.theorySlotIds
-      .map((slotId) => slotMap.get(slotId))
-      .filter((slot): slot is TimeSlot => Boolean(slot))
-      .map((slot) => `${slot.label} ${slot.startTime}-${slot.endTime}`);
-
-    const labSlots = selection.labSlotIds
-      .map((slotId) => slotMap.get(slotId))
-      .filter((slot): slot is TimeSlot => Boolean(slot))
-      .map((slot) => `${slot.label} ${slot.startTime}-${slot.endTime}`);
-
     return {
       courseId: selection.courseId,
       courseCode: selection.courseCode,
@@ -240,9 +203,13 @@ export function buildCourseSummaryRows(
       professorName: selection.professorName,
       credits: selection.credits,
       typeLabel,
-      theorySlots,
-      labSlots,
-      slotIds: [...selection.theorySlotIds, ...selection.labSlotIds, ...selection.combinedSlotIds],
+      theorySlots: formatSlotGroups(selection.theorySlotIds, slotMap),
+      labSlots: formatSlotGroups(selection.labSlotIds, slotMap),
+      slotIds: [
+        ...selection.theorySlotIds,
+        ...selection.labSlotIds,
+        ...selection.combinedSlotIds
+      ],
       color: course?.color ?? "#14b8a6",
       notes: course?.options.find((option) => option.id === selection.optionId)?.notes
     };
@@ -254,13 +221,23 @@ export function buildMatrixCells(
   slots: TimeSlot[],
   courses: Course[]
 ): { theory: MatrixCell[][]; lab: MatrixCell[][] } {
-  const slotMap = new Map(slots.map((slot) => [slot.id, slot]));
   const courseMap = new Map(courses.map((course) => [course.id, course]));
-  const theoryColumns = buildColumns(slots, "theory");
-  const labColumns = buildLabColumns(slots);
+  const days = getSlotDaysForSlots(slots);
+  const { theory: theoryColumns, lab: labColumns } = buildMatrixColumns(slots);
+
+  function selectionForSlot(slot: TimeSlot | null, track: MatrixTrack) {
+    if (!slot) {
+      return undefined;
+    }
+    return schedule.selections.find((item) =>
+      track === "LAB"
+        ? item.labSlotIds.includes(slot.id)
+        : item.theorySlotIds.includes(slot.id) || item.combinedSlotIds.includes(slot.id)
+    );
+  }
 
   function buildRows(track: MatrixTrack, columns: MatrixColumn[]) {
-    return DAYS.map((day) => {
+    return days.map((day) => {
       const daySlots = getDaySlots(slots, day, track === "THEORY" ? "theory" : "lab");
       return columns.map((column) => {
         if (column.kind === "lunch") {
@@ -279,79 +256,49 @@ export function buildMatrixCells(
             courseName: null,
             professorName: null,
             credits: null,
-            color: track === "THEORY" ? "#cbd5e1" : "#cbd5e1",
+            color: "#cbd5e1",
             typeLabel: null
           } satisfies MatrixCell;
         }
 
-        if (track === "LAB") {
-          const slot = daySlots[column.slotIndex ?? 0] ?? null;
-          const selection = slot
-            ? schedule.selections.find((item) => item.labSlotIds.includes(slot.id))
-            : undefined;
-          const course = selection ? courseMap.get(selection.courseId) : undefined;
-
-          const slotLabels = slot ? slot.label.split("+").map((label) => label.trim()) : [];
-          const partIndex = column.partIndex ?? 0;
-          const individualLabel = slotLabels[partIndex] ?? column.slotLabel ?? slot?.label ?? "";
-
-          return {
-            id: slot ? `${slot.id}-p${partIndex}` : `${day}-${track}-${column.slotIndex ?? 0}-p${partIndex}`,
-            day,
-            track,
-            slot,
-            occupied: Boolean(selection && slot),
-            slotLabel: individualLabel,
-            startTime: column.startTime ?? slot?.startTime ?? "",
-            endTime: column.endTime ?? slot?.endTime ?? "",
-            slotIds: selection
-              ? [...selection.theorySlotIds, ...selection.labSlotIds, ...selection.combinedSlotIds]
-              : slot
-                ? [slot.id]
-                : [],
-            courseId: selection?.courseId ?? null,
-            courseCode: selection?.courseCode ?? null,
-            courseName: selection?.courseName ?? null,
-            professorName: selection?.professorName ?? null,
-            credits: selection?.credits ?? null,
-            color: course?.color ?? "#3b82f6",
-            typeLabel:
-              selection?.theorySlotIds.length && selection?.labSlotIds.length
-                ? "Both"
-                : selection?.labSlotIds.length
-                  ? "Lab"
-                  : selection?.theorySlotIds.length
-                    ? "Theory"
-                    : null,
-            notes: selection
-              ? course?.options.find((option) => option.id === selection.optionId)?.notes
-              : undefined,
-            selection
-          } satisfies MatrixCell;
-        }
-
-        const slotIndex = column.slotIndexByDay?.[day] ?? column.slotIndex ?? null;
-        const slot = slotIndex === null || slotIndex === undefined ? null : daySlots[slotIndex] ?? null;
-        const selection = slot
-          ? schedule.selections.find(
-              (item) =>
-                item.theorySlotIds.includes(slot.id) ||
-                item.combinedSlotIds.includes(slot.id)
-            )
-          : undefined;
+        const slot =
+          track === "LAB"
+            ? daySlots.find(
+                (candidate) =>
+                  candidate.startTime === column.sourceStartTime &&
+                  candidate.endTime === column.sourceEndTime
+              ) ?? null
+            : daySlots.find(
+                (candidate) =>
+                  candidate.startTime === column.startTime &&
+                  candidate.endTime === column.endTime
+              ) ?? null;
+        const selection = selectionForSlot(slot, track);
         const course = selection ? courseMap.get(selection.courseId) : undefined;
+        const slotLabels = slot ? slot.label.split("+").map((label) => label.trim()) : [];
+        const partIndex = column.partIndex ?? 0;
+        const individualLabel =
+          track === "LAB"
+            ? slotLabels[partIndex] ?? column.slotLabel ?? slot?.label ?? ""
+            : slot?.label ?? "";
 
         return {
-          id: slot?.id ?? `${day}-${track}-${column.slotIndex ?? 0}`,
+          id: slot
+            ? `${slot.id}${track === "LAB" ? `-p${partIndex}` : ""}`
+            : `${day}-${track}-${column.startTime ?? "empty"}-${partIndex}`,
           day,
           track,
           slot,
           occupied: Boolean(selection && slot),
-          slotLabel: slot?.label ?? "",
-          startTime: slot?.startTime ?? "",
-          endTime: slot?.endTime ?? "",
+          slotLabel: individualLabel,
+          startTime: column.startTime ?? slot?.startTime ?? "",
+          endTime: column.endTime ?? slot?.endTime ?? "",
           slotIds: selection
-            ? [...selection.theorySlotIds, ...selection.labSlotIds, ...selection.combinedSlotIds]
+            ? [
+                ...selection.theorySlotIds,
+                ...selection.labSlotIds,
+                ...selection.combinedSlotIds
+              ]
             : slot
               ? [slot.id]
               : [],

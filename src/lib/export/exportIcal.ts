@@ -5,7 +5,8 @@ const DAY_TO_ICAL: Record<DayOfWeek, string> = {
   Tuesday: "TU",
   Wednesday: "WE",
   Thursday: "TH",
-  Friday: "FR"
+  Friday: "FR",
+  Saturday: "SA"
 };
 
 export function exportTimetableIcal(

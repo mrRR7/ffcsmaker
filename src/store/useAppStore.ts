@@ -11,17 +11,19 @@ import {
   Constraints,
   Course,
   CourseOption,
+  DayOfWeek,
   RankingMode,
   SavedSchedule,
   ScoredTimetable,
   SharedPlannerState,
+  SlotVariant,
   TimeSlot,
   TimetableShapeGroup,
   UiPreferences
 } from "@/engine/types";
 import { clearCampusCache } from "@/lib/catalogCache";
 import { checkStorageCapacity } from "@/lib/storageUtils";
-import { getSlotCatalog } from "@/engine/slotCatalog";
+import { getSlotCatalog, getSlotDays } from "@/engine/slotCatalog";
 import { groupSchedulesByShape } from "@/engine/consolidation";
 import { mapLegacyRankingMode } from "@/engine/ranking";
 
@@ -118,6 +120,7 @@ export interface UniTimeStore {
   courses: Course[];
   constraints: Constraints;
   campus: Campus | null;
+  slotVariant: SlotVariant;
   generatedSchedules: ScoredTimetable[];
   generatedShapeGroups: TimetableShapeGroup[];
   generatedAt: number | null;
@@ -128,6 +131,7 @@ export interface UniTimeStore {
   rankingMode: RankingMode;
   uiPreferences: UiPreferences;
   hasHydrated: boolean;
+  getActiveDays: () => readonly DayOfWeek[];
   setHasHydrated: (value: boolean) => void;
   setCampus: (campus: Campus) => void;
   resetCampus: () => void;
@@ -197,6 +201,7 @@ export const useAppStore = create<UniTimeStore>()(
       courses: [],
       constraints: defaultConstraints,
       campus: null,
+      slotVariant: "standard",
       generatedSchedules: [],
       generatedShapeGroups: [],
       generatedAt: null,
@@ -207,6 +212,7 @@ export const useAppStore = create<UniTimeStore>()(
       rankingMode: "Balanced",
       uiPreferences: defaultUiPreferences,
       hasHydrated: false,
+      getActiveDays: () => getSlotDays(get().slotVariant ?? "standard"),
       setHasHydrated: (value) => set({ hasHydrated: value }),
       setCampus: (campus) =>
         set((state) => {
@@ -216,6 +222,7 @@ export const useAppStore = create<UniTimeStore>()(
           const variant = CAMPUS_SLOT_VARIANT[campus];
           return {
             campus,
+            slotVariant: variant,
             slots: getSlotCatalog(variant),
             courses: [],
             generatedSchedules: [],
@@ -224,12 +231,7 @@ export const useAppStore = create<UniTimeStore>()(
             activeShapeId: null,
             activeVariantId: null,
             compareScheduleIds: [],
-            constraints: {
-              ...state.constraints,
-              professorLocks: [],
-              facultyRanking: {},
-              avoidedFacultyByCourse: {}
-            }
+            constraints: defaultConstraints
           };
         }),
       resetCampus: () =>
@@ -239,6 +241,7 @@ export const useAppStore = create<UniTimeStore>()(
           }
           return {
             campus: null,
+            slotVariant: "standard",
             slots: getSlotCatalog("standard"),
             courses: [],
             generatedSchedules: [],
@@ -247,12 +250,7 @@ export const useAppStore = create<UniTimeStore>()(
             activeShapeId: null,
             activeVariantId: null,
             compareScheduleIds: [],
-            constraints: {
-              ...state.constraints,
-              professorLocks: [],
-              facultyRanking: {},
-              avoidedFacultyByCourse: {}
-            }
+            constraints: defaultConstraints
           };
         }),
       setRankingMode: (mode) => {
@@ -667,8 +665,12 @@ export const useAppStore = create<UniTimeStore>()(
           const slots = state.campus
             ? getSlotCatalog(CAMPUS_SLOT_VARIANT[state.campus])
             : defaultSlots;
+          const slotVariant = state.campus
+            ? CAMPUS_SLOT_VARIANT[state.campus]
+            : "standard";
           const generatedShapeGroups = sharedState.activeSchedule ? groupSchedulesByShape([sharedState.activeSchedule], slots) : [];
           return {
+            slotVariant,
             slots,
             courses: sharedState.courses.map((course) => ({
               ...course,
@@ -694,6 +696,7 @@ export const useAppStore = create<UniTimeStore>()(
           courses: [],
           constraints: defaultConstraints,
           campus: null,
+          slotVariant: "standard",
           generatedSchedules: [],
           generatedShapeGroups: [],
           generatedAt: null,
@@ -720,6 +723,7 @@ export const useAppStore = create<UniTimeStore>()(
           rankingMode: state.rankingMode,
           uiPreferences: state.uiPreferences,
           campus: state.campus,
+          slotVariant: state.slotVariant,
           generatedAt: generationIsRecent ? state.generatedAt : null,
           generatedSchedules: generationIsRecent ? state.generatedSchedules : [],
           generatedShapeGroups: generationIsRecent ? state.generatedShapeGroups : [],
@@ -734,6 +738,7 @@ export const useAppStore = create<UniTimeStore>()(
         const slots = campus
           ? getSlotCatalog(CAMPUS_SLOT_VARIANT[campus])
           : defaultSlots;
+        const slotVariant = campus ? CAMPUS_SLOT_VARIANT[campus] : "standard";
         const generationIsRecent =
           typeof state?.generatedAt === "number" &&
           Date.now() - state.generatedAt < GENERATION_TTL_MS;
@@ -753,6 +758,7 @@ export const useAppStore = create<UniTimeStore>()(
           })),
           constraints: normalizeImportedConstraints(state?.constraints),
           campus,
+          slotVariant,
           generatedSchedules,
           generatedShapeGroups,
           generatedAt: generationIsRecent ? state?.generatedAt ?? null : null,
@@ -779,6 +785,9 @@ export const useAppStore = create<UniTimeStore>()(
           state.slots = state.campus
             ? getSlotCatalog(CAMPUS_SLOT_VARIANT[state.campus])
             : defaultSlots;
+          state.slotVariant = state.campus
+            ? CAMPUS_SLOT_VARIANT[state.campus]
+            : "standard";
           state.constraints = normalizeImportedConstraints(state.constraints);
           const generationIsRecent =
             typeof state.generatedAt === "number" &&

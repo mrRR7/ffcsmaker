@@ -1,4 +1,5 @@
 import { DayOfWeek, DAYS, SlotVariant, TimeSlot } from "./types";
+import { AP_DAYS, AP_SLOTS } from "./apSlotCatalog";
 
 type SlotRow = [DayOfWeek, string, string, string];
 
@@ -120,7 +121,6 @@ const STANDARD_SLOTS: TimeSlot[] = [
 ];
 
 const BHOPAL_SLOTS: TimeSlot[] = [];
-const AP_SLOTS: TimeSlot[] = [];
 
 export const SLOT_CATALOGS: Record<SlotVariant, TimeSlot[]> = {
   standard: STANDARD_SLOTS,
@@ -128,12 +128,31 @@ export const SLOT_CATALOGS: Record<SlotVariant, TimeSlot[]> = {
   ap: AP_SLOTS
 };
 
+export const SLOT_CATALOG_DAYS: Record<SlotVariant, readonly DayOfWeek[]> = {
+  standard: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+  bhopal: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+  ap: AP_DAYS
+};
+
 export function getSlotCatalog(variant: SlotVariant): TimeSlot[] {
   return SLOT_CATALOGS[variant];
 }
 
+export function getSlotDays(variant: SlotVariant): readonly DayOfWeek[] {
+  return SLOT_CATALOG_DAYS[variant];
+}
+
+export function getSlotDaysForSlots(slots: TimeSlot[]): readonly DayOfWeek[] {
+  const days = Array.from(new Set(slots.map((slot) => slot.day)));
+  if (days.length === 0) {
+    return SLOT_CATALOG_DAYS.standard;
+  }
+  return days.sort((a, b) => DAYS.indexOf(a) - DAYS.indexOf(b));
+}
+
 export const SLOT_CATALOG = STANDARD_SLOTS;
 export const FIXED_SLOTS = STANDARD_SLOTS;
+export { AP_DAYS };
 
 const baseLetters = ["A", "B", "C", "D", "E", "F", "G"] as const;
 

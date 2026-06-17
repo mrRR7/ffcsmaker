@@ -3,7 +3,8 @@ export const DAYS = [
   "Tuesday",
   "Wednesday",
   "Thursday",
-  "Friday"
+  "Friday",
+  "Saturday"
 ] as const;
 
 export type DayOfWeek = (typeof DAYS)[number];
@@ -199,6 +200,7 @@ export interface SharedPlannerState {
 
 export interface GeneratePayload {
   slots: TimeSlot[];
+  slotVariant?: SlotVariant;
   courses: Course[];
   constraints: Constraints;
   rankingMode: RankingMode;

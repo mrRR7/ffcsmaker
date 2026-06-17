@@ -4,7 +4,6 @@ import type { CSSProperties, ReactNode } from "react";
 import {
   CAMPUS_LABELS,
   Campus,
-  DAYS,
   SHARE_CARD_DIMENSIONS,
   ScoredTimetable,
   ShareCardSize,
@@ -15,6 +14,8 @@ import {
   buildMatrixCells,
   buildMatrixColumns,
 } from "@/features/results/timetableMatrix";
+
+
 
 const COURSE_COLORS = [
   "#3b82f6",
@@ -27,7 +28,6 @@ const COURSE_COLORS = [
   "#84cc16"
 ];
 
-const DAY_ABBR = ["Mon", "Tue", "Wed", "Thu", "Fri"];
 
 type Props = {
   id: string;
@@ -45,6 +45,18 @@ export function ShareCard({ id, size, schedule, slots, campus, semesterLabel }: 
     (sum, selection) => sum + selection.credits,
     0
   );
+  const days = [...new Set(slots.map((slot) => slot.day))];
+  const matrix = buildMatrixCells(schedule, slots, []);
+const columns = buildMatrixColumns(slots);
+
+const DAY_ABBR_MAP: Record<string, string> = {
+  Monday: "Mon",
+  Tuesday: "Tue",
+  Wednesday: "Wed",
+  Thursday: "Thu",
+  Friday: "Fri",
+  Saturday: "Sat",
+};
   const slotById = new Map(slots.map((slot) => [slot.id, slot]));
   const courseBySlot = new Map<string, { code: string; color: string }>();
 
@@ -126,11 +138,11 @@ export function ShareCard({ id, size, schedule, slots, campus, semesterLabel }: 
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "82px repeat(5, 1fr)", gap: 8 }}>
+      <div style={{ display: "grid", gridTemplateColumns: `82px repeat(${days.length}, 1fr)`}}>
         <div />
-        {DAY_ABBR.map((day) => (
+        {days.map((day) => (
           <div
-            key={day}
+            key={DAY_ABBR_MAP[day]}
             style={{
               color: "#94a3b8",
               fontSize: isStory ? 18 : 14,
@@ -156,7 +168,7 @@ export function ShareCard({ id, size, schedule, slots, campus, semesterLabel }: 
               >
                 {timeSlot.startTime.slice(0, 5)}
               </div>
-              {DAYS.map((day) => {
+              {days.map((day) => {
                 const slot = slots.find(
                   (candidate) =>
                     candidate.day === day &&
