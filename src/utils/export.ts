@@ -119,6 +119,7 @@ export async function exportTimetablePdf(
   slots: TimeSlot[],
   courses: Course[]
 ) {
+  console.log("PDF FUNCTION ENTERED");
   const pdf = new jsPDF({
     orientation: "landscape",
     unit: "px",

@@ -76,6 +76,10 @@ function buildGrid(schedule: ScoredTimetable, slots: TimeSlot[]) {
 
 export function ShareCard({ id, schedule, slots, campus, semesterLabel }: Props) {
   const totalCredits = schedule.selections.reduce((s, sel) => s + sel.credits, 0);
+  const facultyRows = schedule.selections.map((selection) => ({
+  courseCode: selection.courseCode,
+  professorName: selection.professorName
+}));
   const { days, timeBands, rows } = buildGrid(schedule, slots);
 
   // Compact time label: "08:30"
@@ -283,7 +287,6 @@ export function ShareCard({ id, schedule, slots, campus, semesterLabel }: Props)
             {day.slice(0, 3).toUpperCase()}
           </div>
         ))}
-
         {/* Data rows */}
         {timeBands.map(({ start, end }, rowIdx) => (
           <>{/* React fragment — RowFragment pattern avoids extra DOM nodes */}
@@ -302,28 +305,32 @@ export function ShareCard({ id, schedule, slots, campus, semesterLabel }: Props)
           </>
         ))}
       </div>
-
-      {/* Legend */}
-      <div style={legendRow}>
-        {schedule.selections.map((sel, idx) => (
-          <div key={sel.courseId} style={legendItem}>
-            <span style={{
-              width: 8,
-              height: 8,
-              borderRadius: "50%",
-              background: palette[idx % palette.length],
-              flexShrink: 0
-            }} />
-            {sel.courseCode}
-          </div>
-        ))}
-      </div>
-
-      {/* Footer */}
-      <div style={footer}>
-        <div style={footerBrand}>ffcinator</div>
-        <div style={scoreBadge}>Score {Math.round(schedule.score)}</div>
-      </div>
+      <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: 6
+  }}
+>
+  {facultyRows.map((faculty) => (
+    <div
+      key={faculty.courseCode}
+      style={{
+        fontSize: 12,
+        color: "#cbd5e1",
+        overflow: "hidden",
+        whiteSpace: "nowrap",
+        textOverflow: "ellipsis"
+      }}
+    >
+      <span style={{ fontWeight: 700 }}>
+        {faculty.courseCode}
+      </span>
+      {" • "}
+      {faculty.professorName}
+    </div>
+  ))}
+</div>
     </div>
   );
 }

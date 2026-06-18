@@ -161,7 +161,7 @@ export function SlotMatrixTimetable({
                       col.kind === "lunch" && "bg-secondary/20"
                     )}
                   >
-                    {col.kind === "lunch" ? "" : col.startTime}
+                    {col.kind === "lunch" ? "Lunch" : col.startTime}
                   </th>
                 ))}
               </tr>
@@ -178,7 +178,7 @@ export function SlotMatrixTimetable({
                       col.kind === "lunch" && "bg-secondary/20"
                     )}
                   >
-                    {col.kind === "lunch" ? "" : col.endTime}
+                    {col.kind === "lunch" ? "Lunch" : col.endTime}
                   </th>
                 ))}
               </tr>
@@ -203,7 +203,7 @@ export function SlotMatrixTimetable({
                           col.kind === "lunch" && "bg-secondary/20"
                         )}
                       >
-                        {col.kind === "lunch" ? "" : col.startTime}
+                       {col.kind === "lunch" ? "Lunch" : col.startTime}
                       </th>
                     ))}
                   </tr>
@@ -220,7 +220,7 @@ export function SlotMatrixTimetable({
                           col.kind === "lunch" && "bg-secondary/20"
                         )}
                       >
-                        {col.kind === "lunch" ? "" : col.endTime}
+                        {col.kind === "lunch" ? "Lunch" : col.endTime}
                       </th>
                     ))}
                   </tr>

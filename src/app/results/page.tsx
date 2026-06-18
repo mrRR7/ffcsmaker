@@ -263,6 +263,8 @@ function ResultsContent() {
   }
 
   async function exportActive(type: "png" | "pdf") {
+    console.log(exportTimetablePdf);
+    console.log("EXPORT ACTIVE", type);
     if (!activeSchedule || !exportRef.current) {
       return;
     }
@@ -271,7 +273,23 @@ function ResultsContent() {
       if (type === "png") {
         await exportElementPng(exportRef.current, `ultimate-ffcs-${activeSchedule.id}.png`);
       } else {
-        await exportTimetablePdf(activeSchedule, slots, courses);
+        if (type === "pdf") {
+  alert("BEFORE PDF CALL");
+
+  await exportTimetablePdf(
+    activeSchedule,
+    slots,
+    courses
+  );
+
+  alert("AFTER PDF CALL");
+}
+
+debugger;
+
+await exportTimetablePdf(activeSchedule, slots, courses);
+
+console.log("AFTER PDF");
       }
       toast.success(`${type.toUpperCase()} export created.`);
     } catch (error) {
@@ -380,14 +398,6 @@ function ResultsContent() {
         JSON
       </Button>
       <IcalExportDialog schedule={activeSchedule} slots={slots} />
-      <Button type="button" variant="outline" onClick={() => exportActive("png") }>
-        <Download className="h-4 w-4" />
-        PNG
-      </Button>
-      <Button type="button" onClick={() => exportActive("pdf") }>
-        <FileText className="h-4 w-4" />
-        PDF
-      </Button>
     </>
   ) : null;
 
