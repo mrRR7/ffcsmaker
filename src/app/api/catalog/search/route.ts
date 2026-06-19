@@ -11,25 +11,21 @@ export async function GET(request: Request) {
     const supabase = createServerSupabaseClient();
 
     let activeSemesterId = semesterId;
-    let activeSemester = null;
+    let semesterQuery = supabase
+      .from("semesters")
+      .select("id, label, campus, slot_variant, is_active, ffcs_opens, start_date, end_date")
+      .eq("campus", campus);
 
-    if (!activeSemesterId) {
-      const { data: sem } = await supabase
-        .from("semesters")
-        .select("id, label, campus, slot_variant, is_active, ffcs_opens, start_date, end_date")
-        .eq("is_active", true)
-        .eq("campus", campus)
-        .single();
-      activeSemesterId = sem?.id;
-      activeSemester = sem;
+    if (activeSemesterId) {
+      semesterQuery = semesterQuery.eq("id", activeSemesterId);
     } else {
-      const { data: sem } = await supabase
-        .from("semesters")
-        .select("id, label, campus, slot_variant, is_active, ffcs_opens, start_date, end_date")
-        .eq("id", activeSemesterId)
-        .eq("campus", campus)
-        .single();
-      activeSemester = sem;
+      semesterQuery = semesterQuery.eq("is_active", true);
+    }
+
+    const { data: sem } = await semesterQuery.single();
+    let activeSemester = sem;
+    if (!activeSemesterId && sem) {
+      activeSemesterId = sem.id;
     }
 
     if (!activeSemesterId) {
@@ -69,7 +65,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const { data: courses, error } = await coursesQuery.limit(query.length >= 2 ? 20 : 500);
+    const { data: courses, error } = await coursesQuery.limit(query.length >= 2 ? 20 : 50);
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
