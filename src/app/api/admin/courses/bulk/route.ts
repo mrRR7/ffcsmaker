@@ -216,10 +216,31 @@ export async function POST(request: Request) {
 
       coursesCreated += 1;
 
-      await supabaseAdmin
-        .from("course_options")
-        .delete()
-        .eq("course_id", upsertedCourse.id);
+      if (options.length > 0) {
+        const uniquePrograms = Array.from(new Set(options.map((opt) => opt.program)));
+        for (const prog of uniquePrograms) {
+          let deleteQuery = supabaseAdmin
+            .from("course_options")
+            .delete()
+            .eq("course_id", upsertedCourse.id);
+
+          if (prog === null) {
+            deleteQuery = deleteQuery.is("program", null);
+          } else {
+            deleteQuery = deleteQuery.eq("program", prog);
+          }
+
+          const { error: delErr } = await deleteQuery;
+          if (delErr) {
+            console.error("Error deleting course options for program:", prog, delErr);
+          }
+        }
+      } else {
+        await supabaseAdmin
+          .from("course_options")
+          .delete()
+          .eq("course_id", upsertedCourse.id);
+      }
 
       if (options.length === 0) {
         continue;
