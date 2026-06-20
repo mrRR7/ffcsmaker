@@ -11,16 +11,17 @@ interface CacheEntry {
 const queryCache = new Map<string, CacheEntry>();
 const CACHE_TTL_MS = 10 * 60 * 1000;
 
-function cacheKey(query: string, campus: Campus, semesterId?: string) {
-  return `${campus}::${semesterId ?? "active"}::${query.toLowerCase().trim()}`;
+function cacheKey(query: string, campus: Campus, semesterId?: string, program?: string | null) {
+  return `${campus}::${semesterId ?? "active"}::${program ?? "all"}::${query.toLowerCase().trim()}`;
 }
 
 export function getCached(
   query: string,
   campus: Campus,
-  semesterId?: string
+  semesterId?: string,
+  program?: string | null
 ): CacheEntry | null {
-  const key = cacheKey(query, campus, semesterId);
+  const key = cacheKey(query, campus, semesterId, program);
   const entry = queryCache.get(key);
   if (!entry) {
     return null;
@@ -38,9 +39,10 @@ export function setCache(
   data: DBCourse[],
   semesterId: string | null,
   slotVariant: SlotVariant | null,
-  requestedSemesterId?: string
+  requestedSemesterId?: string,
+  program?: string | null
 ) {
-  queryCache.set(cacheKey(query, campus, requestedSemesterId), {
+  queryCache.set(cacheKey(query, campus, requestedSemesterId, program), {
     data,
     timestamp: Date.now(),
     semesterId,
@@ -60,13 +62,17 @@ export function clearAllCache() {
   queryCache.clear();
 }
 
-export async function prewarmCatalogCache(campus: Campus) {
-  if (getCached("", campus)) {
+export async function prewarmCatalogCache(campus: Campus, program?: string | null) {
+  if (getCached("", campus, undefined, program)) {
     return;
   }
 
   try {
-    const response = await fetch(`/api/catalog/search?q=&campus=${campus}`);
+    const params = new URLSearchParams({ q: "", campus });
+    if (program) {
+      params.append("program", program);
+    }
+    const response = await fetch(`/api/catalog/search?${params.toString()}`);
     if (!response.ok) {
       return;
     }
@@ -75,7 +81,7 @@ export async function prewarmCatalogCache(campus: Campus) {
       semesterId?: string | null;
       slotVariant?: SlotVariant | null;
     };
-    setCache("", campus, json.courses ?? [], json.semesterId ?? null, json.slotVariant ?? null);
+    setCache("", campus, json.courses ?? [], json.semesterId ?? null, json.slotVariant ?? null, undefined, program);
   } catch {
     // Best effort only. Normal search still works without a warm cache.
   }

@@ -36,9 +36,12 @@ export interface TimeSlot {
   duration?: number;
 }
 
+export type Program = string;
+
 export interface CourseOption {
   id: string;
   professorName: string;
+  program: Program | null;
   theorySlotIds: string[];
   labSlotIds: string[];
   combinedSlotIds: string[];

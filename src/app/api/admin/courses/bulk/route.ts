@@ -7,6 +7,7 @@ type AdminImportRow = {
   courseCode?: string;
   courseName?: string;
   professorName?: string;
+  program?: string | null;
   theorySlots?: string | string[];
   labSlots?: string | string[];
   credits?: string | number;
@@ -139,6 +140,7 @@ export async function POST(request: Request) {
         };
         options: Array<{
           professor_name: string;
+          program: string | null;
           theory_slots: string[];
           lab_slots: string[];
           professor_notes: string | null;
@@ -189,6 +191,7 @@ export async function POST(request: Request) {
 
       courseMap.get(courseCode)!.options.push({
         professor_name: rawRow.professorName?.trim() || "Unknown",
+        program: rawRow.program?.trim() || null,
         theory_slots: theorySlots,
         lab_slots: labSlots,
         professor_notes: rawRow.notes?.trim() || null,

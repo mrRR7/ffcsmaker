@@ -20,6 +20,7 @@ export function ImportManager() {
   const courses = useAppStore((state) => state.courses);
   const slots = useAppStore((state) => state.slots);
   const constraints = useAppStore((state) => state.constraints);
+  const program = useAppStore((state) => state.program);
   
   const setCourses = useAppStore((state) => (state as any).setCourses);
   const setConstraint = useAppStore((state) => state.setConstraint);
@@ -67,7 +68,7 @@ export function ImportManager() {
     }
 
     try {
-      const { updatedCourses, locks } = transformToCourses(validRows, courses, slots);
+      const { updatedCourses, locks } = transformToCourses(validRows, courses, slots, program);
       
       if (setCourses) {
          setCourses(updatedCourses);

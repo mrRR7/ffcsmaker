@@ -21,7 +21,8 @@ function colorForIndex(index: number) {
 export function transformToCourses(
   validRows: ParsedImportRow[],
   existingCourses: Course[],
-  slots: TimeSlot[]
+  slots: TimeSlot[],
+  program: string | null
 ): { updatedCourses: Course[], locks: string[] } {
   // Deep clone to avoid mutating state directly
   const coursesMap = new Map<string, Course>();
@@ -62,6 +63,7 @@ export function transformToCourses(
     const newOption: CourseOption = {
       id: nanoid(),
       professorName,
+      program,
       theorySlotIds,
       labSlotIds,
       combinedSlotIds: [],

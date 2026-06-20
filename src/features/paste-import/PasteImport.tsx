@@ -35,6 +35,7 @@ export function PasteImport() {
   const [rows, setRows] = useState<PastedCourseOption[]>([]);
   const courses = useAppStore((state) => state.courses);
   const slots = useAppStore((state) => state.slots);
+  const program = useAppStore((state) => state.program);
   const setCourses = useAppStore((state) => state.setCourses);
 
   const validRows = useMemo(
@@ -63,6 +64,7 @@ export function PasteImport() {
         courseName: row.courseName ?? row.courseCode ?? "",
         credits: row.credits ?? 3,
         professorName: row.professorName ?? "",
+        program,
         theorySlotsRaw: row.theorySlotRaw ?? "",
         labSlotsRaw: row.labSlotRaw ?? ""
       })),

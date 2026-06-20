@@ -13,6 +13,7 @@ export interface DBCourseOption {
   id: string;
   course_id: string;
   professor_name: string;
+  program: string | null;
   theory_slots: string[];
   lab_slots: string[];
   professor_notes: string | null;

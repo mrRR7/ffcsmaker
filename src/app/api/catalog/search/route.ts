@@ -8,6 +8,7 @@ export async function GET(request: Request) {
     const query = searchParams.get("q")?.trim() ?? "";
     const semesterId = searchParams.get("semester");
     const campus = (searchParams.get("campus") ?? "chennai") as Campus;
+    const program = searchParams.get("program") as string | null;
     const supabase = createServerSupabaseClient();
 
     let activeSemesterId = semesterId;
@@ -50,13 +51,21 @@ export async function GET(request: Request) {
       .select(
         `
         id, semester_id, course_code, course_name, credits, course_type, verified,
-        course_options (
-          id, course_id, professor_name, theory_slots, lab_slots, professor_notes, verified
+        course_options!inner (
+          id, course_id, professor_name, program, theory_slots, lab_slots, professor_notes, verified
         )
       `
       )
-      .eq("semester_id", activeSemesterId)
-      .order("course_code");
+      .eq("semester_id", activeSemesterId);
+
+    if (program) {
+      // The NULL fallback is temporary and intended to support gradual catalog migration.
+      // Once all course options are classified, the fallback may be removed and filtering can become:
+      // program.eq.${program}
+      coursesQuery = coursesQuery.or(`program.eq.${program},program.is.null`, { foreignTable: "course_options" });
+    }
+
+    coursesQuery = coursesQuery.order("course_code");
 
     if (query.length >= 2) {
       const safeQuery = query.replace(/[,%]/g, "");

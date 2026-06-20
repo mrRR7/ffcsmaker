@@ -21,6 +21,7 @@ export type CourseOptionInput = {
   courseName: string;
   credits: number;
   professorName: string;
+  program?: string | null;
   theorySlotsRaw?: string;
   labSlotsRaw?: string;
   notes?: string;
@@ -30,9 +31,10 @@ function colorForIndex(index: number) {
   return courseColors[index % courseColors.length];
 }
 
-function optionKey(option: Pick<CourseOption, "professorName" | "theorySlotIds" | "labSlotIds">) {
+function optionKey(option: Pick<CourseOption, "professorName" | "program" | "theorySlotIds" | "labSlotIds">) {
   return [
     option.professorName.trim().toLowerCase(),
+    option.program?.trim().toLowerCase() ?? "null",
     [...option.theorySlotIds].sort().join(","),
     [...option.labSlotIds].sort().join(",")
   ].join("|");
@@ -83,6 +85,7 @@ export function mergeCourseOptions(
     const option: CourseOption = {
       id: nanoid(),
       professorName: input.professorName.trim(),
+      program: input.program?.trim() || null,
       theorySlotIds,
       labSlotIds,
       combinedSlotIds: [],

@@ -44,6 +44,7 @@ export function CatalogSearch() {
   const coursesInPlanner = useAppStore((state) => state.courses);
   const slots = useAppStore((state) => state.slots);
   const campus = useAppStore((state) => state.campus) ?? "chennai";
+  const program = useAppStore((state) => state.program);
   const setCourses = useAppStore((state) => state.setCourses);
 
   const activeSemester = useMemo(() => {
@@ -98,7 +99,7 @@ export function CatalogSearch() {
       setCatalogError("");
       try {
         const trimmedQuery = query.trim();
-        const cached = getCached(trimmedQuery, campus, semesterId);
+        const cached = getCached(trimmedQuery, campus, semesterId, program);
         if (cached) {
           setCoursesResult(cached.data);
           setIsLoading(false);
@@ -109,6 +110,9 @@ export function CatalogSearch() {
           semester: semesterId,
           campus
         });
+        if (program) {
+          params.append("program", program);
+        }
         const response = await fetch(`/api/catalog/search?${params.toString()}`);
         const json = (await response.json()) as SearchResponse;
         if (!response.ok) {
@@ -122,7 +126,8 @@ export function CatalogSearch() {
           json.courses ?? [],
           json.semesterId ?? null,
           json.slotVariant ?? null,
-          semesterId
+          semesterId,
+          program
         );
         setCoursesResult(json.courses ?? []);
       } catch (error) {
@@ -136,7 +141,7 @@ export function CatalogSearch() {
     }, 300);
 
     return () => window.clearTimeout(handle);
-  }, [query, semesterId, campus]);
+  }, [query, semesterId, campus, program]);
 
   function toggleOption(optionId: string) {
     setSelectedOptions((current) => ({
@@ -159,6 +164,7 @@ export function CatalogSearch() {
         courseName: course.course_name,
         credits: course.credits,
         professorName: option.professor_name,
+        program: option.program,
         theorySlotsRaw: option.theory_slots.join(", "),
         labSlotsRaw: option.lab_slots.join(", "),
         notes: option.professor_notes ?? ""

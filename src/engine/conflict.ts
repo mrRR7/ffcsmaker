@@ -68,6 +68,7 @@ export function getSlotsForSelection(
   return getOptionSlotIds({
     id: "",
     professorName: "",
+    program: null,
     theorySlotIds: selection.theorySlotIds,
     labSlotIds: selection.labSlotIds,
     combinedSlotIds: selection.combinedSlotIds
