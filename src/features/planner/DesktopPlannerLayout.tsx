@@ -231,13 +231,13 @@ export function DesktopPlannerLayout() {
                   Ultimate FFCS is currently in an early rollout phase.
                 </p>
                 <p>
-                  At the moment, faculty and course data has only been uploaded for 2nd Year Computer Science and Engineering (Core) students.
+                  At the moment, faculty and course data has only been uploaded for 2nd Year CSE Core, CSE AIML, EEE, Int. M.tech DS students.
                 </p>
                 <p>
                   Support for additional programs is actively being added and will be rolled out soon.
                 </p>
                 <p>
-                  If your program is not available yet and you have access to faculty/course allocation data, please get in touch. Community-contributed data will help expand support significantly faster.
+                  If your program is not available yet and you have access to faculty/course allocation data, please get in touch at rakeshrajanikanth@gmail.com or  on insta. Community-contributed data will help expand support significantly faster.
                 </p>
                 <p>
                   Thank you for your patience while the catalog is being expanded.
