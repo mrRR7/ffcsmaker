@@ -26,6 +26,8 @@ export const VALID_PROGRAMS: Array<{
   { id: "Electronics and Computer Engineering", label: "ECM" },
   { id: "Electronics Engineering (VLSI Design and Technology)", label: "ECE (VLSI)" },
   { id: "Fashion Technology", label: "Fashion Tech" },
+  { id: "Integrated M.Tech. Computer Science and Engineering (Data Science)", label: "Integrated M.Tech. CSE (DS)" },
+  { id: "Integrated M.Tech. Software Engineering", label: "Integrated M.Tech. Software Engineering" },
   { id: "Mechanical Engineering", label: "Mech Core" },
   { id: "Mechanical Engineering (Electric Vehicles)", label: "Mech (EV)" },
   { id: "Mechatronics and Automation", label: "Mechatronics" }
@@ -47,7 +49,7 @@ export function ProgramSelector() {
           Which program are you in?
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-sm text-muted-foreground">
-          Choose once to filter courses relevant to your B.Tech program.
+          Choose once to filter courses relevant to your program.
         </p>
 
         <div className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -69,7 +71,11 @@ export function ProgramSelector() {
                     {option.label}
                   </span>
                   <span className="mt-1 block text-xs text-muted-foreground">
-                    {option.id.includes("(") ? option.id.split("(")[1].replace(")", "") : "Core"}
+                    {option.id.includes("(")
+                      ? option.id.split("(")[1].replace(")", "")
+                      : option.id.startsWith("Integrated M.Tech.")
+                      ? "Integrated"
+                      : "Core"}
                   </span>
                 </CardContent>
               </button>

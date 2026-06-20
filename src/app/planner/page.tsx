@@ -14,7 +14,8 @@ import {
   Play,
   Search,
   SlidersHorizontal,
-  X
+  X,
+  Info
 } from "lucide-react";
 import { CreditCounter } from "@/components/CreditCounter";
 import { SectionHeader } from "@/components/SectionHeader";
@@ -48,6 +49,20 @@ type TabId = (typeof tabs)[number]["id"];
 export default function PlannerPage() {
   const [tab, setTab] = useState<TabId>("search");
   const [showConstraints, setShowConstraints] = useState(false);
+  const [showNotice, setShowNotice] = useState(false);
+
+  useEffect(() => {
+    const dismissed = localStorage.getItem("dismissed_preliminary_notice");
+    if (!dismissed) {
+      setShowNotice(true);
+    }
+  }, []);
+
+  function handleDismissNotice() {
+    localStorage.setItem("dismissed_preliminary_notice", "true");
+    setShowNotice(false);
+  }
+
   const courses = useAppStore((state) => state.courses);
   const slots = useAppStore((state) => state.slots);
   const constraints = useAppStore((state) => state.constraints);
@@ -236,6 +251,42 @@ export default function PlannerPage() {
         >
           <ConstraintPanel />
         </motion.div>
+      ) : null}
+
+      {showNotice ? (
+        <Card className="mb-5 border-primary/20 bg-primary/5 shadow-none relative overflow-hidden">
+          <CardContent className="p-4 flex gap-3 text-sm text-ink pr-10">
+            <Info className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+            <div>
+              <h4 className="font-semibold text-foreground mb-1">Notice</h4>
+              <div className="space-y-2 text-muted-foreground leading-relaxed">
+                <p>
+                  Ultimate FFCS is currently in an early rollout phase.
+                </p>
+                <p>
+                  At the moment, faculty and course data has only been uploaded for 2nd Year Computer Science and Engineering (Core) students.
+                </p>
+                <p>
+                  Support for additional programs is actively being added and will be rolled out soon.
+                </p>
+                <p>
+                  If your program is not available yet and you have access to faculty/course allocation data, please get in touch. Community-contributed data will help expand support significantly faster.
+                </p>
+                <p>
+                  Thank you for your patience while the catalog is being expanded.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleDismissNotice}
+              className="absolute right-3 top-3 rounded-md p-1.5 text-muted-foreground hover:bg-surface-soft hover:text-ink transition"
+              aria-label="Dismiss notice"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </CardContent>
+        </Card>
       ) : null}
 
       <div className="mb-5 flex flex-wrap gap-1 rounded-lg border border-hairline bg-canvas/30 p-1">

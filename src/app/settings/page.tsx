@@ -69,6 +69,24 @@ export default function SettingsPage() {
     toast.success("Choose your program again.");
   }
 
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+
+  useEffect(() => {
+    setBannerDismissed(localStorage.getItem("dismissed_preliminary_notice") === "true");
+  }, []);
+
+  const toggleBanner = () => {
+    if (bannerDismissed) {
+      localStorage.removeItem("dismissed_preliminary_notice");
+      setBannerDismissed(false);
+      toast.success("Notice banner will be shown on Planner.");
+    } else {
+      localStorage.setItem("dismissed_preliminary_notice", "true");
+      setBannerDismissed(true);
+      toast.success("Notice banner has been hidden.");
+    }
+  };
+
   return (
     <div className="pb-20 lg:pb-0">
       <SectionHeader title="Settings" />
@@ -141,6 +159,12 @@ export default function SettingsPage() {
               }
               action="Clear"
               onClick={clearSavedResults}
+            />
+            <CacheRow
+              label="Preliminary announcement banner"
+              detail={bannerDismissed ? "Hidden on Planner page" : "Visible on Planner page"}
+              action={bannerDismissed ? "Show" : "Hide"}
+              onClick={toggleBanner}
             />
             <div className="rounded-md border border-hairline bg-background/30 p-4">
               <div className="flex items-center justify-between gap-4 text-sm">
