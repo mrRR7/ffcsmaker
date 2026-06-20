@@ -29,6 +29,7 @@ function pastedOptionToImportRow(option: ReturnType<typeof parsePastedText>[numb
     courseCode: option.courseCode ?? "",
     courseName: option.courseName ?? option.courseCode ?? "",
     professorName: option.professorName ?? "",
+    program: "",
     theorySlots: option.theorySlotRaw ?? "",
     labSlots: option.labSlotRaw ?? "",
     credits: option.credits ? String(option.credits) : "3",
@@ -340,6 +341,7 @@ export default function AdminPage() {
                     <th className="p-3">Course</th>
                     <th className="p-3">Name</th>
                     <th className="p-3">Professor</th>
+                    <th className="p-3">Program</th>
                     <th className="p-3">Theory</th>
                     <th className="p-3">Lab</th>
                     <th className="p-3">Credits</th>
@@ -358,6 +360,7 @@ export default function AdminPage() {
                       <td className="p-3 font-semibold">{row.courseCode}</td>
                       <td className="p-3">{row.courseName}</td>
                       <td className="p-3">{row.professorName}</td>
+                      <td className="p-3 text-muted-foreground">{row.program || "None"}</td>
                       <td className="p-3">{row.theorySlots || "None"}</td>
                       <td className="p-3">{row.labSlots || "None"}</td>
                       <td className="p-3">{row.credits}</td>

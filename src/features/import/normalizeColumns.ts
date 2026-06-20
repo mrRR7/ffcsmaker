@@ -19,6 +19,12 @@ const columnAliases: Record<keyof ImportRow, string[]> = {
     "lslot"
   ],
   credits: ["credits", "credit"],
+  program: [
+    "program",
+    "branch",
+    "department",
+    "specialization"
+  ],
   locked: ["locked", "lock"],
   notes: ["notes", "note", "remarks", "remark"]
 };
@@ -50,6 +56,7 @@ export function normalizeImportRowColumns(row: RawImportRow): ImportRow {
     courseCode: read("courseCode"),
     courseName: read("courseName"),
     professorName: read("professorName"),
+    program: read("program"),
     theorySlots: read("theorySlots"),
     labSlots: read("labSlots"),
     credits: read("credits"),

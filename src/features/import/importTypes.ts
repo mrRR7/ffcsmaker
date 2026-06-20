@@ -2,6 +2,7 @@ export interface ImportRow {
   courseCode: string;
   courseName: string;
   professorName: string;
+  program: string;
   theorySlots: string;
   labSlots: string;
   credits: string;

@@ -31,6 +31,7 @@ export function validateAndParseRow(row: ImportRow, slots?: TimeSlot[]): ParsedI
     courseCode: row.courseCode?.toString() ?? "",
     courseName: row.courseName?.toString() ?? "",
     professorName: row.professorName?.toString() ?? "",
+    program: row.program?.toString() ?? "",
     theorySlots: row.theorySlots?.toString() ?? "",
     labSlots: row.labSlots?.toString() ?? "",
     credits: row.credits?.toString() ?? "",
