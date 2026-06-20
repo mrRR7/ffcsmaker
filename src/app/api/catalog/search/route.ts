@@ -75,6 +75,20 @@ export async function GET(request: Request) {
     }
 
     const { data: courses, error } = await coursesQuery.limit(query.length >= 2 ? 20 : 50);
+    let filteredCourses = courses ?? [];
+
+if (program) {
+  filteredCourses = filteredCourses
+    .map((course) => ({
+      ...course,
+      course_options: course.course_options.filter(
+        (option) =>
+          option.program === program ||
+          option.program === null
+      ),
+    }))
+    .filter((course) => course.course_options.length > 0);
+}
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
