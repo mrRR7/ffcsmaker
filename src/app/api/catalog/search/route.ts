@@ -96,7 +96,7 @@ if (program) {
 
     return NextResponse.json(
       {
-        courses: courses ?? [],
+        courses: filteredCourses,
         semester: activeSemester,
         semesterId: activeSemesterId,
         slotVariant:
