@@ -58,12 +58,12 @@ export async function GET(request: Request) {
       )
       .eq("semester_id", activeSemesterId);
 
-    if (program) {
-      // The NULL fallback is temporary and intended to support gradual catalog migration.
-      // Once all course options are classified, the fallback may be removed and filtering can become:
-      // program.eq.${program}
-      coursesQuery = coursesQuery.or(`program.eq.${program},program.is.null`, { foreignTable: "course_options" });
-    }
+    // if (program) {
+    //   // The NULL fallback is temporary and intended to support gradual catalog migration.
+    //   // Once all course options are classified, the fallback may be removed and filtering can become:
+    //   // program.eq.${program}
+    //   coursesQuery = coursesQuery.or(`program.eq.${program},program.is.null`, { foreignTable: "course_options" });
+    // }
 
     coursesQuery = coursesQuery.order("course_code");
 
