@@ -626,7 +626,7 @@ export const useAppStore = create<UniTimeStore>()(
           return {
             generatedSchedules: schedules,
             generatedShapeGroups,
-            generatedAt: schedules.length > 0 ? Date.now() : null,
+            generatedAt: Date.now(),
             activeShapeId: generatedShapeGroups[0]?.shapeId ?? null,
             activeVariantId: generatedShapeGroups[0]?.representative.id ?? null,
             compareScheduleIds: schedules.slice(0, 2).map((schedule) => schedule.id)

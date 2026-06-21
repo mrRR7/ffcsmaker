@@ -21,6 +21,7 @@ import { ScheduleBrowser } from "@/features/results/ScheduleBrowser";
 import { SlotMatrixTimetable } from "@/features/results/SlotMatrixTimetable";
 import { ShapeNavigator } from "@/features/results/ShapeNavigator";
 import { VariantSwitcher } from "@/features/results/VariantSwitcher";
+import { ZeroResultsPanel } from "@/features/results/ZeroResultsPanel";
 import { buildMatrixCells, MatrixCell } from "@/features/results/timetableMatrix";
 import { ScoredTimetable } from "@/engine/types";
 import { exportElementPng, exportScheduleJson, exportTimetablePdf } from "@/utils/export";
@@ -30,6 +31,7 @@ import { useAppStore } from "@/store/useAppStore";
 type SortMode = "score" | "lowGaps" | "earlyFinish";
 
 function ResultsContent() {
+  console.log("RESULTS PAGE RENDERED");
   const exportRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
@@ -60,7 +62,7 @@ function ResultsContent() {
   const savedSchedules = useAppStore((state) => state.savedSchedules);
 
   // --- Derived state ---
-
+  
   const filteredGroups = useMemo(() => {
     return [...generatedShapeGroups].sort((a, b) => {
       const repA = a.representative;
@@ -318,6 +320,15 @@ console.log("AFTER PDF");
   // --- Empty states ---
 
   if (generatedSchedules.length === 0) {
+    if (generatedAt !== null) {
+      return (
+        <div className="pb-20 lg:pb-0">
+          <SectionHeader title="Results" />
+          <ZeroResultsPanel />
+        </div>
+      );
+    }
+
     return (
       <div className="pb-20 lg:pb-0">
         <SectionHeader title="Results" />

@@ -4,8 +4,10 @@ import { useCallback, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { GeneratePayload, WorkerMessage } from "@/engine/types";
 import { useAppStore } from "@/store/useAppStore";
+import { useRouter } from "next/navigation";
 
 export function useGenerator() {
+  const router = useRouter();
   const workerRef = useRef<Worker | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -58,6 +60,7 @@ export function useGenerator() {
           setChecked(event.data.checked);
           setAccepted(event.data.schedules.length);
           setIsGenerating(false);
+          router.push("/results");
           worker.terminate();
           workerRef.current = null;
           if (event.data.schedules.length === 0) {
