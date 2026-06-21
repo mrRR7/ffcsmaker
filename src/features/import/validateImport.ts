@@ -26,6 +26,16 @@ export function validateAndParseRow(row: ImportRow, slots?: TimeSlot[]): ParsedI
   if (slots && hasEnteredSlots(row.labSlots) && resolveLabSlotIds(row.labSlots.toString(), slots).length === 0) {
     errors.push("Lab slots do not match known lab labels");
   }
+  if (errors.length > 0) {
+  console.log("INVALID IMPORT ROW", {
+    courseCode: row.courseCode,
+    courseName: row.courseName,
+    professorName: row.professorName,
+    theorySlots: row.theorySlots,
+    labSlots: row.labSlots,
+    errors
+  });
+}
   
   return {
     courseCode: row.courseCode?.toString() ?? "",
