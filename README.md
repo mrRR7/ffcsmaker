@@ -1,6 +1,6 @@
 <div align="center">
 
-<h1 Ultimate FFCS Planner</h1>
+<h1>Ultimate FFCS Planner</h1>
 
 <p>Stop checking timetable combinations manually.<br/>Generate every valid FFCS combination automatically ranked, compared, and ready to register.</p>
 
