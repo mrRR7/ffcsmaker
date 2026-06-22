@@ -2,7 +2,7 @@
 
 <h1 Ultimate FFCS Planner</h1>
 
-<p>Stop checking timetable combinations manually.<br/>Generate every valid FFCS combination automatically — ranked, compared, and ready to register.</p>
+<p>Stop checking timetable combinations manually.<br/>Generate every valid FFCS combination automatically ranked, compared, and ready to register.</p>
 
 [![Live](https://img.shields.io/badge/Live-ffcsmaker.vercel.app-blue?style=flat-square&logo=vercel)](https://ffcsmaker.vercel.app)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)](https://nextjs.org)
@@ -42,9 +42,6 @@ FFCS (Fully Flexible Credit System) is VIT's biannual course registration system
 - PDF, PNG, iCal (weekly repeating events for Google/Apple/Outlook Calendar)
 - Styled share card (1080×1080) for WhatsApp and Instagram status
 - Persistent share links for course lists and specific timetables
-
-**Registration day**
-- Registration mode: mark options as gone in real time as you check VTOP — instantly shows the best valid timetable from whatever's left, no regeneration needed
 
 **Multi-campus**
 - VIT Chennai + VIT Vellore: full slot catalog (Mon–Fri)
