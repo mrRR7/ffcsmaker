@@ -26,6 +26,8 @@ import { CAMPUS_LABELS, Campus, Program } from "@/engine/types";
 import { decodeSharedState } from "@/utils/share";
 import { cn } from "@/utils/cn";
 import { useAppStore } from "@/store/useAppStore";
+import { mergeCourseOptions, CourseOptionInput } from "@/features/courses/mergeCourseOptions";
+import { getSlotCatalog } from "@/engine/slotCatalog";
 
 const navItems = [
   { href: "/", label: "Home", icon: Home },
@@ -91,6 +93,113 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     window.history.replaceState(null, "", nextUrl);
     toast.success("Imported shared planner state.");
   }, [applySharedState]);
+
+  // ── VTOP Scraper Import ──────────────────────────────────────────
+  // Handles two delivery paths:
+  //   a) BroadcastChannel ("ffcs-vtop-import") — live cross-tab
+  //   b) URL param (?vtopImport=) — fallback via new tab
+  // Two payload formats:
+  //   1. Legacy flat array: [{courseCode, courseName, credits, courseType, faculty, slot}]
+  //   2. New nested: {campus, semesterLabel, courses: VtopCourse[], capturedAt}
+
+  const [importedVtop, setImportedVtop] = useState(false);
+  const importedVtopRef = useRef(false);
+
+  function processVtopPayload(raw: unknown) {
+    if (importedVtopRef.current) return;
+    importedVtopRef.current = true;
+
+    let inputs: CourseOptionInput[] = [];
+
+    if (Array.isArray(raw)) {
+      // Legacy flat format
+      for (const e of raw) {
+        if (!e.courseCode || !e.faculty) continue;
+        inputs.push({ courseCode: e.courseCode, courseName: e.courseName || e.courseCode, credits: e.credits || 3, professorName: e.faculty, theorySlotsRaw: e.slot || "", labSlotsRaw: "" });
+      }
+    } else if (raw && typeof raw === "object") {
+      const p = raw as Record<string, unknown>;
+      const courses = p.courses;
+      if (Array.isArray(courses)) {
+        for (const c of courses) {
+          if (!c || typeof c !== "object") continue;
+          const cc = c as Record<string, unknown>;
+          const code = String(cc.courseCode ?? "");
+          const name = String(cc.courseName ?? code);
+          const courseCredits = Number(cc.credits) || 3;
+          const options = cc.options;
+          if (!code) continue;
+          if (Array.isArray(options)) {
+            for (const o of options) {
+              if (!o || typeof o !== "object") continue;
+              const opt = o as Record<string, unknown>;
+              const professor = String(opt.professorName ?? "");
+              if (!professor) continue;
+              const theorySlots = opt.theorySlots;
+              const labSlots = opt.labSlots;
+              inputs.push({
+                courseCode: code,
+                courseName: name,
+                credits: Number(opt.credits) || courseCredits,
+                professorName: professor,
+                theorySlotsRaw: Array.isArray(theorySlots) ? theorySlots.join(",") : "",
+                labSlotsRaw: Array.isArray(labSlots) ? labSlots.join(",") : "",
+              });
+            }
+          }
+        }
+      }
+    }
+
+    if (inputs.length === 0) {
+      toast.error("No course data found in import.");
+      return;
+    }
+
+    const state = useAppStore.getState();
+    const slots = state.slots.length > 0 ? state.slots : getSlotCatalog("standard");
+    const result = mergeCourseOptions(state.courses, inputs, slots);
+    state.setCourses(result.courses);
+    toast.success(`Imported ${result.addedCourses} courses (${result.addedOptions} options) from VTOP.`);
+    setImportedVtop(true);
+  }
+
+  // BroadcastChannel listener (receives data from VTOP scraper without page reload)
+  useEffect(() => {
+    if (!hasHydrated) return;
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel("ffcs-vtop-import");
+      bc.onmessage = (event) => {
+        if (event.data?.type === "FFCS_VTOP_IMPORT" && event.data?.payload) {
+          processVtopPayload(event.data.payload);
+        }
+      };
+    } catch {
+      // BroadcastChannel unsupported
+    }
+    return () => { bc?.close(); };
+  }, [hasHydrated]);
+
+  // URL param handler (fallback when the planner tab is opened from the scraper)
+  useEffect(() => {
+    if (importedVtop || importedVtopRef.current || !hasHydrated) return;
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get("vtopImport");
+    if (!encoded) return;
+
+    try {
+      const json = decodeURIComponent(atob(encoded));
+      const parsed = JSON.parse(json);
+      processVtopPayload(parsed);
+      params.delete("vtopImport");
+      const nextUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ""}`;
+      window.history.replaceState(null, "", nextUrl);
+    } catch (err) {
+      toast.error("Could not parse VTOP import data.");
+      console.error("vtopImport error:", err);
+    }
+  }, [hasHydrated, importedVtop]);
 
   function confirmCampusSwitch() {
     if (!pendingCampus) {

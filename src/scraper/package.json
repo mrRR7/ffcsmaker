@@ -1,0 +1,14 @@
+{
+  "name": "ffcs-vtop-scraper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "VTOP course registration scraper — extracts faculty & course data for FFCS Planner",
+  "scripts": {
+    "build": "tsc && cp manifest.json dist/ && cp popup.html dist/",
+    "watch": "tsc --watch"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.287",
+    "typescript": "^5.7.0"
+  }
+}
