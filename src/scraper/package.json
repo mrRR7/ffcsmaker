@@ -4,7 +4,7 @@
   "private": true,
   "description": "VTOP course registration scraper — extracts faculty & course data for FFCS Planner",
   "scripts": {
-    "build": "tsc && cp manifest.json dist/ && cp popup.html dist/",
+    "build": "tsc && node copy-assets.mjs",
     "watch": "tsc --watch"
   },
   "devDependencies": {
