@@ -12,61 +12,54 @@ import {
   CardTitle
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/form";
-import {
-  parsePastedText,
-  PastedCourseOption
-} from "@/features/paste-import/parsePastedText";
 import { mergeCourseOptions } from "@/features/courses/mergeCourseOptions";
+import { ParsedImportRow } from "@/features/import/importTypes";
+import { validateAndParseRow } from "@/features/import/validateImport";
+import { parseImport } from "@/features/paste-import/parseImport";
+import { PasteImportMetadata } from "@/features/paste-import/types";
 import { useAppStore } from "@/store/useAppStore";
-import { cn } from "@/utils/cn";
-
-function confidenceClass(confidence: PastedCourseOption["confidence"]) {
-  if (confidence === "high") {
-    return "border-primary/25 bg-primary/10 text-primary";
-  }
-  if (confidence === "medium") {
-    return "border-amber-500/30 bg-amber-500/10 text-amber-300";
-  }
-  return "border-destructive/30 bg-destructive/10 text-destructive";
-}
 
 export function PasteImport() {
   const [rawText, setRawText] = useState("");
-  const [rows, setRows] = useState<PastedCourseOption[]>([]);
+  const [rows, setRows] = useState<ParsedImportRow[]>([]);
+  const [, setImportMetadata] = useState<PasteImportMetadata>({});
   const courses = useAppStore((state) => state.courses);
   const slots = useAppStore((state) => state.slots);
-  const program = useAppStore((state) => state.program);
   const setCourses = useAppStore((state) => state.setCourses);
 
   const validRows = useMemo(
-    () =>
-      rows.filter(
-        (row) =>
-          row.courseCode &&
-          row.professorName &&
-          (row.theorySlotRaw || row.labSlotRaw) &&
-          row.confidence !== "low"
-      ),
+    () => rows.filter((row) => row.isValid),
     [rows]
   );
 
   function parseText() {
-    const parsed = parsePastedText(rawText);
-    setRows(parsed);
-    toast.success(`${parsed.length} course options parsed from your text.`);
+    try {
+      const parsed = parseImport(rawText);
+      const validated = parsed.rows.map((row) => validateAndParseRow(row, slots));
+      setRows(validated);
+      setImportMetadata(parsed.metadata);
+      toast.success(`${validated.length} course options parsed from your input.`);
+    } catch (error) {
+      setRows([]);
+      setImportMetadata({});
+      toast.error(
+        error instanceof Error ? error.message : "Could not parse pasted input."
+      );
+    }
   }
 
   function addRows() {
     const result = mergeCourseOptions(
       courses,
       validRows.map((row) => ({
-        courseCode: row.courseCode ?? "",
-        courseName: row.courseName ?? row.courseCode ?? "",
-        credits: row.credits ?? 3,
-        professorName: row.professorName ?? "",
-        program,
-        theorySlotsRaw: row.theorySlotRaw ?? "",
-        labSlotsRaw: row.labSlotRaw ?? ""
+        courseCode: row.courseCode,
+        courseName: row.courseName || row.courseCode,
+        credits: Number(row.credits) || 3,
+        professorName: row.professorName,
+        program: null,
+        theorySlotsRaw: row.theorySlots,
+        labSlotsRaw: row.labSlots,
+        notes: row.notes ?? ""
       })),
       slots
     );
@@ -129,17 +122,17 @@ export function PasteImport() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row, index) => (
+                {rows.map((row) => (
                   <tr
-                    key={`${row.rawLine}-${index}`}
+                    key={row.id}
                     className="border-b border-border/60"
                   >
-                    <td className="p-3 font-semibold">{row.courseCode ?? "Unknown"}</td>
-                    <td className="p-3">{row.courseName ?? "Unknown"}</td>
-                    <td className="p-3">{row.professorName ?? "Unknown"}</td>
-                    <td className="p-3">{row.theorySlotRaw ?? "None"}</td>
-                    <td className="p-3">{row.labSlotRaw ?? "None"}</td>
-                    <td className="p-3">{row.credits ?? 3}</td>
+                    <td className="p-3 font-semibold">{row.courseCode || "Unknown"}</td>
+                    <td className="p-3">{row.courseName || "Unknown"}</td>
+                    <td className="p-3">{row.professorName || "Unknown"}</td>
+                    <td className="p-3">{row.theorySlots || "None"}</td>
+                    <td className="p-3">{row.labSlots || "None"}</td>
+                    <td className="p-3">{row.credits || 3}</td>
                   </tr>
                 ))}
               </tbody>

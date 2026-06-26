@@ -39,13 +39,13 @@ export function StepCourses({ showNotice, onDismissNotice }: StepCoursesProps) {
                   2nd Year Computer Science and Engineering (Core) students.
                 </p>
                 <p>
-                  Support for additional programs is actively being added and will be
+                  Additional catalog coverage is actively being added and will be
                   rolled out soon.
                 </p>
                 <p>
-                  If your program is not available yet and you have access to
-                  faculty/course allocation data, please get in touch. Community-contributed
-                  data will help expand support significantly faster.
+                  If you have access to faculty/course allocation data that is missing here,
+                  please get in touch. Community-contributed data will help expand
+                  support significantly faster.
                 </p>
                 <p>Thank you for your patience while the catalog is being expanded.</p>
               </div>

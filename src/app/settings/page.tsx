@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import { Database, Download, MapPin, Moon, RotateCcw, Settings2, Sun, GraduationCap } from "lucide-react";
+import { Database, Download, MapPin, Moon, RotateCcw, Settings2, Sun } from "lucide-react";
 import { SectionHeader } from "@/components/SectionHeader";
-import { VALID_PROGRAMS } from "@/components/ProgramSelector";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -27,7 +26,6 @@ export default function SettingsPage() {
   const uiPreferences = useAppStore((state) => state.uiPreferences);
   const rankingMode = useAppStore((state) => state.rankingMode);
   const campus = useAppStore((state) => state.campus);
-  const program = useAppStore((state) => state.program);
   const generatedAt = useAppStore((state) => state.generatedAt);
   const setTheme = useAppStore((state) => state.setTheme);
   const setCompactMode = useAppStore((state) => state.setCompactMode);
@@ -61,14 +59,6 @@ export default function SettingsPage() {
     toast.success("Choose your campus again.");
   }
 
-  const [confirmProgramReset, setConfirmProgramReset] = useState(false);
-
-  function changeProgram() {
-    useAppStore.getState().setProgram(null);
-    setConfirmProgramReset(false);
-    toast.success("Choose your program again.");
-  }
-
   const [bannerDismissed, setBannerDismissed] = useState(false);
 
   useEffect(() => {
@@ -96,7 +86,7 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MapPin className="h-5 w-5 text-primary" />
-              Campus & Program
+              Campus
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -115,23 +105,8 @@ export default function SettingsPage() {
                 Change
               </Button>
             </div>
-            <div className="flex items-center justify-between gap-4 rounded-md border border-hairline bg-background/30 p-4">
-              <div>
-                <p className="text-sm font-semibold">Current program</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {program ? VALID_PROGRAMS.find(p => p.id === program)?.label ?? program : "Not selected"}
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setConfirmProgramReset(true)}
-              >
-                Change
-              </Button>
-            </div>
             <p className="text-xs text-muted-foreground">
-              Changing campus or program clears your current course list and generated timetables.
+              Changing campus clears your current course list and generated timetables.
             </p>
           </CardContent>
         </Card>
@@ -338,29 +313,6 @@ export default function SettingsPage() {
               </Button>
               <Button type="button" onClick={changeCampus}>
                 Change campus
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-      {confirmProgramReset ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-md rounded-lg border border-hairline bg-surface-card p-5 shadow-card">
-            <h2 className="text-lg font-semibold text-foreground">Change program?</h2>
-            <p className="mt-3 text-sm text-muted-foreground">
-              This will clear your current course list and generated timetables. Your
-              saved timetables will stay.
-            </p>
-            <div className="mt-5 flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setConfirmProgramReset(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="button" onClick={changeProgram}>
-                Change program
               </Button>
             </div>
           </div>

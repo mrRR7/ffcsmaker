@@ -234,10 +234,10 @@ export function DesktopPlannerLayout() {
                   At the moment, faculty and course data has only been uploaded for 2nd Year CSE Core, CSE AIML, EEE, Int. M.tech DS students.
                 </p>
                 <p>
-                  Support for additional programs is actively being added and will be rolled out soon.
+                  Additional catalog coverage is actively being added and will be rolled out soon.
                 </p>
                 <p>
-                  If your program is not available yet and you have access to faculty/course allocation data, please get in touch at rakeshrajanikanth@gmail.com or  on insta. Community-contributed data will help expand support significantly faster.
+                  If you have access to faculty/course allocation data that is missing here, please get in touch at rakeshrajanikanth@gmail.com or on insta. Community-contributed data will help expand support significantly faster.
                 </p>
                 <p>
                   Thank you for your patience while the catalog is being expanded.

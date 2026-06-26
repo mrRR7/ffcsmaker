@@ -44,7 +44,6 @@ export function CatalogSearch() {
   const coursesInPlanner = useAppStore((state) => state.courses);
   const slots = useAppStore((state) => state.slots);
   const campus = useAppStore((state) => state.campus) ?? "chennai";
-  const program = useAppStore((state) => state.program);
   const setCourses = useAppStore((state) => state.setCourses);
 
   const activeSemester = useMemo(() => {
@@ -99,7 +98,7 @@ export function CatalogSearch() {
       setCatalogError("");
       try {
         const trimmedQuery = query.trim();
-        const cached = getCached(trimmedQuery, campus, semesterId, program);
+        const cached = getCached(trimmedQuery, campus, semesterId);
         if (cached) {
           setCoursesResult(cached.data);
           setIsLoading(false);
@@ -110,9 +109,6 @@ export function CatalogSearch() {
           semester: semesterId,
           campus
         });
-        if (program) {
-          params.append("program", program);
-        }
         const response = await fetch(`/api/catalog/search?${params.toString()}`);
         const json = (await response.json()) as SearchResponse;
         if (!response.ok) {
@@ -126,8 +122,7 @@ export function CatalogSearch() {
           json.courses ?? [],
           json.semesterId ?? null,
           json.slotVariant ?? null,
-          semesterId,
-          program
+          semesterId
         );
         setCoursesResult(json.courses ?? []);
       } catch (error) {
@@ -141,7 +136,7 @@ export function CatalogSearch() {
     }, 300);
 
     return () => window.clearTimeout(handle);
-  }, [query, semesterId, campus, program]);
+  }, [query, semesterId, campus]);
 
   function toggleOption(optionId: string) {
     setSelectedOptions((current) => ({

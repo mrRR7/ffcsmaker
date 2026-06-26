@@ -484,7 +484,6 @@ function CourseCard({
   const deleteCourse = useAppStore((state) => state.deleteCourse);
   const duplicateCourse = useAppStore((state) => state.duplicateCourse);
   const moveCourse = useAppStore((state) => state.moveCourse);
-  const program = useAppStore((state) => state.program);
   const addOption = useAppStore((state) => state.addOption);
   const updateOption = useAppStore((state) => state.updateOption);
   const deleteOption = useAppStore((state) => state.deleteOption);
@@ -501,7 +500,7 @@ function CourseCard({
     labSlotIds: [],
     combinedSlotIds: [],
     notes: "",
-    program: program
+    program: null
   });
 
   const sensors = useSensors(
@@ -553,7 +552,7 @@ function CourseCard({
       labSlotIds: [],
       combinedSlotIds: [],
       notes: "",
-      program: program
+      program: null
     });
   }
 

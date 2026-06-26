@@ -20,9 +20,8 @@ import {
 import { MotionConfig } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { CampusSelector } from "@/components/CampusSelector";
-import { ProgramSelector, VALID_PROGRAMS } from "@/components/ProgramSelector";
 import { AppFooter } from "@/components/layout/AppFooter";
-import { CAMPUS_LABELS, Campus, Program } from "@/engine/types";
+import { CAMPUS_LABELS, Campus } from "@/engine/types";
 import { decodeSharedState } from "@/utils/share";
 import { cn } from "@/utils/cn";
 import { useAppStore } from "@/store/useAppStore";
@@ -47,12 +46,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const applySharedState = useAppStore((state) => state.applySharedState);
   const campus = useAppStore((state) => state.campus);
   const setCampus = useAppStore((state) => state.setCampus);
-  const program = useAppStore((state) => state.program);
-  const setProgram = useAppStore((state) => state.setProgram);
   const hasHydrated = useAppStore((state) => state.hasHydrated);
 
-  const [programMenuOpen, setProgramMenuOpen] = useState(false);
-  const [pendingProgram, setPendingProgram] = useState<Program | null>(null);
 
   const activeLabel = useMemo(
     () => navItems.find((item) => item.href === pathname)?.label ?? "Ultimate FFCS",
@@ -102,22 +97,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     router.push("/planner");
   }
 
-  function confirmProgramSwitch() {
-    if (!pendingProgram) {
-      return;
-    }
-    setProgram(pendingProgram);
-    setPendingProgram(null);
-    setProgramMenuOpen(false);
-    router.push("/planner");
-  }
-
   const mainContent = !hasHydrated ? (
     <div className="mx-auto mt-20 h-32 max-w-lg animate-pulse rounded-lg border border-hairline bg-surface-card" />
   ) : !campus && !bypassCampusGate ? (
     <CampusSelector />
-  ) : !program && !bypassCampusGate ? (
-    <ProgramSelector />
   ) : (
     children
   );
@@ -205,47 +188,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
                 ) : null}
               </div>
             ) : null}
-            {program ? (
-              <div className="relative">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setProgramMenuOpen((current) => !current)}
-                  className="hidden sm:inline-flex"
-                >
-                  {VALID_PROGRAMS.find(p => p.id === program)?.label ?? "Program"}
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-                {programMenuOpen ? (
-                  <div className="absolute right-0 mt-2 w-56 max-h-96 overflow-y-auto rounded-md border border-hairline bg-surface-card p-1 shadow-card">
-                    {VALID_PROGRAMS.map((option) => {
-                      const active = option.id === program;
-                      return (
-                        <button
-                          key={option.id}
-                          type="button"
-                          onClick={() => {
-                            if (active) {
-                              setProgramMenuOpen(false);
-                              return;
-                            }
-                            setPendingProgram(option.id);
-                          }}
-                          className={cn(
-                            "flex w-full items-center justify-between rounded px-3 py-2 text-left text-sm transition",
-                            "text-ink hover:bg-surface-soft"
-                          )}
-                        >
-                          <span>{option.label}</span>
-                          {active ? <Check className="h-4 w-4 text-primary" /> : null}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : null}
-              </div>
-            ) : null}
             <Button
               type="button"
               variant="outline"
@@ -323,31 +265,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </Button>
               <Button type="button" onClick={confirmCampusSwitch}>
                 Switch campus
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-      {pendingProgram ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-md rounded-lg border border-hairline bg-surface-card p-5 shadow-card">
-            <h2 className="text-lg font-semibold text-foreground">
-              Switch to {VALID_PROGRAMS.find(p => p.id === pendingProgram)?.label}?
-            </h2>
-            <p className="mt-3 text-sm text-muted-foreground">
-              This will clear your current course list and generated timetables. Your
-              saved timetables will stay.
-            </p>
-            <div className="mt-5 flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setPendingProgram(null)}
-              >
-                Cancel
-              </Button>
-              <Button type="button" onClick={confirmProgramSwitch}>
-                Switch program
               </Button>
             </div>
           </div>
