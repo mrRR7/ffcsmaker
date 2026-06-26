@@ -1,86 +1,173 @@
-"use strict";(()=>{var O=/^L\d+(\+L\d+)*$/;function N(){let o=window.location.hostname;return o.includes("vitap")?"ap":o.includes("vitbhopal")?"bhopal":o.startsWith("vtopcc")?"chennai":o.includes("vit.ac.in")?"vellore":"unknown"}function v(){return/vtop.*vit\.ac\.in|vtop.*vitap\.ac\.in|vtop.*vitbhopal\.ac\.in/.test(window.location.hostname)}function k(){if(!v())return!1;let o=window.location.pathname.toLowerCase();return o.includes("course")||o.includes("registration")||o.includes("allocation")?!0:document.querySelector("table")!==null}function _(o){let t=o.replace(/\s+/g,"").toUpperCase();return t?O.test(t)?"lab":t==="NIL"||/^[A-G]\d(\+T[A-G]{1,2}\d)*$/.test(t)||/^T[A-G]{1,2}\d$/.test(t)?"theory":"unknown":"unknown"}function T(o){let t=o.split("+")[0],s=/(\d)$/.exec(t);return s?s[1]==="1"?"Morning":"Afternoon":null}function y(o){if(o.toUpperCase()==="NIL")return 0;let t=0;for(let s of o.split("+")){let e=s.trim();/^[A-Za-z]\d$/.test(e)?t+=2:/^T/.test(e)&&(t+=1)}return t}function P(o){let t=/L(\d+)/.exec(o.split("+")[0]);return t?Number(t[1])>=31?"Morning":"Afternoon":null}function x(o){let t=o.split("+").filter(Boolean);return Math.floor(t.length/2)}function U(o,t,s){let e=[],r=(n,a,c)=>({professorName:o,theorySlots:n?n.split("+"):[],labSlots:a?[a]:[],credits:c,program:null,notes:""});if(t.length===0&&s.length===0)return e;if(t.length>0&&s.length>0)for(let n of t){if(n.toUpperCase()==="NIL"){e.push(r(n,null,y(n)));continue}let a=T(n),c=s.filter(i=>P(i)===a);if(c.length>0)for(let i of c)e.push(r(n,i,y(n)+x(i)));else e.push(r(n,null,y(n)))}else if(t.length>0)for(let n of t)e.push(r(n,null,y(n)));else for(let n of s)e.push(r(null,n,x(n)));return e}function L(o){let t=new Map;for(let e of o){if(!e.courseCode||e.slotKind==="unknown")continue;t.has(e.courseCode)||t.set(e.courseCode,{name:e.courseName||e.courseCode,profs:new Map});let r=t.get(e.courseCode);e.courseName&&(!r.name||r.name===e.courseCode)&&(r.name=e.courseName),r.profs.has(e.professorName)||r.profs.set(e.professorName,{theory:[],lab:[]});let n=r.profs.get(e.professorName),a=e.slot.replace(/\s+/g,"").toUpperCase();e.slotKind==="theory"&&!n.theory.includes(a)&&n.theory.push(a),e.slotKind==="lab"&&!n.lab.includes(a)&&n.lab.push(a)}let s=[];for(let[e,r]of t){let n=[];for(let[p,u]of r.profs)n.push(...U(p,u.theory,u.lab));if(n.length===0)continue;let a=new Map;for(let p of n)a.set(p.credits,(a.get(p.credits)??0)+1);let c=0,i=-1;for(let[p,u]of a)u>i&&(i=u,c=p);s.push({courseCode:e,courseName:r.name,credits:c,options:n})}return s}function M(){let o=[],t=new Map,s="";for(let e of document.querySelectorAll("select")){let r=e.querySelectorAll("option");if(!(r.length<2))for(let n of r){let c=(n.textContent?.trim()??"").match(/([A-Z]{2,6}\d{3,6}[A-Z]?)\s*[-–—]\s*(.+)/);c&&(t.set(c[1].toUpperCase(),c[2].trim()),n.selected&&(s=c[1].toUpperCase()))}}for(let e of document.querySelectorAll("table")){let r=e.querySelectorAll("tr");if(r.length<2)continue;let n=Array.from(r[0].querySelectorAll("th, td")).map(l=>l.textContent?.trim().toLowerCase()??""),a=l=>n.findIndex(d=>l.test(d)),c=a(/^slot/),i=a(/^faculty|^professor/),p=a(/course\s*code|^code$/),u=a(/course\s*name|^name$/),h=n.findIndex(l=>/code.*name|code.*course/.test(l));if(!(c===-1||i===-1))for(let l=1;l<r.length;l++){let d=r[l].querySelectorAll("td, th");if(d.length<2)continue;let m=b=>b>=0&&b<d.length?d[b]?.textContent?.trim()??"":"",f="";if(p>=0&&(f=m(p).match(/([A-Z]{2,6}\d{3,6}[A-Z]?)/)?.[1]?.toUpperCase()??""),!f&&h>=0&&(f=m(h).match(/([A-Z]{2,6}\d{3,6}[A-Z]?)/)?.[1]?.toUpperCase()??""),f||(f=s),!f)continue;let g=u>=0?m(u):"";!g&&h>=0&&(g=m(h).match(/[A-Z]{2,6}\d{3,6}[A-Z]?\s*[-–—]\s*(.+)/)?.[1]?.trim()??""),g||(g=t.get(f)??f);let C=m(i).replace(/\s+/g," ").trim(),w=m(c).replace(/\s+/g,"").toUpperCase();!C||!w||o.push({courseCode:f,courseName:g,professorName:C,slot:w,slotKind:_(w)})}}return o}function I(o,t){let s=[...o,...t],e=L(s),r=new Map;for(let n of e)for(let a of n.options)r.set(a.professorName.toLowerCase(),{name:a.professorName});return{campus:N(),semesterLabel:"",courses:e,slots:[],faculty:Array.from(r.values()),capturedAt:new Date().toISOString(),source:t.length>0&&o.length>0?"mixed":t.length>0?"network":"dom"}}function S(){let o=M();return I(o,[])}var R="vtopImport",V="https://ffcsmaker.vercel.app/planner";function B(){try{let t=new URLSearchParams(window.location.search).get("ffcsPlannerUrl");if(t)return t.replace(/\/planner\/?$/,"")}catch{}return V.replace(/\/planner\/?$/,"")}function E(o){return o.courses.reduce((t,s)=>t+s.options.length,0)}function A(){document.getElementById("ffcs-vtop-success")?.remove()}function $(o,t,s){A();let e=E(o),r=document.createElement("div");r.id="ffcs-vtop-success",r.innerHTML=`
-    <style>
-      #ffcs-vtop-success {
-        all: initial;
-        position: fixed !important;
-        inset: 0 !important;
-        z-index: 2147483647 !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        background: rgba(15, 23, 42, 0.72) !important;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-      }
-      #ffcs-vtop-success * { box-sizing: border-box !important; }
-      #ffcs-vtop-success .ffcs-card {
-        width: min(420px, calc(100vw - 32px)) !important;
-        border-radius: 16px !important;
-        background: #0f172a !important;
-        border: 1px solid #334155 !important;
-        color: #f8fafc !important;
-        padding: 24px !important;
-        box-shadow: 0 24px 60px rgba(0,0,0,0.45) !important;
-      }
-      #ffcs-vtop-success .ffcs-title {
-        font-size: 18px !important;
-        font-weight: 700 !important;
-        margin: 0 0 8px !important;
-      }
-      #ffcs-vtop-success .ffcs-subtitle {
-        font-size: 13px !important;
-        color: #94a3b8 !important;
-        margin: 0 0 20px !important;
-        line-height: 1.5 !important;
-      }
-      #ffcs-vtop-success .ffcs-stat {
-        display: flex !important;
-        align-items: center !important;
-        gap: 10px !important;
-        font-size: 14px !important;
-        margin: 0 0 10px !important;
-      }
-      #ffcs-vtop-success .ffcs-check {
-        color: #22c55e !important;
-        font-weight: 700 !important;
-      }
-      #ffcs-vtop-success .ffcs-actions {
-        display: flex !important;
-        gap: 10px !important;
-        margin-top: 22px !important;
-      }
-      #ffcs-vtop-success .ffcs-btn-primary {
-        flex: 1 !important;
-        border: none !important;
-        border-radius: 10px !important;
-        background: #16a34a !important;
-        color: white !important;
-        font-size: 14px !important;
-        font-weight: 700 !important;
-        padding: 12px 16px !important;
-        cursor: pointer !important;
-      }
-      #ffcs-vtop-success .ffcs-btn-primary:hover { background: #15803d !important; }
-      #ffcs-vtop-success .ffcs-btn-secondary {
-        border: 1px solid #475569 !important;
-        border-radius: 10px !important;
-        background: transparent !important;
-        color: #cbd5e1 !important;
-        font-size: 14px !important;
-        padding: 12px 14px !important;
-        cursor: pointer !important;
-      }
-    </style>
-    <div class="ffcs-card" role="dialog" aria-modal="true">
-      <h2 class="ffcs-title">VTOP data ready</h2>
-      <p class="ffcs-subtitle">Your registration data was scraped successfully. Open Ultimate FFCS when you're ready to import.</p>
-      <div class="ffcs-stat"><span class="ffcs-check">\u2713</span><span>Scraped ${o.courses.length} courses</span></div>
-      <div class="ffcs-stat"><span class="ffcs-check">\u2713</span><span>${e.toLocaleString()} faculty options</span></div>
+"use strict";(()=>{var x=/([A-Z]{2,6}\d{3,6}[A-Z]?)\s*[-–—]\s*(.+)/;function v(){return/vtop.*vit\.ac\.in|vtop.*vitap\.ac\.in|vtop.*vitbhopal\.ac\.in/.test(window.location.hostname)}function B(){let t=window.location.hostname;return t.includes("vitap")?"ap":t.includes("vitbhopal")?"bhopal":t.startsWith("vtopcc")?"chennai":t.includes("vit.ac.in")?"vellore":"unknown"}function Q(){return Array.from(document.querySelectorAll("select")).filter(t=>Array.from(t.options).filter(r=>r.value&&r.value!=="0"&&r.value!=="-1"&&r.value!=="").length>=2)}function q(t){let e=0;for(let r of t.options){let o=r.textContent?.trim()??"";(x.test(o)||x.test(r.value))&&e++}return e}function tt(t){let e=r=>(r.textContent??"").replace(/\s+/g," ").trim();for(let r of t)for(let o of document.querySelectorAll("label, th, td, span, div, p, b, strong")){let s=e(o);if(!s||s.length>120||!r.test(s))continue;let n=o.getAttribute("for");if(n){let l=document.getElementById(n);if(l instanceof HTMLSelectElement)return l}let c=o.closest("tr, .form-group, .row, fieldset, div")?.querySelector("select");if(c instanceof HTMLSelectElement)return c;let a=o.nextElementSibling;for(let l=0;l<3&&a;l++){if(a instanceof HTMLSelectElement)return a;let u=a.querySelector("select");if(u instanceof HTMLSelectElement)return u;a=a.nextElementSibling}}return null}function et(){let t=tt([/course\s*list/i,/select\s*course/i,/course\s*name/i,/course\s*code/i]);if(t&&q(t)>=1)return t;let e=null,r=0;for(let o of Q()){let s=q(o);s>r&&(r=s,e=o)}return r>=1?e:null}function ot(t){let e=tt([/curriculum\s*category/i,/course\s*category/i,/programme\s*category/i,/category/i]);if(e&&e!==t)return e;let r=Q().filter(n=>n!==t);if(r.length===0)return null;let o=null,s=-1;for(let n of r){let i=q(n),a=n.options.length-i*3;a>s&&(s=a,o=n)}return o}function rt(){return M()!==null}function M(){for(let t of document.querySelectorAll("table")){let e=t.querySelectorAll("tr");if(e.length<2)continue;let r=Array.from(e[0].querySelectorAll("th, td")).map(n=>n.textContent?.trim().toLowerCase()??""),o=r.findIndex(n=>/^slot/.test(n)),s=r.findIndex(n=>/^faculty|^professor/.test(n));if(o>=0&&s>=0)return t}return null}function nt(t){return Array.from(t.options).map(e=>`${e.value}\0${e.textContent?.trim()??""}`).join(`
+`)}function Ot(t){t.dispatchEvent(new Event("input",{bubbles:!0})),t.dispatchEvent(new Event("change",{bubbles:!0}))}function N(t,e){t.value=e,Ot(t)}function J(){if(document.querySelector('.glyphicon-refresh, .fa-spin, .fa-spinner, .spinner, [class*="loading"], [class*="loader"]'))return!0;let t=document.body?.innerText??"";return!!(/loading\.{0,3}/i.test(t.slice(0,5e3))&&Array.from(document.querySelectorAll("*")).some(r=>{if(!(r instanceof HTMLElement))return!1;let o=r.innerText?.trim()??"";if(!/^loading/i.test(o))return!1;let s=window.getComputedStyle(r);return s.display!=="none"&&s.visibility!=="hidden"}))}function $(){if(!v())return{mode:"none"};let t=et(),e=ot(t);return t&&e?{mode:"dropdown",curriculumSelect:e,courseSelect:t}:rt()?{mode:"table"}:{mode:"none"}}function z(){return $().mode!=="none"}var Lt=/^L\d+(\+L\d+)*$/;function kt(t){let e=t.replace(/\s+/g,"").toUpperCase();return e?Lt.test(e)?"lab":e==="NIL"||/^[A-G]\d(\+T[A-G]{1,2}\d)*$/.test(e)||/^T[A-G]{1,2}\d$/.test(e)?"theory":"unknown":"unknown"}function Pt(t){let e=t.split("+")[0],r=/(\d)$/.exec(e);return r?r[1]==="1"?"Morning":"Afternoon":null}function _(t){if(t.toUpperCase()==="NIL")return 0;let e=0;for(let r of t.split("+")){let o=r.trim();/^[A-Za-z]\d$/.test(o)?e+=2:/^T/.test(o)&&(e+=1)}return e}function Vt(t){let e=/L(\d+)/.exec(t.split("+")[0]);return e?Number(e[1])>=31?"Morning":"Afternoon":null}function st(t){let e=t.split("+").filter(Boolean);return Math.floor(e.length/2)}function Mt(t,e,r){let o=[],s=(n,i,c)=>({professorName:t,theorySlots:n?n.split("+"):[],labSlots:i?[i]:[],credits:c,program:null,notes:""});if(e.length===0&&r.length===0)return o;if(e.length>0&&r.length>0)for(let n of e){if(n.toUpperCase()==="NIL"){o.push(s(n,null,_(n)));continue}let i=Pt(n),c=r.filter(a=>Vt(a)===i);if(c.length>0)for(let a of c)o.push(s(n,a,_(n)+st(a)));else o.push(s(n,null,_(n)))}else if(e.length>0)for(let n of e)o.push(s(n,null,_(n)));else for(let n of r)o.push(s(null,n,st(n)));return o}function A(t){let e=new Map;for(let o of t){if(!o.courseCode||o.slotKind==="unknown")continue;e.has(o.courseCode)||e.set(o.courseCode,{name:o.courseName||o.courseCode,profs:new Map});let s=e.get(o.courseCode);o.courseName&&(!s.name||s.name===o.courseCode)&&(s.name=o.courseName),s.profs.has(o.professorName)||s.profs.set(o.professorName,{theory:[],lab:[]});let n=s.profs.get(o.professorName),i=o.slot.replace(/\s+/g,"").toUpperCase();o.slotKind==="theory"&&!n.theory.includes(i)&&n.theory.push(i),o.slotKind==="lab"&&!n.lab.includes(i)&&n.lab.push(i)}let r=[];for(let[o,s]of e){let n=[];for(let[l,u]of s.profs)n.push(...Mt(l,u.theory,u.lab));if(n.length===0)continue;let i=new Map;for(let l of n)i.set(l.credits,(i.get(l.credits)??0)+1);let c=0,a=-1;for(let[l,u]of i)u>a&&(a=u,c=l);r.push({courseCode:o,courseName:s.name,credits:c,options:n})}return r}function it(t,e){let r=[...e.theorySlots].sort().join("+"),o=[...e.labSlots].sort().join("+");return`${t}|${e.professorName}|${r}|${o}`}function I(t){let e=0,r=[];for(let o of t){let s=new Set,n=[];for(let i of o.options){let c=it(o.courseCode,i);if(s.has(c)){e++;continue}s.add(c),n.push(i)}n.length>0&&r.push({...o,options:n})}return{courses:r,duplicateCount:e}}function E(t){let{courses:e,duplicateCount:r}=I(A(t)),o=new Map;for(let s of e)for(let n of s.options)o.set(n.professorName.toLowerCase(),{name:n.professorName});return{campus:B(),semesterLabel:"",courses:e,slots:[],faculty:Array.from(o.values()),capturedAt:new Date().toISOString(),source:"dom"}}function j(t,e,r){let o=[],s=t.querySelectorAll("tr");if(s.length<2)return o;let n=Array.from(s[0].querySelectorAll("th, td")).map(p=>p.textContent?.trim().toLowerCase()??""),i=p=>n.findIndex(m=>p.test(m)),c=i(/^slot/),a=i(/^faculty|^professor/),l=i(/course\s*code|^code$/),u=i(/course\s*name|^name$/),C=i(/note|remark/),w=n.findIndex(p=>/code.*name|code.*course/.test(p));if(c===-1||a===-1)return o;for(let p=1;p<s.length;p++){let m=s[p].querySelectorAll("td, th");if(m.length<2)continue;let g=S=>S>=0&&S<m.length?m[S]?.textContent?.trim()??"":"",d=e;if(l>=0&&(d=g(l).match(/([A-Z]{2,6}\d{3,6}[A-Z]?)/)?.[1]?.toUpperCase()??d),!d&&w>=0&&(d=g(w).match(/([A-Z]{2,6}\d{3,6}[A-Z]?)/)?.[1]?.toUpperCase()??d),!d)continue;let y=r||d;if(u>=0&&g(u)&&(y=g(u)),w>=0){let S=g(w).match(x)?.[2]?.trim()??"";S&&(y=S)}let b=g(a).replace(/\s+/g," ").trim(),D=g(c).replace(/\s+/g,"").toUpperCase();!b||!D||o.push({courseCode:d,courseName:y,professorName:b,slot:D,slotKind:kt(D)})}return o}function at(t){let e=[];for(let r of t.options){let o=r.value,s=r.textContent?.trim()??"";!o||o==="0"||o==="-1"||!s||/^select|^choose|^--/i.test(s)||e.push({value:o,label:s})}return e}function ct(t){let e=t.textContent?.trim()??"",r=e.match(x);if(r)return{code:r[1].toUpperCase(),name:r[2].trim()};let o=t.value.match(/([A-Z]{2,6}\d{3,6}[A-Z]?)/i);return o?{code:o[1].toUpperCase(),name:e||o[1].toUpperCase()}:null}function lt(t){let e=[];for(let r of t.options){let o=r.value,s=r.textContent?.trim()??"";if(!o||o==="0"||o==="-1"||!s||/^select|^choose|^--/i.test(s))continue;let n=ct(r);n&&e.push({value:o,code:n.code,name:n.name,label:s})}return e}var R=45e3,h=class extends Error{constructor(){super("Scrape cancelled"),this.name="ScrapeCancelledError"}};function pt(t){if(t?.aborted)throw new h}function ft(t,e){return new Promise((r,o)=>{if(e?.aborted){o(new h);return}let s=window.setTimeout(r,t);e?.addEventListener("abort",()=>{window.clearTimeout(s),o(new h)},{once:!0})})}async function F(t,e={}){let r=e.timeoutMs??R,o=e.pollMs??50,s=Date.now();for(;Date.now()-s<r;){if(pt(e.signal),t())return;await ft(o,e.signal)}throw new Error("Timed out waiting for condition.")}async function mt(t,e=R){J()&&await F(()=>!J(),{timeoutMs:e,signal:t}).catch(()=>{})}async function dt(t,e,r){await F(()=>nt(t)!==e,{signal:r,timeoutMs:R}),await mt(r)}async function K(t,e,r){if(await mt(r),t===""){await F(()=>e().length>0,{signal:r,timeoutMs:R});return}await F(()=>{let o=e();return o.length>0&&o!==t},{signal:r,timeoutMs:R})}var ut=!1,O=0,gt=0;function Nt(){if(ut)return;ut=!0;let t=()=>{gt=Date.now()},e=window.fetch.bind(window);window.fetch=async(...n)=>{O++,t();try{return await e(...n)}finally{O--,t()}};let r=window.XMLHttpRequest,o=r.prototype.open,s=r.prototype.send;r.prototype.open=function(...n){return this.__ffcsTracked=!0,o.apply(this,n)},r.prototype.send=function(...n){return this.__ffcsTracked&&(O++,t(),this.addEventListener("loadend",()=>{O--,t()},{once:!0})),s.apply(this,n)}}async function U(t=300,e,r=R){Nt();let o=Date.now();for(;Date.now()-o<r;)if(pt(e),await ft(50,e),O===0&&Date.now()-gt>=t)return}async function Z(t,e,r,o){let s=Array.from(r.options).map(n=>`${n.value}\0${n.textContent?.trim()??""}`).join(`
+`);N(t,e.value),await dt(r,s,o),await U(300,o)}async function G(t,e,r,o){N(t,e.value),await r(),await U(300,o)}function L(t){return t.map(e=>`${e.professorName}|${e.slot}`).join(";")}function k(t){let e=M();return e?j(e,t.code,t.name):[]}function wt(){let t=M();if(!t)return[];let e="",r="";for(let o of document.querySelectorAll("select")){for(let s of o.options){if(!s.selected)continue;let i=(s.textContent?.trim()??"").match(/([A-Z]{2,6}\d{3,6}[A-Z]?)\s*[-–—]\s*(.+)/);if(i){e=i[1].toUpperCase(),r=i[2].trim();break}}if(e)break}return j(t,e,r||e)}function Ct(t,e){return t.concat(e)}function X(t){let{courses:e}=I(A(t));return e.reduce((r,o)=>r+o.options.length,0)}function H(t){let e=new Set;for(let r of t)r.courseCode&&e.add(r.courseCode);return e.size}function P(t){let{duplicateCount:e}=I(A(t));return e}function bt(t,e,r){if(e<=0||r<=0)return null;let s=(Date.now()-t)/e,n=Math.max(0,r-e);return Math.ceil(n*s/1e3)}function V(t){return{curriculumLabel:"",curriculumIndex:0,curriculumTotal:0,courseLabel:"",courseIndex:0,courseTotal:0,coursesCollected:0,optionsCollected:0,estimatedSecondsRemaining:null,failedCount:0,duplicateCount:0,...t}}async function $t(t,e,r,o,s,n,i,c){let a=[...i],l=[...c],u=0,C=0,w=L(a);for(let p=0;p<r.length;p++){let m=r[p];try{await Z(t,m,e,s)}catch(d){if(d instanceof h)throw d;console.error("[Ultimate FFCS] Curriculum category failed:",m.label,d);continue}let g=lt(e);C+=g.length;for(let d=0;d<g.length;d++){let y=g[d];u++,o(V({phase:"scraping",curriculumLabel:m.label,curriculumIndex:p+1,curriculumTotal:r.length,courseLabel:y.name,courseIndex:u,courseTotal:C,coursesCollected:H(a),optionsCollected:X(a),estimatedSecondsRemaining:bt(n,u-1,C),failedCount:l.length,duplicateCount:P(a)}));try{await G(e,y,async()=>{await K(w,()=>L(k(y)),s)},s);let b=k(y);if(b.length===0)throw new Error("No faculty allocation rows found.");w=L(b),a=Ct(a,b)}catch(b){if(b instanceof h)throw b;l.push({category:m,course:y,error:b instanceof Error?b.message:"Unknown error"}),console.error("[Ultimate FFCS] Course failed:",y.code,b)}}}return{rows:a,failedCourses:l,duplicateCount:P(a),totalCoursesAttempted:u}}async function W(t,e={}){let r=$();if(r.mode==="none")throw new Error("NOT_REGISTRATION_PAGE");let o=Date.now();if(t(V({phase:"scraping"})),r.mode==="table"){let l=wt();if(l.length===0)throw new Error("NO_DATA");let u=E(l),C={rows:l,failedCourses:[],duplicateCount:P(l),totalCoursesAttempted:H(l)};return t(V({phase:"complete",coursesCollected:u.courses.length,optionsCollected:u.courses.reduce((w,p)=>w+p.options.length,0),duplicateCount:C.duplicateCount})),{result:u,scrapeMeta:C}}let{curriculumSelect:s,courseSelect:n}=r,i=at(s);if(i.length===0)throw new Error("NO_CURRICULUM_CATEGORIES");let c;if(e.retryOnly&&e.retryOnly.length>0){let l=e.retryOnly.length,u=[...e.existingRows??[]],C=[],w=0;for(let p of e.retryOnly){t(V({phase:"scraping",curriculumLabel:p.category.label,curriculumIndex:1,curriculumTotal:1,courseLabel:p.course.name,courseIndex:w+1,courseTotal:l,coursesCollected:H(u),optionsCollected:X(u),estimatedSecondsRemaining:bt(o,w,l),failedCount:C.length}));try{await Z(s,p.category,n,e.signal);let m="";await G(n,p.course,async()=>{await K(m,()=>L(k(p.course)),e.signal)},e.signal);let g=k(p.course);if(g.length===0)throw new Error("No faculty allocation rows found.");u.push(...g),w++}catch(m){if(m instanceof h)throw m;C.push({...p,error:m instanceof Error?m.message:"Unknown error"})}}c={rows:u,failedCourses:C,duplicateCount:P(u),totalCoursesAttempted:e.retryOnly.length}}else c=await $t(s,n,i,t,e.signal,o,e.existingRows??[],[]);if(c.rows.length===0)throw new Error("NO_DATA");let a=E(c.rows);return t(V({phase:"complete",coursesCollected:a.courses.length,optionsCollected:a.courses.reduce((l,u)=>l+u.options.length,0),failedCount:c.failedCourses.length,duplicateCount:c.duplicateCount,courseTotal:c.totalCoursesAttempted,courseIndex:c.totalCoursesAttempted})),{result:a,scrapeMeta:c}}async function Y(t,e){let r=new URL("/api/vtop-import",e).toString(),o=await fetch(r,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(t)});if(!o.ok){let n=await o.json().catch(()=>null);throw new Error(n?.error??"Failed to upload scraped data.")}let s=await o.json();if(!s.token)throw new Error("Import token missing from server response.");return s.token}var f="ffcs-vtop-overlay",ht=`
+  #${f} {
+    all: initial;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 2147483647 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: rgba(15, 23, 42, 0.72) !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  }
+  #${f} * { box-sizing: border-box !important; }
+  #${f} .ffcs-card {
+    width: min(420px, calc(100vw - 32px)) !important;
+    border-radius: 16px !important;
+    background: #0f172a !important;
+    border: 1px solid #334155 !important;
+    color: #f8fafc !important;
+    padding: 24px !important;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.45) !important;
+  }
+  #${f} .ffcs-brand {
+    font-size: 12px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.08em !important;
+    text-transform: uppercase !important;
+    color: #64748b !important;
+    margin: 0 0 4px !important;
+  }
+  #${f} .ffcs-title {
+    font-size: 18px !important;
+    font-weight: 700 !important;
+    margin: 0 0 16px !important;
+  }
+  #${f} .ffcs-section {
+    margin: 0 0 14px !important;
+  }
+  #${f} .ffcs-label {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.06em !important;
+    color: #64748b !important;
+    margin: 0 0 4px !important;
+  }
+  #${f} .ffcs-value {
+    font-size: 14px !important;
+    color: #e2e8f0 !important;
+    margin: 0 !important;
+    line-height: 1.4 !important;
+  }
+  #${f} .ffcs-muted {
+    font-size: 12px !important;
+    color: #94a3b8 !important;
+    margin: 2px 0 0 !important;
+  }
+  #${f} .ffcs-stat-row {
+    display: flex !important;
+    justify-content: space-between !important;
+    font-size: 13px !important;
+    margin: 0 0 6px !important;
+    color: #cbd5e1 !important;
+  }
+  #${f} .ffcs-stat-row strong {
+    color: #f8fafc !important;
+    font-weight: 600 !important;
+  }
+  #${f} .ffcs-check {
+    color: #22c55e !important;
+    font-weight: 700 !important;
+    margin-right: 8px !important;
+  }
+  #${f} .ffcs-warning {
+    color: #fbbf24 !important;
+    font-size: 13px !important;
+    margin: 12px 0 0 !important;
+    line-height: 1.5 !important;
+  }
+  #${f} .ffcs-actions {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    margin-top: 20px !important;
+  }
+  #${f} .ffcs-btn-primary {
+    width: 100% !important;
+    border: none !important;
+    border-radius: 10px !important;
+    background: #16a34a !important;
+    color: white !important;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    padding: 12px 16px !important;
+    cursor: pointer !important;
+  }
+  #${f} .ffcs-btn-primary:hover { background: #15803d !important; }
+  #${f} .ffcs-btn-secondary {
+    width: 100% !important;
+    border: 1px solid #475569 !important;
+    border-radius: 10px !important;
+    background: transparent !important;
+    color: #cbd5e1 !important;
+    font-size: 14px !important;
+    padding: 12px 14px !important;
+    cursor: pointer !important;
+  }
+  #${f} .ffcs-btn-secondary:hover {
+    border-color: #64748b !important;
+    color: #f8fafc !important;
+  }
+  #${f} .ffcs-btn-cancel {
+    width: 100% !important;
+    border: 1px solid #475569 !important;
+    border-radius: 10px !important;
+    background: transparent !important;
+    color: #94a3b8 !important;
+    font-size: 13px !important;
+    padding: 10px 14px !important;
+    cursor: pointer !important;
+  }
+`;function T(){document.getElementById(f)?.remove()}function xt(){let t=document.getElementById(f);return t||(t=document.createElement("div"),t.id=f,document.body.appendChild(t)),t}function St(t){T();let e=xt();return e.innerHTML=`
+    <style>${ht}</style>
+    <div class="ffcs-card" role="dialog" aria-modal="true" aria-live="polite">
+      <p class="ffcs-brand">Ultimate FFCS</p>
+      <h2 class="ffcs-title">Scraping VTOP\u2026</h2>
+      <div id="ffcs-progress-body"></div>
       <div class="ffcs-actions">
-        <button type="button" class="ffcs-btn-primary" id="ffcs-open-planner">Open Ultimate FFCS</button>
-        <button type="button" class="ffcs-btn-secondary" id="ffcs-close-success">Close</button>
+        <button type="button" class="ffcs-btn-cancel" id="ffcs-cancel-scrape">Cancel</button>
       </div>
     </div>
-  `,document.body.appendChild(r);let n=new URL("/planner",s);n.searchParams.set(R,t),r.querySelector("#ffcs-open-planner")?.addEventListener("click",()=>{window.location.href=n.toString()}),r.querySelector("#ffcs-close-success")?.addEventListener("click",()=>{A(),window.__ffcsVtopBookmarklet=!1})}async function j(o,t){let s=new URL("/api/vtop-import",t).toString(),e=await fetch(s,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(o)});if(!e.ok){let n=await e.json().catch(()=>null);throw new Error(n?.error??"Failed to upload scraped data.")}let r=await e.json();if(!r.token)throw new Error("Import token missing from server response.");return r.token}async function q(){if(!window.__ffcsVtopBookmarklet){if(window.__ffcsVtopBookmarklet=!0,!v()){alert("This bookmark only works on the VTOP Course Registration page."),window.__ffcsVtopBookmarklet=!1;return}if(!k()){alert(`This bookmark only works on the VTOP Course Registration page.
+  `,e.querySelector("#ffcs-cancel-scrape")?.addEventListener("click",t),{update(r){let o=e.querySelector("#ffcs-progress-body");o&&(o.innerHTML=r)},remove:T}}function vt(t){let e=t.curriculumTotal>0?`(${t.curriculumIndex} / ${t.curriculumTotal})`:"",r=t.courseTotal>0?`(${t.courseIndex} / ${t.courseTotal})`:"",o=t.estimatedSecondsRemaining!==null?`<div class="ffcs-stat-row"><span>Estimated time remaining</span><strong>${t.estimatedSecondsRemaining} seconds</strong></div>`:"";return`
+    <div class="ffcs-section">
+      <p class="ffcs-label">Curriculum</p>
+      <p class="ffcs-value">${yt(t.curriculumLabel||"\u2014")}</p>
+      <p class="ffcs-muted">${e}</p>
+    </div>
+    <div class="ffcs-section">
+      <p class="ffcs-label">Course</p>
+      <p class="ffcs-value">${yt(t.courseLabel||"\u2014")}</p>
+      <p class="ffcs-muted">${r}</p>
+    </div>
+    <div class="ffcs-section">
+      <p class="ffcs-label">Collected</p>
+      <div class="ffcs-stat-row"><span>Courses</span><strong>${t.coursesCollected.toLocaleString()}</strong></div>
+      <div class="ffcs-stat-row"><span>Faculty Options</span><strong>${t.optionsCollected.toLocaleString()}</strong></div>
+      ${o}
+    </div>
+  `}function Rt(t){T();let e=xt(),r=t.totalAttempted-t.failedCount,o=t.duplicateCount>0?`${t.duplicateCount.toLocaleString()} duplicate options merged`:"No duplicates found",s=t.failedCount>0?`
+        <p class="ffcs-warning">
+          ${r.toLocaleString()} / ${t.totalAttempted.toLocaleString()} courses scraped<br>
+          ${t.failedCount.toLocaleString()} course${t.failedCount===1?"":"s"} failed
+        </p>
+      `:"",n=t.failedCount>0&&t.onRetryFailed?'<button type="button" class="ffcs-btn-secondary" id="ffcs-retry-failed">Retry Failed Courses</button>':"";e.innerHTML=`
+    <style>${ht}</style>
+    <div class="ffcs-card" role="dialog" aria-modal="true">
+      <p class="ffcs-brand">Ultimate FFCS</p>
+      <h2 class="ffcs-title"><span class="ffcs-check">\u2713</span>Scraping Complete</h2>
+      <div class="ffcs-stat-row"><span>Courses</span><strong>${t.courseCount.toLocaleString()}</strong></div>
+      <div class="ffcs-stat-row"><span>Faculty Options</span><strong>${t.optionCount.toLocaleString()}</strong></div>
+      <div class="ffcs-stat-row"><span>Deduplication</span><strong>${o}</strong></div>
+      ${s}
+      <div class="ffcs-actions">
+        <button type="button" class="ffcs-btn-primary" id="ffcs-open-planner">Open Ultimate FFCS</button>
+        ${n}
+        <button type="button" class="ffcs-btn-secondary" id="ffcs-close-overlay">Close</button>
+      </div>
+    </div>
+  `,e.querySelector("#ffcs-open-planner")?.addEventListener("click",t.onOpenPlanner),e.querySelector("#ffcs-retry-failed")?.addEventListener("click",()=>{t.onRetryFailed?.()}),e.querySelector("#ffcs-close-overlay")?.addEventListener("click",t.onClose)}function yt(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;")}var Tt="vtopImport",At="https://ffcsmaker.vercel.app/planner";function It(){try{let e=new URLSearchParams(window.location.search).get("ffcsPlannerUrl");if(e)return e.replace(/\/planner\/?$/,"")}catch{}return At.replace(/\/planner\/?$/,"")}function Ft(t){return t.courses.reduce((e,r)=>e+r.options.length,0)}async function Ut(t,e,r,o){let s=o??await Y(t,r);return{payload:t,token:s,failedCourses:e.failedCourses,totalAttempted:e.totalCoursesAttempted,duplicateCount:e.duplicateCount,rows:e.rows}}function Ht(t,e){let r=Ft(t.payload),o=new URL("/planner",e);o.searchParams.set(Tt,t.token),Rt({courseCount:t.payload.courses.length,optionCount:r,duplicateCount:t.duplicateCount,failedCount:t.failedCourses.length,totalAttempted:t.totalAttempted,onOpenPlanner:()=>{window.location.href=o.toString()},onRetryFailed:t.failedCourses.length>0?()=>{T(),Et(e,{retryOnly:t.failedCourses,existingRows:t.rows,priorTotalAttempted:t.totalAttempted})}:void 0,onClose:()=>{T(),window.__ffcsVtopBookmarklet=!1}})}async function Et(t,e={}){let r=new AbortController,o=St(()=>r.abort()),s=n=>{n.phase==="scraping"&&o.update(vt(n)),n.phase==="uploading"&&o.update('<p class="ffcs-value">Uploading results\u2026</p>')};try{let{result:n,scrapeMeta:i}=await W(s,{signal:r.signal,retryOnly:e.retryOnly,existingRows:e.existingRows});s({phase:"uploading"});let c=await Ut(n,{...i,totalCoursesAttempted:e.priorTotalAttempted??i.totalCoursesAttempted},t);o.remove(),Ht(c,t)}catch(n){if(o.remove(),n instanceof Error&&n.message==="Scrape cancelled"){window.__ffcsVtopBookmarklet=!1;return}n instanceof Error&&n.message==="NOT_REGISTRATION_PAGE"?alert("This bookmark only works on the Course Registration page."):n instanceof Error&&n.message==="NO_DATA"?alert(`No registration data found.
 
-Navigate to Course Registration, then try again.`),window.__ffcsVtopBookmarklet=!1;return}try{let o=S();if(o.courses.length===0){alert(`No registration data found.
-Refresh the page after your courses have loaded.`),window.__ffcsVtopBookmarklet=!1;return}let t=B(),s=await j(o,t);$(o,s,t)}catch{alert("Unable to import scraped data."),window.__ffcsVtopBookmarklet=!1}}}typeof window<"u"&&q();})();
+Make sure you are on the Course Registration page with curriculum and course dropdowns visible.`):(alert("Unable to scrape VTOP registration data. Please try again."),console.error("[Ultimate FFCS]",n)),window.__ffcsVtopBookmarklet=!1}}async function Dt(){if(window.__ffcsVtopBookmarklet)return;if(window.__ffcsVtopBookmarklet=!0,!v()){alert("This bookmark only works on the Course Registration page."),window.__ffcsVtopBookmarklet=!1;return}if(!z()){alert("This bookmark only works on the Course Registration page."),window.__ffcsVtopBookmarklet=!1;return}let t=It();await Et(t)}typeof window<"u"&&Dt();})();
