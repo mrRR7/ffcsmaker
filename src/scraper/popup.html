@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FFCS Scraper</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 400px;
+      min-height: 300px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 13px;
+      background: #0f172a;
+      color: #e2e8f0;
+    }
+    .container { padding: 16px; }
+    h1 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .subtitle {
+      color: #64748b;
+      font-size: 11px;
+      margin-bottom: 16px;
+    }
+    .card {
+      background: #1e293b;
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .card-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #64748b;
+      margin-bottom: 8px;
+    }
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid #334155;
+    }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { color: #94a3b8; }
+    .stat-value { font-weight: 600; }
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-bottom: 8px;
+    }
+    .btn:last-child { margin-bottom: 0; }
+    .btn-primary { background: #3b82f6; color: white; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-success { background: #22c55e; color: white; }
+    .btn-success:hover { background: #16a34a; }
+    .btn-secondary { background: #334155; color: #e2e8f0; }
+    .btn-secondary:hover { background: #475569; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-danger:hover { background: #dc2626; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid #334155;
+      color: #94a3b8;
+    }
+    .btn-outline:hover { background: #1e293b; color: #e2e8f0; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .badge-active { background: #22c55e; color: #052e16; }
+    .badge-inactive { background: #64748b; color: #0f172a; }
+    .badge-paused { background: #f59e0b; color: #451a03; }
+    #status-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-active { background: #22c55e; }
+    .dot-inactive { background: #64748b; }
+    .dot-paused { background: #f59e0b; }
+    .log-entry {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: #94a3b8;
+      padding: 2px 0;
+    }
+    .actions { margin-top: 8px; }
+    .link {
+      color: #3b82f6;
+      text-decoration: none;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .link:hover { text-decoration: underline; }
+    .empty-state {
+      text-align: center;
+      padding: 24px 0;
+      color: #64748b;
+    }
+    .empty-state .icon { font-size: 32px; margin-bottom: 8px; }
+    .empty-state p { font-size: 12px; }
+    hr { border: none; border-top: 1px solid #334155; margin: 12px 0; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎓 FFCS Scraper</h1>
+    <p class="subtitle">Extract course &amp; faculty data from VTOP registration pages</p>
+
+    <div id="status-indicator">
+      <span class="dot dot-inactive" id="status-dot"></span>
+      <span id="status-text">Checking...</span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Captured Data</div>
+      <div class="stat-row">
+        <span class="stat-label">Courses</span>
+        <span class="stat-value" id="course-count">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Faculty/Options</span>
+        <span class="stat-value" id="faculty-count">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Requests captured</span>
+        <span class="stat-value" id="req-count">—</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Campus</span>
+        <span class="stat-value" id="campus-name">—</span>
+      </div>
+    </div>
+
+    <div id="actions-container">
+      <button class="btn btn-success" id="refresh-btn">🔄 Refresh Data from Page</button>
+      <button class="btn btn-primary" id="export-json-btn">📄 Export JSON</button>
+      <button class="btn btn-primary" id="export-csv-btn">📊 Export CSV</button>
+      <button class="btn btn-outline" id="open-planner-btn">🔗 Open FFCS Planner</button>
+    </div>
+
+    <hr />
+
+    <div class="card">
+      <div class="card-title">How to Use</div>
+      <ol style="padding-left: 16px; color: #94a3b8; font-size: 12px; line-height: 1.8;">
+        <li>Log in to <strong>VTOP</strong> and go to the <strong>course registration</strong> page</li>
+        <li>The scraper automatically intercepts network data as pages load</li>
+        <li>A floating panel will appear on the VTOP page with live stats</li>
+        <li>Click <strong>Export JSON/CSV</strong> here or from the panel</li>
+        <li>Import the JSON into FFCS Planner or open it directly</li>
+      </ol>
+    </div>
+
+    <div id="log-container" class="card" style="max-height: 120px; overflow-y: auto;">
+      <div class="card-title">Activity Log</div>
+      <div id="log-entries">
+        <div class="log-entry">Open a VTOP course registration page to start capturing...</div>
+      </div>
+    </div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
