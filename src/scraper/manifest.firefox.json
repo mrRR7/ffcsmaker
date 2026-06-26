@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "ffcs-scraper@ffcsmaker.app",
+      "strict_min_version": "113.0"
+    }
+  },
+  "name": "FFCS Planner — VTOP Scraper",
+  "version": "1.0.0",
+  "description": "Extracts course, faculty, and slot data from VTOP into the FFCS Planner format. One-click export to JSON/CSV.",
+  "permissions": ["storage"],
+  "host_permissions": [
+    "*://vtop.vit.ac.in/*",
+    "*://vtopcc.vit.ac.in/*",
+    "*://vtop.vitap.ac.in/*",
+    "*://vtop.vitbhopal.ac.in/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://vtop.vit.ac.in/*",
+        "*://vtopcc.vit.ac.in/*",
+        "*://vtop.vitap.ac.in/*",
+        "*://vtop.vitbhopal.ac.in/*",
+        "*://vtopbeta.vit.ac.in/*"
+      ],
+      "js": ["vtop-network-interceptor.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "background": {
+    "scripts": ["background.js"]
+  },
+  "action": {
+    "default_title": "FFCS Scraper",
+    "default_popup": "popup.html"
+  }
+}
