@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import toast from "react-hot-toast";
+import { Download } from "lucide-react";
 import { ImportDropzone } from "./ImportDropzone";
 import { ImportPreview } from "./ImportPreview";
 import { ImportValidationPanel } from "./ImportValidationPanel";
@@ -12,13 +13,17 @@ import { validateAndParseRow } from "./validateImport";
 import { transformToCourses } from "./transformImport";
 import { useAppStore } from "@/store/useAppStore";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { VtopImportModal } from "@/features/vtop-scraper/components/VtopImportModal";
 
 export function ImportManager() {
   const [step, setStep] = useState<ImportStep>("upload");
   const [parsedRows, setParsedRows] = useState<ParsedImportRow[]>([]);
-  
+  const [vtopModalOpen, setVtopModalOpen] = useState(false);
+
   const courses = useAppStore((state) => state.courses);
   const slots = useAppStore((state) => state.slots);
+  const campus = useAppStore((state) => state.campus);
   const constraints = useAppStore((state) => state.constraints);
   
   const setCourses = useAppStore((state) => (state as any).setCourses);
@@ -91,10 +96,19 @@ export function ImportManager() {
   return (
     <Card className="border-border shadow-sm">
       <CardHeader className="pb-4">
-        <CardTitle className="text-2xl">Bulk Import</CardTitle>
-        <CardDescription>
-          Instantly set up your semester planner by uploading your courses from a spreadsheet.
-        </CardDescription>
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <CardTitle className="text-2xl">Bulk Import</CardTitle>
+            <CardDescription>
+              Instantly set up your semester planner by uploading your courses from a
+              spreadsheet.
+            </CardDescription>
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={() => setVtopModalOpen(true)}>
+            <Download className="h-4 w-4" />
+            Import from VTOP
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="pt-2">
         <ImportStepper currentStepId={step} />
@@ -129,6 +143,11 @@ export function ImportManager() {
           )}
         </div>
       </CardContent>
+      <VtopImportModal
+        open={vtopModalOpen}
+        onClose={() => setVtopModalOpen(false)}
+        campus={campus}
+      />
     </Card>
   );
 }

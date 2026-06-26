@@ -35,6 +35,7 @@ import { CAMPUS_LABELS, RankingMode } from "@/engine/types";
 import { usePlannerGeneration } from "./usePlannerGeneration";
 import { PLANNER_TABS, PlannerTabId } from "./constants";
 import { prewarmCatalogCache } from "@/lib/catalogCache";
+import { VtopScraperRecommendation } from "./VtopScraperRecommendation";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/utils/cn";
 
@@ -281,6 +282,12 @@ export function DesktopPlannerLayout() {
           );
         })}
       </div>
+
+      <VtopScraperRecommendation
+        campus={campus}
+        hasImportedData={courses.length > 0}
+        className="mb-5"
+      />
 
       <motion.div
         key={tab}

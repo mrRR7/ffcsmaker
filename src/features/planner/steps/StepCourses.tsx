@@ -8,6 +8,7 @@ import { CourseBuilder } from "@/features/courses/CourseBuilder";
 import { CreditCounter } from "@/components/CreditCounter";
 import { useAppStore } from "@/store/useAppStore";
 import { PLANNER_TABS, PlannerTabId } from "../constants";
+import { VtopScraperRecommendation } from "../VtopScraperRecommendation";
 import { cn } from "@/utils/cn";
 
 interface StepCoursesProps {
@@ -17,6 +18,7 @@ interface StepCoursesProps {
 
 export function StepCourses({ showNotice, onDismissNotice }: StepCoursesProps) {
   const courses = useAppStore((state) => state.courses);
+  const campus = useAppStore((state) => state.campus);
   const [tab, setTab] = useState<PlannerTabId>("search");
 
   return (
@@ -84,6 +86,11 @@ export function StepCourses({ showNotice, onDismissNotice }: StepCoursesProps) {
           );
         })}
       </div>
+
+      <VtopScraperRecommendation
+        campus={campus}
+        hasImportedData={courses.length > 0}
+      />
 
       <div>
         {tab === "search" ? <CatalogSearch /> : null}
