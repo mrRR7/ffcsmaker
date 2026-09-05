@@ -12,3 +12,5 @@ yarn-error.log*
 pnpm-debug.log*
 cal
 .vercel
+.claude
+tsconfig.tsbuildinfo
