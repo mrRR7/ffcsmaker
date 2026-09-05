@@ -1,8 +1,25 @@
 import { nanoid } from "nanoid";
 import { NextResponse } from "next/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { getClientIp, rateLimit } from "@/lib/rateLimit";
+
+// Unauthenticated write endpoint: cap how often one client can create share
+// links so it can't be scripted into a storage/cost abuse vector.
+const SHARE_CREATE_LIMIT = { max: 20, windowMs: 10 * 60 * 1000 };
 
 export async function POST(req: Request) {
+  const clientIp = getClientIp(req);
+  const { allowed, retryAfterMs } = rateLimit(`share-timetable:${clientIp}`, SHARE_CREATE_LIMIT);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many share links created. Try again later." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil(retryAfterMs / 1000)) }
+      }
+    );
+  }
+
   try {
     const body = await req.json();
     const { snapshot } = body;
