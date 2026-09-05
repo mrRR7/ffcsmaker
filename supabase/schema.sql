@@ -1,4 +1,5 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 CREATE TABLE IF NOT EXISTS semesters (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -38,8 +39,15 @@ CREATE TABLE IF NOT EXISTS courses (
 
 CREATE INDEX IF NOT EXISTS courses_semester_idx ON courses(semester_id);
 CREATE INDEX IF NOT EXISTS courses_code_idx ON courses(course_code);
-CREATE INDEX IF NOT EXISTS courses_search_idx
-  ON courses USING gin(to_tsvector('english', course_code || ' ' || course_name));
+
+-- The catalog search route filters with ILIKE ('code%' / '%name%'), which a
+-- tsvector/full-text index cannot accelerate at all. Trigram indexes are
+-- what actually speeds up ILIKE prefix and substring matches.
+DROP INDEX IF EXISTS courses_search_idx;
+CREATE INDEX IF NOT EXISTS courses_code_trgm_idx
+  ON courses USING gin (course_code gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS courses_name_trgm_idx
+  ON courses USING gin (course_name gin_trgm_ops);
 
 CREATE TABLE IF NOT EXISTS course_options (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

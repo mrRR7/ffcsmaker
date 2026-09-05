@@ -7,20 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input, Select } from "@/components/ui/form";
-import { SlotVariant } from "@/engine/types";
 import { DBCourse, DBCourseOption, DBSemester } from "@/types/db";
 import { mergeCourseOptions } from "@/features/courses/mergeCourseOptions";
-import { getCached, setCache } from "@/lib/catalogCache";
+import { loadCatalog } from "@/lib/catalogCache";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/utils/cn";
-
-type SearchResponse = {
-  courses: DBCourse[];
-  semester: DBSemester | null;
-  semesterId: string | null;
-  slotVariant: SlotVariant | null;
-  error?: string;
-};
 
 type SemesterResponse = {
   semesters: DBSemester[];
@@ -35,7 +26,7 @@ export function CatalogSearch() {
   const [query, setQuery] = useState("");
   const [semesterId, setSemesterId] = useState("");
   const [semesters, setSemesters] = useState<DBSemester[]>([]);
-  const [courses, setCoursesResult] = useState<DBCourse[]>([]);
+  const [allCourses, setAllCourses] = useState<DBCourse[]>([]);
   const [expandedCourseId, setExpandedCourseId] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, boolean>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -86,57 +77,51 @@ export function CatalogSearch() {
     };
   }, [campus]);
 
+  // Fetch the whole campus/semester catalog once (cached — see
+  // src/lib/catalogCache.ts) instead of hitting the network per keystroke.
   useEffect(() => {
-    if (query.trim().length < 2 || !semesterId) {
-      setCoursesResult([]);
-      setIsLoading(false);
+    if (!semesterId) {
+      setAllCourses([]);
       return;
     }
 
-    const handle = window.setTimeout(async () => {
-      setIsLoading(true);
-      setCatalogError("");
-      try {
-        const trimmedQuery = query.trim();
-        const cached = getCached(trimmedQuery, campus, semesterId);
-        if (cached) {
-          setCoursesResult(cached.data);
-          setIsLoading(false);
-          return;
-        }
-        const params = new URLSearchParams({
-          q: trimmedQuery,
-          semester: semesterId,
-          campus
-        });
-        const response = await fetch(`/api/catalog/search?${params.toString()}`);
-        const json = (await response.json()) as SearchResponse;
-        if (!response.ok) {
-          setCatalogError(json.error ?? "Catalog search failed.");
-          setCoursesResult([]);
-          return;
-        }
-        setCache(
-          trimmedQuery,
-          campus,
-          json.courses ?? [],
-          json.semesterId ?? null,
-          json.slotVariant ?? null,
-          semesterId
-        );
-        setCoursesResult(json.courses ?? []);
-      } catch (error) {
+    let cancelled = false;
+    setIsLoading(true);
+    setCatalogError("");
+
+    loadCatalog(campus, semesterId)
+      .then((entry) => {
+        if (cancelled) return;
+        setAllCourses(entry.courses);
+      })
+      .catch((error) => {
+        if (cancelled) return;
         setCatalogError(
           error instanceof Error ? error.message : "Catalog search failed."
         );
-        setCoursesResult([]);
-      } finally {
-        setIsLoading(false);
-      }
-    }, 300);
+        setAllCourses([]);
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
 
-    return () => window.clearTimeout(handle);
-  }, [query, semesterId, campus]);
+    return () => {
+      cancelled = true;
+    };
+  }, [semesterId, campus]);
+
+  const courses = useMemo(() => {
+    const trimmedQuery = query.trim();
+    if (trimmedQuery.length < 2) {
+      return [];
+    }
+    const needle = trimmedQuery.toLowerCase();
+    return allCourses.filter(
+      (course) =>
+        course.course_code.toLowerCase().startsWith(needle) ||
+        course.course_name.toLowerCase().includes(needle)
+    );
+  }, [allCourses, query]);
 
   function toggleOption(optionId: string) {
     setSelectedOptions((current) => ({

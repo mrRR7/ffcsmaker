@@ -15,7 +15,8 @@ ctx.onmessage = (event: MessageEvent<GeneratePayload>) => {
     ctx.postMessage({
       type: "done",
       schedules: result.schedules,
-      checked: result.checked
+      checked: result.checked,
+      capped: result.capped
     } satisfies WorkerMessage);
   } catch (error) {
     ctx.postMessage({

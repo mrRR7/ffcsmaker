@@ -222,6 +222,7 @@ export type WorkerDoneMessage = {
   type: "done";
   schedules: ScoredTimetable[];
   checked: number;
+  capped: boolean;
 };
 
 export type WorkerErrorMessage = {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Campus } from "@/engine/types";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
+import { getCachedSemester, setCachedSemester } from "@/lib/semesterCache";
 
 export async function GET(request: Request) {
   try {
@@ -12,21 +13,27 @@ export async function GET(request: Request) {
     const supabase = createServerSupabaseClient();
 
     let activeSemesterId = semesterId;
-    let semesterQuery = supabase
-      .from("semesters")
-      .select("id, label, campus, slot_variant, is_active, ffcs_opens, start_date, end_date")
-      .eq("campus", campus);
+    let activeSemester = getCachedSemester(campus, semesterId);
 
-    if (activeSemesterId) {
-      semesterQuery = semesterQuery.eq("id", activeSemesterId);
-    } else {
-      semesterQuery = semesterQuery.eq("is_active", true);
+    if (activeSemester === undefined) {
+      let semesterQuery = supabase
+        .from("semesters")
+        .select("id, label, campus, slot_variant, is_active, ffcs_opens, start_date, end_date")
+        .eq("campus", campus);
+
+      if (activeSemesterId) {
+        semesterQuery = semesterQuery.eq("id", activeSemesterId);
+      } else {
+        semesterQuery = semesterQuery.eq("is_active", true);
+      }
+
+      const { data: sem } = await semesterQuery.single();
+      activeSemester = sem ?? null;
+      setCachedSemester(campus, semesterId, activeSemester);
     }
 
-    const { data: sem } = await semesterQuery.single();
-    let activeSemester = sem;
-    if (!activeSemesterId && sem) {
-      activeSemesterId = sem.id;
+    if (!activeSemesterId && activeSemester) {
+      activeSemesterId = activeSemester.id;
     }
 
     if (!activeSemesterId) {
@@ -80,7 +87,11 @@ export async function GET(request: Request) {
       }
     }
 
-    const { data: courses, error } = await coursesQuery.limit(query.length >= 2 ? 20 : 50);
+    // The client now fetches the whole catalog once (no `q`) and filters
+    // client-side, so the unfiltered path needs a real ceiling rather than
+    // the old 50-row cap — 2000 comfortably covers a full campus/semester
+    // catalog while still bounding worst-case payload size.
+    const { data: courses, error } = await coursesQuery.limit(query.length >= 2 ? 200 : 2000);
     let filteredCourses = courses ?? [];
 
 if (program) {

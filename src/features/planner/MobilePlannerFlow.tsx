@@ -6,7 +6,7 @@ import { StepConstraints } from "./steps/StepConstraints";
 import { StepReview } from "./steps/StepReview";
 import { usePlannerGeneration } from "./usePlannerGeneration";
 import { useAppStore } from "@/store/useAppStore";
-import { prewarmCatalogCache } from "@/lib/catalogCache";
+import { loadCatalog } from "@/lib/catalogCache";
 
 export function MobilePlannerFlow() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -26,7 +26,9 @@ export function MobilePlannerFlow() {
 
   useEffect(() => {
     if (campus) {
-      void prewarmCatalogCache(campus);
+      // Best-effort prewarm only — see DesktopPlannerLayout for why this
+      // swallows failures instead of propagating them.
+      loadCatalog(campus).catch(() => {});
     }
   }, [campus]);
 
