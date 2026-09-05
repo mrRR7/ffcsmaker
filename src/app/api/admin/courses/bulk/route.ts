@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { CAMPUS_SLOT_VARIANT, Campus } from "@/engine/types";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
+import { ADMIN_SESSION_COOKIE, isValidAdminSessionToken } from "@/lib/adminAuth";
 
 type AdminImportRow = {
   courseCode?: string;
@@ -16,8 +17,8 @@ type AdminImportRow = {
   isValid?: boolean;
 };
 
-function isAdminAuthed() {
-  return cookies().get("admin_session")?.value === process.env.ADMIN_SECRET_KEY;
+async function isAdminAuthed() {
+  return isValidAdminSessionToken(cookies().get(ADMIN_SESSION_COOKIE)?.value);
 }
 
 function splitSlots(value: string | string[] | undefined) {
@@ -54,7 +55,7 @@ function mergeCourseType(
 }
 
 export async function POST(request: Request) {
-  if (!isAdminAuthed()) {
+  if (!(await isAdminAuthed())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

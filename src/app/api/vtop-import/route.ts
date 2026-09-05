@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { PlannerImportJSON } from "@/features/vtop-scraper/types";
 import { storeVtopImport } from "@/lib/vtopImport/storage";
+import { getClientIp, rateLimit } from "@/lib/rateLimit";
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
@@ -8,11 +9,32 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
+// Open CORS is required here (the bookmarklet posts from vtop.vit.ac.in), so
+// this endpoint is reachable from any origin. Rate limit it per-IP to keep an
+// unauthenticated 2MB-per-request write endpoint from being scripted into a
+// storage abuse vector.
+const VTOP_IMPORT_LIMIT = { max: 20, windowMs: 10 * 60 * 1000 };
+
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: CORS_HEADERS });
 }
 
 export async function POST(request: Request) {
+  const clientIp = getClientIp(request);
+  const { allowed, retryAfterMs } = rateLimit(`vtop-import:${clientIp}`, VTOP_IMPORT_LIMIT);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Too many imports. Try again later." },
+      {
+        status: 429,
+        headers: {
+          ...CORS_HEADERS,
+          "Retry-After": String(Math.ceil(retryAfterMs / 1000))
+        }
+      }
+    );
+  }
+
   try {
     const body = (await request.json()) as PlannerImportJSON;
 

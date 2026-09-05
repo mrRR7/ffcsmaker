@@ -68,10 +68,16 @@ export async function GET(request: Request) {
     coursesQuery = coursesQuery.order("course_code");
 
     if (query.length >= 2) {
-      const safeQuery = query.replace(/[,%]/g, "");
-      coursesQuery = coursesQuery.or(
-        `course_code.ilike.${safeQuery}%,course_name.ilike.%${safeQuery}%`
-      );
+      // Only letters, digits, spaces, and hyphens survive — this value is
+      // interpolated into a raw PostgREST or() filter expression below, so
+      // anything from that syntax (`,` `.` `(` `)` `%` `"` etc.) needs to be
+      // stripped rather than passed through.
+      const safeQuery = query.replace(/[^a-zA-Z0-9 -]/g, "").trim();
+      if (safeQuery.length >= 2) {
+        coursesQuery = coursesQuery.or(
+          `course_code.ilike.${safeQuery}%,course_name.ilike.%${safeQuery}%`
+        );
+      }
     }
 
     const { data: courses, error } = await coursesQuery.limit(query.length >= 2 ? 20 : 50);

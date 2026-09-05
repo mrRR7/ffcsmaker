@@ -96,23 +96,14 @@ BEGIN
     CREATE POLICY "options_public_read" ON course_options FOR SELECT USING (true);
   END IF;
 
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies
-    WHERE schemaname = 'public' AND tablename = 'share_links'
-      AND policyname = 'share_public_read'
-  ) THEN
-    CREATE POLICY "share_public_read"
-      ON share_links FOR SELECT USING (expires_at > NOW());
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies
-    WHERE schemaname = 'public' AND tablename = 'share_links'
-      AND policyname = 'share_insert'
-  ) THEN
-    CREATE POLICY "share_insert" ON share_links FOR INSERT WITH CHECK (true);
-  END IF;
 END $$;
+
+-- share_links is unused by the app (superseded by share_timetables below)
+-- and share_timetables is only ever read/written via the service-role admin
+-- client server-side, so neither needs (or should have) a public RLS policy
+-- letting the anon key touch them directly from a browser. RLS stays
+-- enabled with no policies, which defaults to deny for anon/authenticated
+-- roles; the service role bypasses RLS entirely regardless.
 
 CREATE TABLE IF NOT EXISTS share_timetables (
   id TEXT PRIMARY KEY,
@@ -123,22 +114,18 @@ CREATE TABLE IF NOT EXISTS share_timetables (
 
 ALTER TABLE share_timetables ENABLE ROW LEVEL SECURITY;
 
+-- No public policies: only the service-role admin client reads/writes this
+-- table (see the comment above). RLS with zero policies defaults to deny
+-- for anon/authenticated roles.
+
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 FROM pg_policies
-    WHERE schemaname = 'public' AND tablename = 'share_timetables'
-      AND policyname = 'share_timetables_public_read'
+    SELECT 1 FROM pg_constraint WHERE conname = 'share_timetables_snapshot_size_check'
   ) THEN
-    CREATE POLICY "share_timetables_public_read" ON share_timetables FOR SELECT USING (true);
-  END IF;
-
-  IF NOT EXISTS (
-    SELECT 1 FROM pg_policies
-    WHERE schemaname = 'public' AND tablename = 'share_timetables'
-      AND policyname = 'share_timetables_insert'
-  ) THEN
-    CREATE POLICY "share_timetables_insert" ON share_timetables FOR INSERT WITH CHECK (true);
+    ALTER TABLE share_timetables
+      ADD CONSTRAINT share_timetables_snapshot_size_check
+      CHECK (length(snapshot_json::text) < 1200000);
   END IF;
 END $$;
 
@@ -153,3 +140,14 @@ CREATE TABLE IF NOT EXISTS vtop_imports (
 CREATE INDEX IF NOT EXISTS vtop_imports_expires_at_idx ON vtop_imports (expires_at);
 
 ALTER TABLE vtop_imports ENABLE ROW LEVEL SECURITY;
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'vtop_imports_payload_size_check'
+  ) THEN
+    ALTER TABLE vtop_imports
+      ADD CONSTRAINT vtop_imports_payload_size_check
+      CHECK (length(payload_json::text) < 2200000);
+  END IF;
+END $$;
