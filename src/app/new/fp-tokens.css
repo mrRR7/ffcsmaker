@@ -1,0 +1,219 @@
+/*
+ * "FFCS Planner" skin design tokens — scoped to .fp-root only.
+ * Never imported from the root globals.css; only src/app/new/layout.tsx loads this file,
+ * so nothing outside /new/* can ever see these variables.
+ */
+
+.fp-root {
+  /* base — dark is the system default */
+  --ground: #0b0e11;
+  --surface: #11161a;
+  --ink: #e6edea;
+  --muted: #7e8b90;
+  --accent: #3fa96b;
+  --rule: #1f262b;
+
+  /* block family — one hue, four depths. Brighter = earlier in the day */
+  --block-1: #4fba7c;
+  --block-2: #2e7d4f;
+  --block-3: #1c5535;
+  --block-4: #12331f;
+
+  /* accent variations */
+  --accent-bright: #4fba7c;
+  --accent-dim: #2e7d4f;
+  --accent-wash: rgba(63, 169, 107, 0.12);
+  --accent-wash-strong: rgba(63, 169, 107, 0.22);
+  --accent-ink: #0b0e11;
+
+  /* semantic status */
+  --warn: #d8a23a;
+  --warn-wash: rgba(216, 162, 58, 0.12);
+  --danger: #d8663a;
+  --danger-wash: rgba(216, 102, 58, 0.12);
+  --ok: var(--accent);
+
+  /* semantic aliases — components should use these, not the base roles */
+  --bg-page: var(--ground);
+  --bg-surface: var(--surface);
+  --bg-raised: #161c21;
+  --bg-inset: #0e1317;
+  --text-body: var(--ink);
+  --text-strong: #f2f7f4;
+  --text-dim: var(--muted);
+  --text-accent: var(--accent);
+  --text-on-accent: var(--accent-ink);
+  --border-default: var(--rule);
+  --border-strong: #2b353b;
+  --border-accent: var(--accent);
+  --focus-ring: var(--accent);
+  --surface-card: var(--surface);
+  --overlay-scrim: rgba(5, 8, 10, 0.72);
+
+  /* per-course identity palette (5 colors) — used only where the grid colors by
+     course identity rather than time-of-day depth (e.g. small preview strips) */
+  --c1: #6fcb95;
+  --ci1: #0b0e11;
+  --c2: #4fba7c;
+  --ci2: #0b0e11;
+  --c3: #2e7d4f;
+  --ci3: #f2f7f4;
+  --c4: #1c5535;
+  --ci4: #e6edea;
+  --c5: #12331f;
+  --ci5: #cfe0d5;
+  --busy: #2b353b;
+  --busy-ink: #7e8b90;
+
+  /* typography */
+  --fp-font-display-fallback: "Space Grotesk", "IBM Plex Sans", sans-serif;
+  --fp-font-body-fallback: "IBM Plex Sans", system-ui, sans-serif;
+  --fp-font-mono-fallback: "IBM Plex Mono", ui-monospace, monospace;
+  --font-display: var(--fp-font-display, var(--fp-font-display-fallback));
+  --font-body: var(--fp-font-body, var(--fp-font-body-fallback));
+  --font-mono: var(--fp-font-mono, var(--fp-font-mono-fallback));
+
+  --text-display: 34px;
+  --text-title: 24px;
+  --text-h: 19px;
+  --text-body-size: 15px;
+  --text-small: 13px;
+  --text-micro: 11px;
+
+  --lh-tight: 1.1;
+  --lh-snug: 1.3;
+  --lh-body: 1.5;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+
+  --track-label: 0.14em;
+  --track-display: -0.01em;
+
+  /* spacing / layout */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 56px;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-pill: 999px;
+
+  --border-width: 1px;
+
+  /* the system is flat: depth comes from value steps, not shadow */
+  --shadow-none: none;
+  --shadow-raised: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+  --shadow-overlay: 0 18px 48px rgba(0, 0, 0, 0.55);
+  --ring-focus: 0 0 0 2px rgba(63, 169, 107, 0.45);
+
+  --grid-row-h: 72px;
+  --grid-col-min: 120px;
+  --sidebar-w: 300px;
+
+  --ease-standard: cubic-bezier(0.2, 0.6, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur-base: 180ms;
+}
+
+.fp-root.light {
+  --ground: #efede7;
+  --surface: #faf9f5;
+  --ink: #161b1d;
+  --muted: #666f72;
+  --accent: #25794a;
+  --rule: #dcd7cc;
+
+  --block-1: #cdebd9;
+  --block-2: #a7dcbe;
+  --block-3: #7fc9a0;
+  --block-4: #54ae7c;
+
+  --accent-bright: #2c8b55;
+  --accent-dim: #1a5c37;
+  --accent-wash: rgba(37, 121, 74, 0.1);
+  --accent-wash-strong: rgba(37, 121, 74, 0.18);
+  --accent-ink: #faf9f5;
+
+  --warn: #8a5d0a;
+  --warn-wash: rgba(138, 93, 10, 0.12);
+
+  --bg-page: #efede7;
+  --bg-surface: #faf9f5;
+  --bg-raised: #ffffff;
+  --bg-inset: #e7e4db;
+
+  --text-body: #161b1d;
+  --text-strong: #0b0e11;
+  --text-dim: #666f72;
+  --text-accent: #1a5c37;
+  --text-on-accent: #faf9f5;
+
+  --border-default: #dcd7cc;
+  --border-strong: #c6bfb1;
+  --border-accent: #25794a;
+  --surface-card: #faf9f5;
+
+  --c1: #dcf0e4;
+  --ci1: #14402a;
+  --c2: #bce3cc;
+  --ci2: #14402a;
+  --c3: #93d0ae;
+  --ci3: #123822;
+  --c4: #63b389;
+  --ci4: #08240f;
+  --c5: #2f8c5a;
+  --ci5: #f4faf6;
+  --busy: #3c4449;
+  --busy-ink: var(--muted);
+}
+
+/* the system's signature: mono, uppercase, generously tracked micro-labels —
+   used on nearly every panel header, step, metric and button */
+.fp-label {
+  font-family: var(--font-mono);
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+.fp-root {
+  background: var(--bg-page);
+  color: var(--text-body);
+  font-family: var(--font-body);
+  font-size: var(--text-body-size);
+  line-height: var(--lh-body);
+}
+
+.fp-root h1,
+.fp-root h2,
+.fp-root h3,
+.fp-root h4 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-bold);
+  letter-spacing: var(--track-display);
+  line-height: var(--lh-tight);
+  margin: 0;
+}
+
+.fp-root a {
+  text-decoration: none;
+}
+
+.fp-root code,
+.fp-root kbd {
+  font-family: var(--font-mono);
+}
+
+.fp-root *:focus-visible {
+  outline: none;
+  box-shadow: var(--ring-focus);
+}
