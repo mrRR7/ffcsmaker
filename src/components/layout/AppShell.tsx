@@ -39,6 +39,7 @@ const navItems = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const isNewSkin = pathname?.startsWith("/new") ?? false;
   const importedShareRef = useRef(false);
   const [campusMenuOpen, setCampusMenuOpen] = useState(false);
   const [pendingCampus, setPendingCampus] = useState<Campus | null>(null);
@@ -105,6 +106,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   ) : (
     children
   );
+
+  if (isNewSkin) {
+    return <>{children}</>;
+  }
 
   return (
     <div className="min-h-screen bg-canvas text-body flex flex-col">
