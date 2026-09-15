@@ -9,7 +9,7 @@ import { cn } from "@/utils/cn";
  * sm/md sizes, hover = raise a value step or brighten accent, never opacity.
  */
 const fpButtonVariants = cva(
-  "fp-label inline-flex items-center gap-2 rounded-[var(--radius-md)] border border-transparent leading-none transition-colors duration-[120ms] ease-[cubic-bezier(.2,.6,.2,1)] disabled:cursor-not-allowed disabled:border-fp-border-default disabled:bg-fp-bg-inset disabled:text-fp-text-dim",
+  "fp-label inline-flex items-center gap-2 rounded-[var(--radius-md)] border border-transparent leading-none transition-[background-color,border-color,color,transform] duration-[120ms] ease-[cubic-bezier(.2,.6,.2,1)] active:scale-[0.98] disabled:cursor-not-allowed disabled:border-fp-border-default disabled:bg-fp-bg-inset disabled:text-fp-text-dim disabled:active:scale-100",
   {
     variants: {
       variant: {

@@ -1,4 +1,6 @@
 import * as React from "react";
+import { motion } from "framer-motion";
+import { Check } from "lucide-react";
 import { cn } from "@/utils/cn";
 
 /**
@@ -22,7 +24,7 @@ export const FPCheckbox = React.forwardRef<HTMLButtonElement, FPCheckboxProps>(
       disabled={disabled}
       onClick={() => onCheckedChange?.(!checked)}
       className={cn(
-        "flex h-5 w-5 flex-none items-center justify-center rounded-[var(--radius-sm)] border text-[13px] leading-none",
+        "flex h-5 w-5 flex-none items-center justify-center rounded-[var(--radius-sm)] border leading-none transition-colors active:scale-[0.92]",
         checked
           ? "border-fp-accent text-fp-accent"
           : "border-fp-border-strong",
@@ -32,7 +34,16 @@ export const FPCheckbox = React.forwardRef<HTMLButtonElement, FPCheckboxProps>(
       style={checked ? { backgroundColor: "var(--accent-wash-strong)" } : undefined}
       {...props}
     >
-      {checked ? "✓" : null}
+      {checked ? (
+        <motion.span
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 0.12, ease: [0.2, 0.6, 0.2, 1] }}
+          className="flex"
+        >
+          <Check className="h-3.5 w-3.5" strokeWidth={2} />
+        </motion.span>
+      ) : null}
     </button>
   )
 );

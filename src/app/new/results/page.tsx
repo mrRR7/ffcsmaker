@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import toast from "react-hot-toast";
-import { Check, ChevronDown } from "lucide-react";
+import { motion } from "framer-motion";
+import { staggerContainer, fadeUp } from "@/utils/motion";
+import { ArrowRight, Check, ChevronDown } from "lucide-react";
 import { FPButton } from "@/components/fp-ui/button";
 import { FPCard } from "@/components/fp-ui/card";
 import { FPLabel } from "@/components/fp-ui/label";
@@ -13,6 +15,7 @@ import { FPNote } from "@/components/fp-ui/note";
 import { FPComboCard } from "@/components/fp-ui/combo-card";
 import { FPSlotTable, FP_EMPTY_CELL } from "@/components/fp-ui/slot-table";
 import { FPSlotMatrixTimetable } from "@/components/fp-ui/slot-matrix-timetable";
+import { useCountUp } from "@/components/fp-ui/use-count-up";
 import { BlockDetailPanel } from "@/features/results/BlockDetailPanel";
 import { IcalExportDialog } from "@/features/results/IcalExportDialog";
 import { ShareCardModal } from "@/features/results/ShareCardModal";
@@ -108,6 +111,8 @@ function ResultsContent() {
     if (allVariants.length === 0) return null;
     return allVariants.find((v) => v.id === activeVariantId) ?? allVariants[0];
   }, [allVariants, activeVariantId]);
+
+  const displayedScore = useCountUp(activeSchedule?.score ?? 0);
 
   const activeShapeIndex = useMemo(() => {
     if (!activeShapeGroup) return -1;
@@ -415,15 +420,21 @@ function ResultsContent() {
             Each one is a different week layout. Best first.
           </p>
 
-          <div className="mt-4 flex flex-col gap-2.5">
+          <motion.div
+            className="mt-4 flex flex-col gap-2.5"
+            variants={staggerContainer}
+            initial="initial"
+            animate="animate"
+          >
             {filteredGroups.slice(0, visibleGroupCount).map((group, index) => {
               const selected = group.shapeId === activeShapeGroup?.shapeId;
               const thumbnail = buildShapeThumbnail(group.representative, slots, courses);
               const label = index === 0 ? "Best overall" : `Shape ${index + 1}`;
               return (
-                <button
+                <motion.button
                   key={group.shapeId}
                   type="button"
+                  variants={fadeUp}
                   onClick={() => selectShape(group.shapeId)}
                   className="text-left"
                 >
@@ -457,7 +468,7 @@ function ResultsContent() {
                       </span>
                     </div>
                   </FPCard>
-                </button>
+                </motion.button>
               );
             })}
 
@@ -470,7 +481,7 @@ function ResultsContent() {
                 {hiddenGroupCount} more
               </button>
             ) : null}
-          </div>
+          </motion.div>
 
           <div className="mt-5 flex flex-col items-start gap-2.5 border-t border-fp-border-default pt-4">
             <label className="fp-label flex items-center gap-1 text-[11px] text-fp-text-dim">
@@ -487,13 +498,14 @@ function ResultsContent() {
             </label>
             <button
               type="button"
-              className="fp-label whitespace-nowrap text-[11px] text-fp-accent"
+              className="fp-label inline-flex items-center gap-1 whitespace-nowrap text-[11px] text-fp-accent"
               onClick={() => {
                 if (activeSchedule) addCompareSchedule(activeSchedule.id);
                 router.push("/new/compare");
               }}
             >
-              Compare {compareScheduleIds.length} →
+              Compare {compareScheduleIds.length}
+              <ArrowRight className="h-3 w-3" strokeWidth={1.5} />
             </button>
           </div>
         </aside>
@@ -512,7 +524,7 @@ function ResultsContent() {
                       className="rounded-[var(--radius-sm)] px-3 py-1.5 font-fp-mono text-[17px] text-fp-accent sm:text-[19px]"
                       style={{ backgroundColor: "var(--accent-wash-strong)" }}
                     >
-                      {Math.round(activeSchedule.score)} / 100
+                      {Math.round(displayedScore)} / 100
                     </span>
                   </div>
                   <div className="mt-2">
@@ -612,7 +624,12 @@ function ResultsContent() {
                     <FPLabel>{allVariants.length} combos · the grid above doesn&apos;t move</FPLabel>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <motion.div
+                    className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4"
+                    variants={staggerContainer}
+                    initial="initial"
+                    animate="animate"
+                  >
                     {allVariants.map((variant, index) => {
                       const selected = variant.id === activeSchedule.id;
                       const notesCount = variant.selections.filter((selection) => {
@@ -622,19 +639,20 @@ function ResultsContent() {
                         );
                       }).length;
                       return (
-                        <FPComboCard
-                          key={variant.id}
-                          selected={selected}
-                          eyebrow={`Combo ${String(index + 1).padStart(2, "0")}`}
-                          score={Math.round(variant.score)}
-                          title={notesCount === 0 ? "No notes flagged" : "Has notes"}
-                          meta={`${variant.selections.length} profs · ${notesCount} notes`}
-                          onClick={() => selectVariant(variant.id)}
-                          className="cursor-pointer"
-                        />
+                        <motion.div key={variant.id} variants={fadeUp}>
+                          <FPComboCard
+                            selected={selected}
+                            eyebrow={`Combo ${String(index + 1).padStart(2, "0")}`}
+                            score={Math.round(variant.score)}
+                            title={notesCount === 0 ? "No notes flagged" : "Has notes"}
+                            meta={`${variant.selections.length} profs · ${notesCount} notes`}
+                            onClick={() => selectVariant(variant.id)}
+                            className="cursor-pointer"
+                          />
+                        </motion.div>
                       );
                     })}
-                  </div>
+                  </motion.div>
 
                   <div className="mt-4 overflow-hidden rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface">
                     <div className="flex items-center justify-between border-b border-fp-border-default px-4 py-3">
@@ -741,9 +759,10 @@ function ResultsContent() {
                               <button
                                 type="button"
                                 onClick={() => swapProfessorFor(row.courseId, selection.optionId)}
-                                className="fp-label text-[11px] text-fp-accent"
+                                className="fp-label inline-flex items-center gap-1 text-[11px] text-fp-accent"
                               >
-                                Swap ▾
+                                Swap
+                                <ChevronDown className="h-3 w-3" strokeWidth={1.5} />
                               </button>
                             );
                           }

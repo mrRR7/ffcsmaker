@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { ArrowRight, X } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
 import { getRankingProfiles } from "@/engine/ranking";
 import { RankingMode } from "@/engine/types";
@@ -87,9 +88,10 @@ export default function NewPlannerPage() {
               localStorage.setItem("dismissed_preliminary_notice", "true");
               setShowNotice(false);
             }}
-            className="fp-label -m-2 ml-auto shrink-0 p-2 text-[11px] text-fp-text-dim hover:text-fp-text-body"
+            className="fp-label -m-2 ml-auto flex shrink-0 items-center gap-1 p-2 text-[11px] text-fp-text-dim hover:text-fp-text-body"
           >
-            Got it ✕
+            Got it
+            <X className="h-3 w-3" strokeWidth={1.5} />
           </button>
         </div>
       ) : null}
@@ -117,7 +119,8 @@ export default function NewPlannerPage() {
           {accepted > 0 && !isGenerating ? (
             <Link href="/new/results" className="mt-3 inline-block">
               <FPButton variant="primary" size="sm">
-                Open Results →
+                Open Results
+                <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
               </FPButton>
             </Link>
           ) : null}
@@ -147,7 +150,14 @@ export default function NewPlannerPage() {
             {activeConstraintCount} constraints active
           </FPBadge>
           <FPButton variant={isGenerating ? "secondary" : "primary"} size="md" onClick={isGenerating ? cancel : runGeneration}>
-            {isGenerating ? "Cancel" : "Find my weeks →"}
+            {isGenerating ? (
+              "Cancel"
+            ) : (
+              <>
+                Find my weeks
+                <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
+              </>
+            )}
           </FPButton>
         </div>
       </footer>

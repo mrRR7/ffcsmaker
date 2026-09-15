@@ -186,7 +186,11 @@
 }
 
 .fp-root {
-  background: var(--bg-page);
+  background-color: var(--bg-page);
+  /* A barely-perceptible noise grain to break up the flat ground color —
+     no gradients/blur, just enough texture to keep large dark areas from
+     reading as empty. Pure CSS/SVG, no image asset. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
   color: var(--text-body);
   font-family: var(--font-body);
   font-size: var(--text-body-size);

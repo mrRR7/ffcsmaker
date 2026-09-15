@@ -8,6 +8,7 @@ import { FPButton } from "@/components/fp-ui/button";
 import { FPLabel } from "@/components/fp-ui/label";
 import { FPNote } from "@/components/fp-ui/note";
 import { getScheduleDayBlocks } from "./scheduleVisuals";
+import { useCountUp } from "@/components/fp-ui/use-count-up";
 
 export function SavedWeekCard({
   saved,
@@ -38,6 +39,7 @@ export function SavedWeekCard({
   const [draftName, setDraftName] = useState(saved.name);
 
   const schedule = saved.timetable;
+  const displayedScore = useCountUp(schedule.score);
   const { days, blocksByDay } = getScheduleDayBlocks(schedule, slots, courses);
   const totalCredits = schedule.selections.reduce((sum, selection) => sum + selection.credits, 0);
   const freeDayCount = blocksByDay.filter((blocks) => blocks.length === 0).length;
@@ -117,7 +119,7 @@ export function SavedWeekCard({
             type="button"
             onClick={() => setEditing(true)}
             title="Click to rename"
-            className="mt-1 block truncate text-left font-fp-display text-[19px] font-bold text-fp-text-strong hover:opacity-80"
+            className="mt-1 block truncate text-left font-fp-display text-[19px] font-bold text-fp-text-strong transition-colors hover:text-fp-accent"
           >
             {saved.name}
           </button>
@@ -129,7 +131,20 @@ export function SavedWeekCard({
           {schedule.metrics.totalGapSlots} gap{schedule.metrics.totalGapSlots === 1 ? "" : "s"} &middot;{" "}
           {unverifiedCourseCode ? "1 unverified professor" : "all verified"}
         </FPLabel>
-        <FPLabel className="mt-1 block truncate font-fp-mono">{slotCodes}</FPLabel>
+        <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+          {schedule.selections.map((selection) => {
+            const course = courses.find((c) => c.id === selection.courseId);
+            return (
+              <span key={selection.courseId} className="fp-label inline-flex items-center gap-1.5 text-[11px] text-fp-text-dim">
+                <span
+                  className="h-1.5 w-1.5 shrink-0 rounded-full"
+                  style={{ backgroundColor: course?.color ?? "var(--text-dim)" }}
+                />
+                {selection.displaySlots.join("+")}
+              </span>
+            );
+          })}
+        </div>
 
         {isStale ? (
           <FPNote className="mt-2">
@@ -147,7 +162,7 @@ export function SavedWeekCard({
           className="font-fp-mono text-[24px]"
           style={{ color: saved.favorite ? "var(--accent)" : "var(--text-strong)" }}
         >
-          {schedule.score}
+          {Math.round(displayedScore)}
         </span>
         <div className="flex gap-2">
           {isStale ? (

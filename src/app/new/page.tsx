@@ -1,6 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
+import { staggerContainer, fadeUp } from "@/utils/motion";
 import { useAppStore } from "@/store/useAppStore";
 import { CAMPUS_LABELS, type Campus } from "@/engine/types";
 import { cn } from "@/utils/cn";
@@ -49,22 +52,28 @@ export default function NewLandingPage() {
           &mdash; which campus?
         </p>
 
-        <div className="mt-9 grid w-full max-w-4xl grid-cols-2 gap-4 text-left sm:grid-cols-4">
+        <motion.div
+          className="mt-9 grid w-full max-w-4xl grid-cols-2 gap-4 text-left sm:grid-cols-4"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
           {campusCards.map((card) => {
             const isCurrent = card.campus === campus;
             return (
-              <button
+              <motion.button
                 key={card.campus}
+                variants={fadeUp}
                 type="button"
                 disabled={!card.active}
                 onClick={() => pickCampus(card.campus)}
                 className={cn(
-                  "rounded-[var(--radius-md)] border p-5 transition-colors",
+                  "rounded-[var(--radius-md)] border p-5 transition-[border-color,background-color,transform] duration-150",
                   !card.active
                     ? "cursor-not-allowed border-fp-border-default bg-fp-bg-inset"
                     : isCurrent
-                      ? "border-fp-border-accent"
-                      : "border-fp-border-default bg-fp-bg-surface hover:border-fp-border-accent"
+                      ? "border-fp-border-accent active:scale-[0.98]"
+                      : "border-fp-border-default bg-fp-bg-surface hover:border-fp-border-accent active:scale-[0.98]"
                 )}
                 style={card.active && isCurrent ? { backgroundColor: "var(--accent-wash)" } : undefined}
               >
@@ -77,13 +86,19 @@ export default function NewLandingPage() {
                   {CAMPUS_LABELS[card.campus]}
                 </div>
                 <div className="mt-1.5 text-[13px] text-fp-text-dim">{card.detail}</div>
-                <FPLabel tone={card.active ? "accent" : "dim"} className="mt-3.5 inline-block">
-                  {card.active ? "Ready →" : "Not yet"}
+                <FPLabel tone={card.active ? "accent" : "dim"} className="mt-3.5 inline-flex items-center gap-1">
+                  {card.active ? (
+                    <>
+                      Ready <ArrowRight className="h-3 w-3" strokeWidth={1.5} />
+                    </>
+                  ) : (
+                    "Not yet"
+                  )}
                 </FPLabel>
-              </button>
+              </motion.button>
             );
           })}
-        </div>
+        </motion.div>
 
         <p className="mt-7 text-[13px] text-fp-text-dim">
           Never done FFCS before? <span className="cursor-pointer text-fp-text-accent underline underline-offset-[3px]">40-second explainer</span>
@@ -91,14 +106,20 @@ export default function NewLandingPage() {
       </section>
 
       <section className="mx-auto max-w-4xl px-8 pb-14 pt-12">
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+        <motion.div
+          className="grid grid-cols-1 gap-8 sm:grid-cols-3"
+          variants={staggerContainer}
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true, margin: "-40px" }}
+        >
           {steps.map((step) => (
-            <div key={step.label}>
+            <motion.div key={step.label} variants={fadeUp} className="border-l-2 border-fp-accent pl-4">
               <FPLabel tone="accent">{step.label}</FPLabel>
               <p className="mt-2.5 text-[15px] leading-[1.5] text-fp-text-body">{step.body}</p>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
     </div>
   );

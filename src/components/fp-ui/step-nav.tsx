@@ -1,4 +1,5 @@
 import * as React from "react";
+import { Check } from "lucide-react";
 import { cn } from "@/utils/cn";
 
 /**
@@ -49,7 +50,7 @@ export function FPStepNav({ steps, className, ...props }: FPStepNavProps) {
             )}
           >
             <span className={isActive || isDone ? "text-fp-accent" : undefined}>
-              {isDone ? "✓" : step.number}
+              {isDone ? <Check className="h-3.5 w-3.5" strokeWidth={1.5} /> : step.number}
             </span>
             <span>{step.label}</span>
             {step.suffix}

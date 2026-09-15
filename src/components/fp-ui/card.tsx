@@ -19,12 +19,14 @@ const paddingMap = {
 } as const;
 
 export const FPCard = React.forwardRef<HTMLDivElement, FPCardProps>(
-  ({ className, selected, padding = "md", ...props }, ref) => (
+  ({ className, selected, padding = "md", onClick, ...props }, ref) => (
     <div
       ref={ref}
+      onClick={onClick}
       className={cn(
         "rounded-[var(--radius-lg)] border bg-fp-bg-surface",
         selected ? "border-fp-border-accent" : "border-fp-border-default",
+        onClick && "cursor-pointer transition-transform duration-150 active:scale-[0.98]",
         paddingMap[padding],
         className
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import toast from "react-hot-toast";
+import { X } from "lucide-react";
 import { Course, ScoredTimetable, TimeSlot } from "@/engine/types";
 import { useAppStore } from "@/store/useAppStore";
 import { FPButton } from "@/components/fp-ui/button";
@@ -8,6 +9,7 @@ import { FPLabel } from "@/components/fp-ui/label";
 import { FPMetricRun } from "@/components/fp-ui/metric-run";
 import { FPSlotMatrixTimetable } from "@/components/fp-ui/slot-matrix-timetable";
 import { findFreeDay, getScheduleDayBlocks } from "./scheduleVisuals";
+import { useCountUp } from "@/components/fp-ui/use-count-up";
 
 export function CompareWeekCard({
   schedule,
@@ -25,6 +27,7 @@ export function CompareWeekCard({
   onRemove: () => void;
 }) {
   const saveSchedule = useAppStore((state) => state.saveSchedule);
+  const displayedScore = useCountUp(schedule.score);
 
   const { days, blocksByDay } = getScheduleDayBlocks(schedule, slots, courses);
   const freeDay = findFreeDay(days, blocksByDay);
@@ -47,15 +50,15 @@ export function CompareWeekCard({
           className="ml-auto font-fp-mono text-[24px]"
           style={{ color: recommended ? "var(--accent)" : "var(--text-strong)" }}
         >
-          {schedule.score}
+          {Math.round(displayedScore)}
         </span>
         <button
           type="button"
           onClick={onRemove}
           aria-label="Remove from compare"
-          className="fp-label -m-2 p-2 text-[11px] text-fp-text-dim hover:text-fp-warn"
+          className="-m-2 p-2 text-fp-text-dim hover:text-fp-warn"
         >
-          ✕
+          <X className="h-3.5 w-3.5" strokeWidth={1.5} />
         </button>
       </div>
 
@@ -74,12 +77,19 @@ export function CompareWeekCard({
         />
 
         <div className="flex flex-col gap-1.5">
-          {schedule.selections.map((selection) => (
-            <div key={selection.courseId} className="flex items-center justify-between gap-3 text-[13px]">
-              <span className="font-fp-mono text-fp-text-strong">{selection.courseCode}</span>
-              <span className="truncate text-fp-text-dim">{selection.professorName}</span>
-            </div>
-          ))}
+          {schedule.selections.map((selection) => {
+            const course = courses.find((c) => c.id === selection.courseId);
+            return (
+              <div key={selection.courseId} className="flex items-center gap-2.5 text-[13px]">
+                <span
+                  className="h-2 w-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: course?.color ?? "var(--text-dim)" }}
+                />
+                <span className="font-fp-mono text-fp-text-strong">{selection.courseCode}</span>
+                <span className="ml-auto truncate text-fp-text-dim">{selection.professorName}</span>
+              </div>
+            );
+          })}
         </div>
 
         <FPButton

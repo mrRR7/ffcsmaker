@@ -15,6 +15,13 @@ import { FPBadge } from "@/components/fp-ui/badge";
 import { FPNote } from "@/components/fp-ui/note";
 import { FPCheckbox } from "@/components/fp-ui/checkbox";
 import { FPMetricRun } from "@/components/fp-ui/metric-run";
+import {
+  FPSlotOptionChip,
+  FPTimeOfDayToggle,
+  groupOptionsBySlot,
+  slotLabel,
+  TimeOfDayFilter
+} from "@/features/planner/fp/FPCourseOptionGroups";
 
 type SearchResponse = {
   courses: DBCourse[];
@@ -29,10 +36,6 @@ type SemesterResponse = {
   error?: string;
 };
 
-function slotLabel(slots: string[]) {
-  return slots.length > 0 ? slots.join(" + ") : "None";
-}
-
 /**
  * FPSearchTab — reskin of `src/features/catalog/CatalogSearch.tsx`. Same
  * state, effects, debounce, caching, and `mergeCourseOptions` call; only the
@@ -45,6 +48,8 @@ export function FPSearchTab() {
   const [courses, setCoursesResult] = useState<DBCourse[]>([]);
   const [expandedCourseId, setExpandedCourseId] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, boolean>>({});
+  const [timeFilterByCourse, setTimeFilterByCourse] = useState<Record<string, TimeOfDayFilter>>({});
+  const [expandedGroupByCourse, setExpandedGroupByCourse] = useState<Record<string, string | null>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [catalogError, setCatalogError] = useState("");
 
@@ -190,6 +195,7 @@ export function FPSearchTab() {
         <span className="min-w-0 flex-1">
           <span className={cn("flex flex-wrap items-center gap-2 text-[13px]", selected ? "text-fp-text-strong" : "text-fp-text-body")}>
             {option.professor_name}
+            {option.program ? <FPLabel>{option.program}</FPLabel> : null}
             {!option.verified ? <FPLabel tone="warn">Unverified</FPLabel> : null}
           </span>
           {option.professor_notes ? (
@@ -267,6 +273,12 @@ export function FPSearchTab() {
           {courses.map((course) => {
             const expanded = expandedCourseId === course.id;
             const tickedCount = course.course_options.filter((option) => selectedOptions[option.id]).length;
+            const timeFilter = timeFilterByCourse[course.id] ?? "all";
+            const groups = groupOptionsBySlot(course.course_options, slots);
+            const visibleGroups = groups.filter(
+              (group) => timeFilter === "all" || group.timeOfDay === "unscheduled" || group.timeOfDay === timeFilter
+            );
+            const expandedGroupKey = expandedGroupByCourse[course.id] ?? null;
             return (
               <div
                 key={course.id}
@@ -299,8 +311,38 @@ export function FPSearchTab() {
                 </button>
 
                 {expanded ? (
-                  <div className="space-y-2 p-4">
-                    {course.course_options.map((option) => optionRow(course, option))}
+                  <div className="space-y-3 p-4">
+                    {groups.length > 1 ? (
+                      <FPTimeOfDayToggle
+                        value={timeFilter}
+                        onChange={(value) => setTimeFilterByCourse((current) => ({ ...current, [course.id]: value }))}
+                      />
+                    ) : null}
+
+                    <div className="space-y-2">
+                      {visibleGroups.map((group) => {
+                        const groupExpanded = groups.length === 1 || expandedGroupKey === group.slotKey;
+                        const hasTicked = group.options.some((option) => selectedOptions[option.id]);
+                        return (
+                          <FPSlotOptionChip
+                            key={group.slotKey}
+                            theoryLabel={group.theoryLabel}
+                            count={group.options.length}
+                            hasTicked={hasTicked}
+                            expanded={groupExpanded}
+                            onToggle={() =>
+                              setExpandedGroupByCourse((current) => ({
+                                ...current,
+                                [course.id]: current[course.id] === group.slotKey ? null : group.slotKey
+                              }))
+                            }
+                          >
+                            {group.options.map((option) => optionRow(course, option))}
+                          </FPSlotOptionChip>
+                        );
+                      })}
+                    </div>
+
                     <div className="mt-1 flex flex-wrap items-center gap-3">
                       <FPButton variant="primary" size="sm" onClick={() => addSelected(course)}>
                         {tickedCount > 0 ? `Add ${tickedCount} professor${tickedCount === 1 ? "" : "s"}` : "Add professors"}

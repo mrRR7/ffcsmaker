@@ -3,7 +3,10 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { ArrowRight } from "lucide-react";
 import toast from "react-hot-toast";
+import { staggerContainer, fadeUp } from "@/utils/motion";
 import { useAppStore } from "@/store/useAppStore";
 import { exportScheduleJson } from "@/utils/export";
 import { createSharedTimetableUrl } from "@/utils/share";
@@ -117,7 +120,12 @@ export default function NewSavedPage() {
           </FPCard>
         </div>
       ) : (
-        <div className="flex flex-col gap-4 px-6 py-6">
+        <motion.div
+          className="flex flex-col gap-4 px-6 py-6"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
           {sorted.map((saved) => {
             const staleCourse = courses.find(
               (course) => !saved.timetable.selections.some((selection) => selection.courseId === course.id)
@@ -133,20 +141,21 @@ export default function NewSavedPage() {
             }
 
             return (
-              <SavedWeekCard
-                key={saved.id}
-                saved={saved}
-                slots={slots}
-                courses={courses}
-                isStale={Boolean(staleCourse)}
-                staleCourseCode={staleCourse?.courseCode ?? null}
-                unverifiedCourseCode={unverifiedCourseCode}
-                onToggleFavorite={() => toggleFavoriteSchedule(saved.id)}
-                onRename={(name) => renameSavedSchedule(saved.id, name)}
-                onDelete={() => deleteSavedSchedule(saved.id)}
-                onReopen={() => reopen(saved.id)}
-                onRerun={rerun}
-              />
+              <motion.div key={saved.id} variants={fadeUp}>
+                <SavedWeekCard
+                  saved={saved}
+                  slots={slots}
+                  courses={courses}
+                  isStale={Boolean(staleCourse)}
+                  staleCourseCode={staleCourse?.courseCode ?? null}
+                  unverifiedCourseCode={unverifiedCourseCode}
+                  onToggleFavorite={() => toggleFavoriteSchedule(saved.id)}
+                  onRename={(name) => renameSavedSchedule(saved.id, name)}
+                  onDelete={() => deleteSavedSchedule(saved.id)}
+                  onReopen={() => reopen(saved.id)}
+                  onRerun={rerun}
+                />
+              </motion.div>
             );
           })}
 
@@ -161,12 +170,13 @@ export default function NewSavedPage() {
             <button
               type="button"
               onClick={createShareLink}
-              className="fp-label ml-auto shrink-0 text-[11px] text-fp-accent hover:opacity-80"
+              className="fp-label ml-auto inline-flex shrink-0 items-center gap-1 text-[11px] text-fp-accent hover:text-fp-accent-bright"
             >
-              Create share link &rarr;
+              Create share link
+              <ArrowRight className="h-3 w-3" strokeWidth={1.5} />
             </button>
           </div>
-        </div>
+        </motion.div>
       )}
     </div>
   );
