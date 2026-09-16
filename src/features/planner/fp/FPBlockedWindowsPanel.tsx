@@ -2,12 +2,11 @@
 
 import * as React from "react";
 import { useEffect, useRef, useState } from "react";
+import { X } from "lucide-react";
 import { BlockedWindow, DAYS, DayOfWeek } from "@/engine/types";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/utils/cn";
 import { FPLabel } from "@/components/fp-ui/label";
-import { FPButton } from "@/components/fp-ui/button";
-import { fpInputClass, fpSelectClass } from "./FPPrefControls";
 
 const GRID_START_HOUR = 8;
 const GRID_END_HOUR = 19;
@@ -34,27 +33,19 @@ function windowCoversHour(win: BlockedWindow, day: DayOfWeek, hour: number) {
 type DragState = { day: DayOfWeek; startHour: number; endHour: number };
 
 /**
- * Section 4 — Blocked Windows. Primary interaction is the drag-paint busy-time
- * grid from the mockup; underneath it, the classic app's label/day/time
- * add-row form and editable list are preserved verbatim (same store actions)
- * so no capability from ConstraintPanel.tsx's Blocked Windows section is lost.
+ * Blocked Windows — drag-paint a weekly busy-time grid. Existing windows show
+ * as removable chips below the grid; there's no separate manual add/edit
+ * form, since dragging already covers add and remove (drag over a busy cell
+ * clears it).
  */
 export function FPBlockedWindowsPanel() {
   const constraints = useAppStore((state) => state.constraints);
   const addBlockedWindow = useAppStore((state) => state.addBlockedWindow);
-  const updateBlockedWindow = useAppStore((state) => state.updateBlockedWindow);
   const deleteBlockedWindow = useAppStore((state) => state.deleteBlockedWindow);
   const setConstraint = useAppStore((state) => state.setConstraint);
 
   const [drag, setDrag] = useState<DragState | null>(null);
   const dragRef = useRef<DragState | null>(null);
-
-  const [draft, setDraft] = useState<Omit<BlockedWindow, "id">>({
-    day: "All",
-    startTime: "12:30",
-    endTime: "13:30",
-    label: ""
-  });
 
   function updateDrag(next: DragState | null) {
     dragRef.current = next;
@@ -91,11 +82,6 @@ export function FPBlockedWindowsPanel() {
     window.addEventListener("mouseup", onMouseUp);
     return () => window.removeEventListener("mouseup", onMouseUp);
   }, [constraints.blockedWindows, addBlockedWindow, deleteBlockedWindow]);
-
-  function submitBlockedWindow() {
-    addBlockedWindow(draft);
-    setDraft({ day: "All", startTime: "12:30", endTime: "13:30", label: "" });
-  }
 
   const blockedCount = constraints.blockedWindows.length;
 
@@ -191,99 +177,29 @@ export function FPBlockedWindowsPanel() {
         </div>
       </div>
 
-      <div className="space-y-3">
-        <FPLabel className="block">Labeled windows</FPLabel>
-        <div className="grid gap-2 md:grid-cols-[1fr_130px_130px_130px_40px]">
-          <input
-            className={fpInputClass}
-            value={draft.label ?? ""}
-            placeholder="label"
-            onChange={(event) => setDraft((current) => ({ ...current, label: event.target.value }))}
-          />
-          <select
-            className={fpSelectClass}
-            value={draft.day}
-            onChange={(event) =>
-              setDraft((current) => ({ ...current, day: event.target.value as BlockedWindow["day"] }))
-            }
-          >
-            <option value="All">all</option>
-            {DAYS.map((day) => (
-              <option key={day} value={day}>
-                {day.toLowerCase()}
-              </option>
-            ))}
-          </select>
-          <input
-            type="time"
-            className={fpInputClass}
-            value={draft.startTime}
-            onChange={(event) => setDraft((current) => ({ ...current, startTime: event.target.value }))}
-          />
-          <input
-            type="time"
-            className={fpInputClass}
-            value={draft.endTime}
-            onChange={(event) => setDraft((current) => ({ ...current, endTime: event.target.value }))}
-          />
-          <FPButton variant="secondary" size="sm" className="justify-center px-0" onClick={submitBlockedWindow}>
-            +
-          </FPButton>
-        </div>
-
-        {constraints.blockedWindows.length > 0 ? (
-          <div className="space-y-2">
-            {constraints.blockedWindows.map((win) => (
-              <div
-                key={win.id}
-                className="grid gap-2 rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface p-2.5 md:grid-cols-[1fr_130px_130px_130px_40px]"
+      {constraints.blockedWindows.length > 0 ? (
+        <div className="flex flex-wrap gap-2">
+          {constraints.blockedWindows.map((win) => (
+            <span
+              key={win.id}
+              className="fp-label inline-flex items-center gap-2 rounded-[var(--radius-pill)] border border-fp-border-default bg-fp-bg-surface py-1.5 pl-3 pr-1.5 text-[11px] text-fp-text-body"
+            >
+              {win.label || "Busy"} &middot; {win.day === "All" ? "All days" : win.day.slice(0, 3)} &middot; {win.startTime}
+              &ndash;{win.endTime}
+              <button
+                type="button"
+                onClick={() => deleteBlockedWindow(win.id)}
+                aria-label="Remove blocked window"
+                className="flex h-4 w-4 items-center justify-center text-fp-text-dim hover:text-fp-danger"
               >
-                <input
-                  className={fpInputClass}
-                  value={win.label ?? ""}
-                  onChange={(event) => updateBlockedWindow(win.id, { label: event.target.value })}
-                />
-                <select
-                  className={fpSelectClass}
-                  value={win.day}
-                  onChange={(event) =>
-                    updateBlockedWindow(win.id, { day: event.target.value as BlockedWindow["day"] })
-                  }
-                >
-                  <option value="All">all</option>
-                  {DAYS.map((day) => (
-                    <option key={day} value={day}>
-                      {day.toLowerCase()}
-                    </option>
-                  ))}
-                </select>
-                <input
-                  type="time"
-                  className={fpInputClass}
-                  value={win.startTime}
-                  onChange={(event) => updateBlockedWindow(win.id, { startTime: event.target.value })}
-                />
-                <input
-                  type="time"
-                  className={fpInputClass}
-                  value={win.endTime}
-                  onChange={(event) => updateBlockedWindow(win.id, { endTime: event.target.value })}
-                />
-                <FPButton
-                  variant="ghost"
-                  size="sm"
-                  className="justify-center px-0 text-fp-danger hover:text-fp-danger"
-                  onClick={() => deleteBlockedWindow(win.id)}
-                >
-                  &times;
-                </FPButton>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-[13px] text-fp-text-dim">No labeled windows yet &mdash; paint the grid above or add one here.</p>
-        )}
-      </div>
+                <X className="h-3 w-3" strokeWidth={1.5} />
+              </button>
+            </span>
+          ))}
+        </div>
+      ) : (
+        <p className="text-[13px] text-fp-text-dim">No busy times yet &mdash; drag over the grid above to add some.</p>
+      )}
     </div>
   );
 }

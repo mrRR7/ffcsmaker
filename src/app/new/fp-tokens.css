@@ -7,11 +7,11 @@
 .fp-root {
   /* base — dark is the system default */
   --ground: #0b0e11;
-  --surface: #11161a;
+  --surface: #141a1f;
   --ink: #e6edea;
   --muted: #7e8b90;
   --accent: #3fa96b;
-  --rule: #1f262b;
+  --rule: #2a343b;
 
   /* block family — one hue, four depths. Brighter = earlier in the day */
   --block-1: #4fba7c;
@@ -22,8 +22,8 @@
   /* accent variations */
   --accent-bright: #4fba7c;
   --accent-dim: #2e7d4f;
-  --accent-wash: rgba(63, 169, 107, 0.12);
-  --accent-wash-strong: rgba(63, 169, 107, 0.22);
+  --accent-wash: rgba(63, 169, 107, 0.16);
+  --accent-wash-strong: rgba(63, 169, 107, 0.26);
   --accent-ink: #0b0e11;
 
   /* semantic status */
@@ -36,7 +36,7 @@
   /* semantic aliases — components should use these, not the base roles */
   --bg-page: var(--ground);
   --bg-surface: var(--surface);
-  --bg-raised: #161c21;
+  --bg-raised: #1b2228;
   --bg-inset: #0e1317;
   --text-body: var(--ink);
   --text-strong: #f2f7f4;
@@ -44,7 +44,7 @@
   --text-accent: var(--accent);
   --text-on-accent: var(--accent-ink);
   --border-default: var(--rule);
-  --border-strong: #2b353b;
+  --border-strong: #3a464e;
   --border-accent: var(--accent);
   --focus-ring: var(--accent);
   --surface-card: var(--surface);
@@ -131,7 +131,7 @@
   --ink: #161b1d;
   --muted: #666f72;
   --accent: #25794a;
-  --rule: #dcd7cc;
+  --rule: #c9c2b3;
 
   --block-1: #cdebd9;
   --block-2: #a7dcbe;
@@ -140,8 +140,8 @@
 
   --accent-bright: #2c8b55;
   --accent-dim: #1a5c37;
-  --accent-wash: rgba(37, 121, 74, 0.1);
-  --accent-wash-strong: rgba(37, 121, 74, 0.18);
+  --accent-wash: rgba(37, 121, 74, 0.14);
+  --accent-wash-strong: rgba(37, 121, 74, 0.22);
   --accent-ink: #faf9f5;
 
   --warn: #8a5d0a;
@@ -158,8 +158,8 @@
   --text-accent: #1a5c37;
   --text-on-accent: #faf9f5;
 
-  --border-default: #dcd7cc;
-  --border-strong: #c6bfb1;
+  --border-default: #c9c2b3;
+  --border-strong: #ada393;
   --border-accent: #25794a;
   --surface-card: #faf9f5;
 

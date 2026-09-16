@@ -4,6 +4,7 @@ import { useState } from "react";
 import { formatDistanceToNow } from "date-fns";
 import toast from "react-hot-toast";
 import { SavedSchedule, Course, TimeSlot } from "@/engine/types";
+import { FPBadge } from "@/components/fp-ui/badge";
 import { FPButton } from "@/components/fp-ui/button";
 import { FPLabel } from "@/components/fp-ui/label";
 import { FPNote } from "@/components/fp-ui/note";
@@ -98,6 +99,11 @@ export function SavedWeekCard({
           {saved.favorite ? "First choice" : "Backup"}
         </button>
         <FPLabel className="inline">Saved {formatDistanceToNow(new Date(saved.updatedAt), { addSuffix: true })}</FPLabel>
+        {isStale ? (
+          <FPBadge tone="warn" pill className="ml-2 align-middle">
+            Stale
+          </FPBadge>
+        ) : null}
 
         {editing ? (
           <input
@@ -125,12 +131,14 @@ export function SavedWeekCard({
           </button>
         )}
 
-        <FPLabel className="mt-1 block">
-          {schedule.selections.length} courses &middot; {totalCredits} credits &middot;{" "}
-          {freeDayCount > 0 ? `${freeDayCount} free day${freeDayCount === 1 ? "" : "s"}` : "no free day"} &middot;{" "}
-          {schedule.metrics.totalGapSlots} gap{schedule.metrics.totalGapSlots === 1 ? "" : "s"} &middot;{" "}
-          {unverifiedCourseCode ? "1 unverified professor" : "all verified"}
-        </FPLabel>
+        <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1">
+          <FPLabel className="inline">
+            {schedule.selections.length} courses &middot; {totalCredits} credits &middot;{" "}
+            {freeDayCount > 0 ? `${freeDayCount} free day${freeDayCount === 1 ? "" : "s"}` : "no free day"} &middot;{" "}
+            {schedule.metrics.totalGapSlots} gap{schedule.metrics.totalGapSlots === 1 ? "" : "s"}
+          </FPLabel>
+          {unverifiedCourseCode ? <FPBadge tone="warn">Unverified professor</FPBadge> : null}
+        </div>
         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
           {schedule.selections.map((selection) => {
             const course = courses.find((c) => c.id === selection.courseId);
@@ -147,7 +155,7 @@ export function SavedWeekCard({
         </div>
 
         {isStale ? (
-          <FPNote className="mt-2">
+          <FPNote tone="warn" className="mt-2">
             Built before you added {staleCourseCode} &mdash; re-run to check it still holds.
           </FPNote>
         ) : unverifiedCourseCode ? (

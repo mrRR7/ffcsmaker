@@ -30,7 +30,10 @@ export const FPCard = React.forwardRef<HTMLDivElement, FPCardProps>(
         paddingMap[padding],
         className
       )}
-      style={selected ? { backgroundColor: "var(--accent-wash)" } : undefined}
+      style={{
+        boxShadow: "var(--shadow-raised)",
+        ...(selected ? { backgroundColor: "var(--accent-wash)" } : null)
+      }}
       {...props}
     />
   )

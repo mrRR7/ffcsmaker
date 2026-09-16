@@ -52,6 +52,15 @@ export default function NewComparePage() {
           ? "One week, on its own"
           : "Pick weeks to compare";
 
+  function addAnotherWeek() {
+    const next = allSchedules.find((schedule) => !compareScheduleIds.includes(schedule.id));
+    if (!next) {
+      toast.error("No other weeks left to add.");
+      return;
+    }
+    addCompareSchedule(next.id);
+  }
+
   function swapAWeek() {
     const next = allSchedules.find((schedule) => !compareScheduleIds.includes(schedule.id));
     if (!next) {
@@ -162,6 +171,18 @@ export default function NewComparePage() {
               onRemove={() => removeCompareSchedule(schedule.id)}
             />
           ))}
+          {selected.length < 3 && selected.length < allSchedules.length
+            ? Array.from({ length: 3 - selected.length }).map((_, i) => (
+                <button
+                  key={`ghost-${i}`}
+                  type="button"
+                  onClick={addAnotherWeek}
+                  className="flex min-h-24 items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-fp-border-strong text-[13px] text-fp-text-dim transition-colors hover:border-fp-accent hover:text-fp-text-body"
+                >
+                  + Add a week to compare
+                </button>
+              ))
+            : null}
         </div>
       )}
     </div>

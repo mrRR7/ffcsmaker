@@ -4,8 +4,8 @@ import toast from "react-hot-toast";
 import { X } from "lucide-react";
 import { Course, ScoredTimetable, TimeSlot } from "@/engine/types";
 import { useAppStore } from "@/store/useAppStore";
+import { FPBadge } from "@/components/fp-ui/badge";
 import { FPButton } from "@/components/fp-ui/button";
-import { FPLabel } from "@/components/fp-ui/label";
 import { FPMetricRun } from "@/components/fp-ui/metric-run";
 import { FPSlotMatrixTimetable } from "@/components/fp-ui/slot-matrix-timetable";
 import { findFreeDay, getScheduleDayBlocks } from "./scheduleVisuals";
@@ -42,9 +42,9 @@ export function CompareWeekCard({
       <div className="flex items-center gap-3 border-b border-fp-border-default p-4">
         <div>
           <div className="font-fp-display text-[19px] font-bold text-fp-text-strong">{eyebrow}</div>
-          <FPLabel tone={recommended ? "accent" : "dim"} className="mt-0.5 block">
+          <FPBadge tone={recommended ? "accent" : "neutral"} pill className="mt-1">
             {recommended ? "Recommended" : "Alternative"}
-          </FPLabel>
+          </FPBadge>
         </div>
         <span
           className="ml-auto font-fp-mono text-[24px]"

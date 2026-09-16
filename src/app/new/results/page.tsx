@@ -9,6 +9,7 @@ import { staggerContainer, fadeUp } from "@/utils/motion";
 import { ArrowRight, Check, ChevronDown } from "lucide-react";
 import { FPButton } from "@/components/fp-ui/button";
 import { FPCard } from "@/components/fp-ui/card";
+import { FPBadge } from "@/components/fp-ui/badge";
 import { FPLabel } from "@/components/fp-ui/label";
 import { FPMetricRun } from "@/components/fp-ui/metric-run";
 import { FPNote } from "@/components/fp-ui/note";
@@ -113,6 +114,15 @@ function ResultsContent() {
   }, [allVariants, activeVariantId]);
 
   const displayedScore = useCountUp(activeSchedule?.score ?? 0);
+
+  const hasUnverifiedProfessor = useMemo(() => {
+    if (!activeSchedule) return false;
+    return activeSchedule.selections.some((selection) => {
+      const course = courses.find((c) => c.id === selection.courseId);
+      const option = course?.options.find((item) => item.id === selection.optionId);
+      return !option || option.professorRating === undefined;
+    });
+  }, [activeSchedule, courses]);
 
   const activeShapeIndex = useMemo(() => {
     if (!activeShapeGroup) return -1;
@@ -429,7 +439,8 @@ function ResultsContent() {
             {filteredGroups.slice(0, visibleGroupCount).map((group, index) => {
               const selected = group.shapeId === activeShapeGroup?.shapeId;
               const thumbnail = buildShapeThumbnail(group.representative, slots, courses);
-              const label = index === 0 ? "Best overall" : `Shape ${index + 1}`;
+              const isBest = index === 0;
+              const label = isBest ? "Best overall" : `Shape ${index + 1}`;
               return (
                 <motion.button
                   key={group.shapeId}
@@ -444,12 +455,12 @@ function ResultsContent() {
                     className={selected ? undefined : "hover:border-fp-border-strong"}
                   >
                     {thumbnail.length > 0 ? (
-                      <div className="grid grid-cols-5 gap-[3px]">
+                      <div className="grid grid-cols-5 gap-1">
                         {thumbnail.map((col, colIndex) =>
                           col.map((band, bandIndex) => (
                             <div
                               key={`${colIndex}-${bandIndex}`}
-                              className="h-2 rounded-[1px]"
+                              className="h-3 rounded-[2px]"
                               style={{ backgroundColor: band.color ?? "var(--bg-inset)" }}
                             />
                           ))
@@ -457,7 +468,13 @@ function ResultsContent() {
                       </div>
                     ) : null}
                     <div className="mt-2 flex items-baseline gap-1.5">
-                      <FPLabel tone={selected ? "accent" : "dim"}>{label}</FPLabel>
+                      {isBest ? (
+                        <FPBadge tone="accent" pill>
+                          {label}
+                        </FPBadge>
+                      ) : (
+                        <FPLabel tone={selected ? "accent" : "dim"}>{label}</FPLabel>
+                      )}
                       <span
                         className={
                           "ml-auto font-fp-mono text-[15px] " +
@@ -526,6 +543,9 @@ function ResultsContent() {
                     >
                       {Math.round(displayedScore)} / 100
                     </span>
+                    {hasUnverifiedProfessor ? (
+                      <FPBadge tone="warn">Unverified professor</FPBadge>
+                    ) : null}
                   </div>
                   <div className="mt-2">
                     <FPMetricRun
