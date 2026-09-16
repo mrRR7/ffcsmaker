@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { fadeUp } from "@/utils/motion";
 import { useAppStore } from "@/store/useAppStore";
 import { getRankingProfiles } from "@/engine/ranking";
 import { RankingMode } from "@/engine/types";
@@ -11,16 +12,15 @@ import { usePlannerGeneration } from "@/features/planner/usePlannerGeneration";
 import { prewarmCatalogCache } from "@/lib/catalogCache";
 import { FPStepNav } from "@/components/fp-ui/step-nav";
 import { FPButton } from "@/components/fp-ui/button";
-import { FPBadge } from "@/components/fp-ui/badge";
 import { FPLabel } from "@/components/fp-ui/label";
 import { FPNote } from "@/components/fp-ui/note";
+import { FPCheckbox } from "@/components/fp-ui/checkbox";
 import { FPCoursesPane } from "@/features/planner/fp/FPCoursesPane";
 import { FPPreferencesPane } from "@/features/planner/fp/FPPreferencesPane";
 
 type PlannerTab = "courses" | "preferences";
 
 export default function NewPlannerPage() {
-  const router = useRouter();
   const [tab, setTab] = useState<PlannerTab>("courses");
   const [showNotice, setShowNotice] = useState(false);
 
@@ -29,19 +29,15 @@ export default function NewPlannerPage() {
     if (!dismissed) setShowNotice(true);
   }, []);
 
-  const courses = useAppStore((state) => state.courses);
-  const constraints = useAppStore((state) => state.constraints);
   const campus = useAppStore((state) => state.campus);
-  const generatedSchedules = useAppStore((state) => state.generatedSchedules);
   const rankingMode = useAppStore((state) => state.rankingMode);
+  const setRankingMode = useAppStore((state) => state.setRankingMode);
+  const usePriorityRanking = useAppStore((state) => state.uiPreferences.usePriorityRanking);
+  const setUsePriorityRanking = useAppStore((state) => state.setUsePriorityRanking);
 
   const { cancel, isGenerating, progress, checked, accepted, runGeneration } = usePlannerGeneration();
 
-  const optionCount = useMemo(
-    () => courses.reduce((sum, course) => sum + course.options.length, 0),
-    [courses]
-  );
-  const activeConstraintCount = useMemo(() => Object.values(constraints).filter(Boolean).length, [constraints]);
+  const rankingProfiles = useMemo(() => getRankingProfiles(), []);
   const slots = useAppStore((state) => state.slots);
 
   useEffect(() => {
@@ -64,13 +60,6 @@ export default function NewPlannerPage() {
             suffix: <span className="opacity-60">(optional)</span>,
             status: tab === "preferences" ? "active" : "upcoming",
             onClick: () => setTab("preferences")
-          },
-          {
-            number: "03",
-            label: "Results",
-            status: "upcoming",
-            disabled: generatedSchedules.length === 0,
-            onClick: generatedSchedules.length > 0 ? () => router.push("/new/results") : undefined
           }
         ]}
       />
@@ -127,40 +116,50 @@ export default function NewPlannerPage() {
         </div>
       ) : null}
 
-      {tab === "courses" ? <FPCoursesPane /> : <FPPreferencesPane />}
-
-      <footer className="flex flex-wrap items-center gap-4 border-t border-fp-border-default bg-fp-bg-surface px-6 py-4">
-        <FPLabel>
-          {courses.length} courses &middot; {optionCount} professor options
-        </FPLabel>
-        {generatedSchedules[0] ? (
-          <FPLabel tone="accent">Best score {generatedSchedules[0].score}</FPLabel>
-        ) : null}
-        <div className="ml-auto flex items-center gap-3">
+      <AnimatePresence mode="wait">
+        <motion.div key={tab} variants={fadeUp} initial="initial" animate="animate" exit="exit">
           {tab === "courses" ? (
-            <FPButton variant="ghost" size="md" onClick={() => setTab("preferences")}>
-              Skip to 02
-            </FPButton>
+            <FPCoursesPane
+              actions={
+                <>
+                  <select
+                    value={rankingMode}
+                    onChange={(event) => setRankingMode(event.target.value as RankingMode)}
+                    aria-label="Ranking profile"
+                    className="fp-label rounded-[var(--radius-md)] border border-fp-border-strong bg-transparent px-2.5 py-[7px] text-[11px] text-fp-text-body outline-none hover:border-fp-accent"
+                  >
+                    {rankingProfiles.map((profile) => (
+                      <option key={profile} value={profile}>
+                        {profile}
+                      </option>
+                    ))}
+                  </select>
+                  <label className="fp-label inline-flex cursor-pointer items-center gap-1.5 text-[11px] text-fp-text-dim">
+                    <FPCheckbox checked={usePriorityRanking} onCheckedChange={setUsePriorityRanking} />
+                    My list order
+                  </label>
+                  <FPButton
+                    variant={isGenerating ? "secondary" : "primary"}
+                    size="sm"
+                    onClick={isGenerating ? cancel : runGeneration}
+                  >
+                    {isGenerating ? (
+                      "Cancel"
+                    ) : (
+                      <>
+                        Find my weeks
+                        <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
+                      </>
+                    )}
+                  </FPButton>
+                </>
+              }
+            />
           ) : (
-            <FPButton variant="secondary" size="md" onClick={() => setTab("courses")}>
-              Back
-            </FPButton>
+            <FPPreferencesPane />
           )}
-          <FPBadge tone={activeConstraintCount > 0 ? "accent" : "neutral"}>
-            {activeConstraintCount} constraints active
-          </FPBadge>
-          <FPButton variant={isGenerating ? "secondary" : "primary"} size="md" onClick={isGenerating ? cancel : runGeneration}>
-            {isGenerating ? (
-              "Cancel"
-            ) : (
-              <>
-                Find my weeks
-                <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
-              </>
-            )}
-          </FPButton>
-        </div>
-      </footer>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

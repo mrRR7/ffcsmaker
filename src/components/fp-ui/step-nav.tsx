@@ -41,13 +41,14 @@ export function FPStepNav({ steps, className, ...props }: FPStepNavProps) {
               "fp-label flex flex-1 items-center gap-3 px-5 py-3 text-[11px] text-left transition-colors",
               index < steps.length - 1 && "border-r border-fp-border-default",
               isActive
-                ? "bg-fp-bg-surface border-b-2 border-b-fp-accent text-fp-text-body"
+                ? "border-b-2 border-b-fp-accent text-fp-text-strong"
                 : step.disabled
                   ? "cursor-not-allowed text-fp-text-dim opacity-40"
                   : isClickable
                     ? "cursor-pointer text-fp-text-dim hover:text-fp-text-body"
                     : "text-fp-text-dim"
             )}
+            style={isActive ? { backgroundColor: "var(--accent-wash)" } : undefined}
           >
             <span className={isActive || isDone ? "text-fp-accent" : undefined}>
               {isDone ? <Check className="h-3.5 w-3.5" strokeWidth={1.5} /> : step.number}

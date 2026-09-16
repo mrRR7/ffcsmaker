@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
+import { AnimatePresence, motion } from "framer-motion";
+import { navPillSpring, popover, routeSlide } from "@/utils/motion";
 import {
   ArrowRight,
   CalendarCheck,
@@ -36,6 +38,18 @@ const navItems = [
   { href: "/new/saved", label: "Saved", icon: GalleryVerticalEnd },
   { href: "/new/settings", label: "Settings", icon: Settings }
 ];
+
+// Longest-prefix step order for directional page transitions — anything
+// outside this list (settings/admin/legal) is treated as trailing/forward.
+const ROUTE_ORDER = ["/new", "/new/planner", "/new/results", "/new/compare", "/new/saved"];
+
+function routeIndex(pathname: string | null) {
+  if (!pathname) return ROUTE_ORDER.length;
+  const match = ROUTE_ORDER.filter((p) => pathname === p || pathname.startsWith(`${p}/`)).sort(
+    (a, b) => b.length - a.length
+  )[0];
+  return match ? ROUTE_ORDER.indexOf(match) : ROUTE_ORDER.length;
+}
 
 const campusOptions: Array<{ campus: Campus; active: boolean }> = [
   { campus: "chennai", active: true },
@@ -70,6 +84,14 @@ export function FPShell({ children }: { children: React.ReactNode }) {
       .filter((item) => pathname === item.href || pathname?.startsWith(`${item.href}/`))
       .sort((a, b) => b.href.length - a.href.length)[0];
     return match?.href ?? "/new";
+  }, [pathname]);
+
+  const prevRouteIndexRef = useRef(routeIndex(pathname));
+  const direction = useMemo(() => {
+    const nextIndex = routeIndex(pathname);
+    const dir = nextIndex >= prevRouteIndexRef.current ? 1 : -1;
+    prevRouteIndexRef.current = nextIndex;
+    return dir;
   }, [pathname]);
 
   useEffect(() => {
@@ -118,7 +140,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
         <Link href="/new" className="select-none font-fp-display text-[19px] font-bold tracking-[-0.01em] text-fp-text-strong">
           FFCS Planner
         </Link>
-        <nav className="fp-label hidden items-center gap-[18px] text-[11px] lg:flex">
+        <nav className="fp-label hidden items-center gap-[6px] text-[11px] lg:flex">
           {navItems.map((item) => {
             const active = item.href === activeHref;
             const Icon = item.icon;
@@ -127,11 +149,21 @@ export function FPShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "inline-flex items-center gap-1.5 transition-colors",
+                  "relative inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] px-2.5 py-1.5 transition-colors duration-[var(--dur-fast)] ease-[var(--ease-standard)]",
                   active ? "text-fp-accent" : "text-fp-text-dim hover:text-fp-text-body"
                 )}
               >
-                <Icon className="h-3.5 w-3.5" strokeWidth={1.5} />
+                {active ? (
+                  <motion.div
+                    layoutId="fp-nav-pill"
+                    className="absolute inset-0 rounded-[var(--radius-pill)] border border-fp-border-accent"
+                    style={{ backgroundColor: "var(--accent-wash)", zIndex: -1 }}
+                    transition={navPillSpring}
+                  />
+                ) : null}
+                <motion.span className="inline-flex" whileHover={{ y: -1 }} transition={{ duration: 0.1 }}>
+                  <Icon className="h-3.5 w-3.5" strokeWidth={1.5} />
+                </motion.span>
                 {item.label}
               </Link>
             );
@@ -148,39 +180,47 @@ export function FPShell({ children }: { children: React.ReactNode }) {
                 {CAMPUS_LABELS[campus]}
                 <ChevronDown className="h-3.5 w-3.5" />
               </button>
-              {campusMenuOpen ? (
-                <div className="absolute right-0 z-50 mt-2 w-56 rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface p-1">
-                  {campusOptions.map((option) => {
-                    const isActive = option.campus === campus;
-                    return (
-                      <button
-                        key={option.campus}
-                        type="button"
-                        disabled={!option.active}
-                        onClick={() => {
-                          if (isActive) {
-                            setCampusMenuOpen(false);
-                            return;
-                          }
-                          setPendingCampus(option.campus);
-                        }}
-                        className={cn(
-                          "flex w-full items-center justify-between rounded-[var(--radius-sm)] px-3 py-2 text-left text-[13px]",
-                          option.active
-                            ? "text-fp-text-body hover:bg-fp-bg-raised"
-                            : "cursor-not-allowed text-fp-text-dim opacity-50"
-                        )}
-                      >
-                        <span>
-                          {CAMPUS_LABELS[option.campus]}
-                          {!option.active ? " (soon)" : ""}
-                        </span>
-                        {isActive ? <Check className="h-3.5 w-3.5 text-fp-accent" strokeWidth={1.5} /> : null}
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : null}
+              <AnimatePresence>
+                {campusMenuOpen ? (
+                  <motion.div
+                    variants={popover}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    className="absolute right-0 z-50 mt-2 w-56 rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface p-1"
+                  >
+                    {campusOptions.map((option) => {
+                      const isActive = option.campus === campus;
+                      return (
+                        <button
+                          key={option.campus}
+                          type="button"
+                          disabled={!option.active}
+                          onClick={() => {
+                            if (isActive) {
+                              setCampusMenuOpen(false);
+                              return;
+                            }
+                            setPendingCampus(option.campus);
+                          }}
+                          className={cn(
+                            "flex w-full items-center justify-between rounded-[var(--radius-sm)] px-3 py-2 text-left text-[13px]",
+                            option.active
+                              ? "text-fp-text-body hover:bg-fp-bg-raised"
+                              : "cursor-not-allowed text-fp-text-dim opacity-50"
+                          )}
+                        >
+                          <span>
+                            {CAMPUS_LABELS[option.campus]}
+                            {!option.active ? " (soon)" : ""}
+                          </span>
+                          {isActive ? <Check className="h-3.5 w-3.5 text-fp-accent" strokeWidth={1.5} /> : null}
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
             </div>
           ) : null}
           <FPBadge tone="accent" pill>
@@ -198,7 +238,18 @@ export function FPShell({ children }: { children: React.ReactNode }) {
       </header>
 
       <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-8 pb-16 sm:px-6 lg:px-8">
-        {mainContent}
+        <AnimatePresence mode="wait" initial={false} custom={direction}>
+          <motion.div
+            key={pathname}
+            custom={direction}
+            variants={routeSlide}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+          >
+            {mainContent}
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       <footer className="flex items-center gap-4 border-t border-fp-border-default bg-fp-bg-surface px-6 py-5">

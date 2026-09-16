@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useMemo } from "react";
+import { Fragment, useMemo, type ReactNode } from "react";
 import { Course, DayOfWeek, TimeSlot } from "@/engine/types";
 import { getSlotDaysForSlots } from "@/engine/slotCatalog";
 import { parseTime } from "@/engine/conflict";
@@ -50,7 +50,15 @@ function buildPreviewBlocks(courses: Course[], slots: TimeSlot[]): PreviewBlock[
   return blocks;
 }
 
-export function FPWeekSoFarPreview({ courses, slots }: { courses: Course[]; slots: TimeSlot[] }) {
+export function FPWeekSoFarPreview({
+  courses,
+  slots,
+  actions
+}: {
+  courses: Course[];
+  slots: TimeSlot[];
+  actions?: ReactNode;
+}) {
   const days = useMemo(() => getSlotDaysForSlots(slots) as DayOfWeek[], [slots]);
   const blocks = useMemo(() => buildPreviewBlocks(courses, slots), [courses, slots]);
 
@@ -72,14 +80,38 @@ export function FPWeekSoFarPreview({ courses, slots }: { courses: Course[]; slot
 
   return (
     <div>
-      <div className="flex items-baseline gap-3">
-        <h2 className="font-fp-display text-[17px] font-bold text-fp-text-strong">Your week so far</h2>
-        <FPLabel>One possible layout &middot; nothing locked</FPLabel>
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="flex items-baseline gap-3">
+          <h2 className="font-fp-display text-[17px] font-bold text-fp-text-strong">Your week so far</h2>
+          <FPLabel>One possible layout &middot; nothing locked</FPLabel>
+        </div>
+        {actions ? <div className="ml-auto flex flex-wrap items-center gap-2.5">{actions}</div> : null}
       </div>
 
       {!hasCourses || days.length === 0 ? (
-        <div className="mt-4 rounded-[var(--radius-md)] border border-dashed border-fp-border-strong p-8 text-center text-[13px] text-fp-text-dim">
-          Add a course to see a live preview here.
+        <div className="relative mt-3.5">
+          <FPScheduleGrid
+            columnHeaders={(days.length > 0 ? days : (["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] as DayOfWeek[])).map(
+              (d) => d.slice(0, 3)
+            )}
+            rowLabelWidth={46}
+          >
+            {hours.map((hour) => (
+              <Fragment key={hour}>
+                <FPScheduleRowLabel>{String(hour).padStart(2, "0")}:00</FPScheduleRowLabel>
+                {(days.length > 0 ? days : (["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"] as DayOfWeek[])).map(
+                  (day) => (
+                    <FPScheduleBlock key={`${day}-${hour}`} minHeight={30} />
+                  )
+                )}
+              </Fragment>
+            ))}
+          </FPScheduleGrid>
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+            <p className="rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-surface px-4 py-2.5 text-center text-[13px] text-fp-text-dim">
+              Add a course to see a live preview here.
+            </p>
+          </div>
         </div>
       ) : (
         <>

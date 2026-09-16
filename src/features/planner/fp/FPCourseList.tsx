@@ -42,6 +42,8 @@ import { FPButton } from "@/components/fp-ui/button";
 import { FPBadge } from "@/components/fp-ui/badge";
 import { FPLabel } from "@/components/fp-ui/label";
 
+const COURSE_LIST_CAP = 6;
+
 function sameIds(left: string[], right: string[]) {
   return left.length === right.length && left.every((slotId) => right.includes(slotId));
 }
@@ -70,12 +72,13 @@ function iconButtonClass(active: boolean, tone: "accent" | "warn" | "default" = 
  * "add a course" form is tab-gated). Pass `showAddForm` to also render that
  * form (Manual tab only).
  */
-export function FPCourseList({ showAddForm }: { showAddForm: boolean }) {
+export function FPCourseList({ showAddForm, showList = true }: { showAddForm: boolean; showList?: boolean }) {
   const [courseCode, setCourseCode] = useState("");
   const [courseName, setCourseName] = useState("");
   const [credits, setCredits] = useState("");
   const [collapsedCourseIds, setCollapsedCourseIds] = useState<Record<string, boolean>>({});
   const [isDeleteAllOpen, setIsDeleteAllOpen] = useState(false);
+  const [showAllCourses, setShowAllCourses] = useState(false);
   const courses = useAppStore((state) => state.courses);
   const addCourse = useAppStore((state) => state.addCourse);
   const clearCourses = useAppStore((state) => state.clearCourses);
@@ -96,6 +99,7 @@ export function FPCourseList({ showAddForm }: { showAddForm: boolean }) {
   function confirmDeleteAllCourses() {
     clearCourses();
     setCollapsedCourseIds({});
+    setShowAllCourses(false);
     setIsDeleteAllOpen(false);
     toast.success("All courses cleared.");
   }
@@ -149,31 +153,44 @@ export function FPCourseList({ showAddForm }: { showAddForm: boolean }) {
         </div>
       ) : null}
 
-      <div className="flex items-center justify-between">
-        <FPLabel>Your courses &middot; {courses.length}</FPLabel>
-        <FPButton variant="ghost" size="sm" onClick={() => setIsDeleteAllOpen(true)} disabled={courses.length === 0}>
-          <Trash2 className="h-3.5 w-3.5" />
-          Delete all
-        </FPButton>
-      </div>
+      {showList ? (
+        <>
+          <div className="flex items-center justify-between">
+            <FPLabel>Your courses &middot; {courses.length}</FPLabel>
+            <FPButton variant="ghost" size="sm" onClick={() => setIsDeleteAllOpen(true)} disabled={courses.length === 0}>
+              <Trash2 className="h-3.5 w-3.5" />
+              Delete all
+            </FPButton>
+          </div>
 
-      {courses.length === 0 ? (
-        <div className="rounded-[var(--radius-lg)] border border-dashed border-fp-border-default bg-fp-bg-inset p-8 text-center text-[13px] text-fp-text-dim">
-          No courses added yet.
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {courses.map((course, index) => (
-            <CourseCard
-              key={course.id}
-              courseId={course.id}
-              index={index}
-              collapsed={Boolean(collapsedCourseIds[course.id])}
-              onToggleCollapse={toggleCourseCollapse}
-            />
-          ))}
-        </div>
-      )}
+          {courses.length === 0 ? (
+            <div className="rounded-[var(--radius-lg)] border border-dashed border-fp-border-default bg-fp-bg-inset p-8 text-center text-[13px] text-fp-text-dim">
+              No courses added yet.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {(showAllCourses ? courses : courses.slice(0, COURSE_LIST_CAP)).map((course, index) => (
+                <CourseCard
+                  key={course.id}
+                  courseId={course.id}
+                  index={index}
+                  collapsed={Boolean(collapsedCourseIds[course.id])}
+                  onToggleCollapse={toggleCourseCollapse}
+                />
+              ))}
+              {!showAllCourses && courses.length > COURSE_LIST_CAP ? (
+                <button
+                  type="button"
+                  onClick={() => setShowAllCourses(true)}
+                  className="fp-label w-full rounded-[var(--radius-md)] border border-dashed border-fp-border-strong px-4 py-3 text-center text-[11px] text-fp-text-dim hover:text-fp-text-body"
+                >
+                  {courses.length - COURSE_LIST_CAP} more course{courses.length - COURSE_LIST_CAP === 1 ? "" : "s"}
+                </button>
+              ) : null}
+            </div>
+          )}
+        </>
+      ) : null}
 
       {isDeleteAllOpen ? (
         <div
@@ -248,6 +265,7 @@ function CourseCard({
     notes: "",
     program: null
   });
+  const [showAddOptionForm, setShowAddOptionForm] = useState(false);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -286,6 +304,7 @@ function CourseCard({
     }
     addOption(courseId, { ...draft, professorName: draft.professorName.trim(), combinedSlotIds: [] });
     setDraft({ professorName: "", theorySlotIds: [], labSlotIds: [], combinedSlotIds: [], notes: "", program: null });
+    setShowAddOptionForm(false);
   }
 
   return (
@@ -423,11 +442,31 @@ function CourseCard({
             </div>
           ) : null}
 
-          {/* Add professor option form */}
+          {/* Add professor option — collapsed behind a toggle button by default */}
+          {!showAddOptionForm ? (
+            <button
+              type="button"
+              onClick={() => setShowAddOptionForm(true)}
+              className="fp-label flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border border-dashed border-fp-border-accent p-3 text-[11px] text-fp-accent transition-colors hover:bg-fp-accent hover:text-fp-text-on-accent"
+              style={{ backgroundColor: "var(--accent-wash)" }}
+            >
+              <UserRoundPlus className="h-3.5 w-3.5" />
+              Add professor option
+            </button>
+          ) : (
           <div className="rounded-[var(--radius-md)] border border-dashed border-fp-border-accent p-4" style={{ backgroundColor: "var(--accent-wash)" }}>
-            <div className="mb-3 flex items-center gap-2">
-              <UserRoundPlus className="h-4 w-4 text-fp-accent" />
-              <FPLabel tone="accent">Add professor option</FPLabel>
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <UserRoundPlus className="h-4 w-4 text-fp-accent" />
+                <FPLabel tone="accent">Add professor option</FPLabel>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowAddOptionForm(false)}
+                className="fp-label text-[11px] text-fp-text-dim hover:text-fp-text-body"
+              >
+                Cancel
+              </button>
             </div>
             <input
               value={draft.professorName}
@@ -465,6 +504,7 @@ function CourseCard({
               Add option
             </FPButton>
           </div>
+          )}
         </div>
       ) : null}
     </div>

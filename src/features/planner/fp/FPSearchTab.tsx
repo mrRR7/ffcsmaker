@@ -23,6 +23,8 @@ import {
   TimeOfDayFilter
 } from "@/features/planner/fp/FPCourseOptionGroups";
 
+const SEARCH_RESULTS_CAP = 10;
+
 type SearchResponse = {
   courses: DBCourse[];
   semester: DBSemester | null;
@@ -50,6 +52,7 @@ export function FPSearchTab() {
   const [selectedOptions, setSelectedOptions] = useState<Record<string, boolean>>({});
   const [timeFilterByCourse, setTimeFilterByCourse] = useState<Record<string, TimeOfDayFilter>>({});
   const [expandedGroupByCourse, setExpandedGroupByCourse] = useState<Record<string, string | null>>({});
+  const [showAllResults, setShowAllResults] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [catalogError, setCatalogError] = useState("");
 
@@ -95,6 +98,10 @@ export function FPSearchTab() {
       cancelled = true;
     };
   }, [campus]);
+
+  useEffect(() => {
+    setShowAllResults(false);
+  }, [query]);
 
   useEffect(() => {
     if (query.trim().length < 2 || !semesterId) {
@@ -270,7 +277,7 @@ export function FPSearchTab() {
         </div>
       ) : (
         <div className="space-y-3">
-          {courses.map((course) => {
+          {(showAllResults ? courses : courses.slice(0, SEARCH_RESULTS_CAP)).map((course) => {
             const expanded = expandedCourseId === course.id;
             const tickedCount = course.course_options.filter((option) => selectedOptions[option.id]).length;
             const timeFilter = timeFilterByCourse[course.id] ?? "all";
@@ -354,6 +361,15 @@ export function FPSearchTab() {
               </div>
             );
           })}
+          {!showAllResults && courses.length > SEARCH_RESULTS_CAP ? (
+            <button
+              type="button"
+              onClick={() => setShowAllResults(true)}
+              className="fp-label w-full rounded-[var(--radius-md)] border border-dashed border-fp-border-strong px-4 py-3 text-center text-[11px] text-fp-text-dim hover:text-fp-text-body"
+            >
+              {courses.length - SEARCH_RESULTS_CAP} more result{courses.length - SEARCH_RESULTS_CAP === 1 ? "" : "s"}
+            </button>
+          ) : null}
         </div>
       )}
     </div>
