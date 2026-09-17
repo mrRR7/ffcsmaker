@@ -335,7 +335,7 @@ function CourseCard({
               <FPBadge>
                 {course.options.length} prof{course.options.length !== 1 ? "s" : ""}
               </FPBadge>
-              {lockedOptionCount > 0 ? <FPBadge tone="accent">{lockedOptionCount} locked</FPBadge> : null}
+              {lockedOptionCount > 0 ? <FPBadge tone="neutral">{lockedOptionCount} locked</FPBadge> : null}
               {isRisky ? <FPLabel tone="warn">Add more &mdash; one clash and this course has nowhere to go</FPLabel> : null}
             </div>
             <p className="mt-1 truncate text-[length:var(--text-small)] text-fp-text-dim">{course.courseName}</p>
@@ -581,7 +581,7 @@ function SortableOptionRow({
               <span className="truncate text-[length:var(--text-small)] font-medium text-fp-text-body">
                 {option.professorName || <span className="italic text-fp-text-dim">Unnamed</span>}
               </span>
-              {locked ? <FPBadge tone="accent">Locked</FPBadge> : null}
+              {locked ? <FPBadge tone="neutral">Locked</FPBadge> : null}
               {avoided ? <FPBadge tone="danger">Avoided</FPBadge> : null}
             </span>
             <span className="mt-0.5 block truncate text-[12px] text-fp-text-dim">{slotSummary}</span>

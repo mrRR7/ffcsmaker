@@ -249,7 +249,7 @@ export function FPSearchTab() {
       {activeSemester ? (
         <FPMetricRun
           items={[
-            <FPBadge tone="accent" key="sem">
+            <FPBadge tone="neutral" key="sem">
               {activeSemester.label}
             </FPBadge>,
             activeSemester.is_active ? "Active catalog" : "Selected catalog"

@@ -223,7 +223,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
               </AnimatePresence>
             </div>
           ) : null}
-          <FPBadge tone="accent" pill>
+          <FPBadge tone="neutral" pill>
             Fall 2026
           </FPBadge>
           <FPButton
