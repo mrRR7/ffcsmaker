@@ -126,7 +126,7 @@ Default posture flips from "border by default" to "border only when it answers a
 ## Verification
 
 - `npx tsc --noEmit` clean.
-- Grep the codebase for `fp-label` (class usage, not the `FPLabel` component name) — the only remaining match should be inside `label.tsx` itself, on the compatibility path backing the explicit `variant="eyebrow"` opt-in. Any other match means the old treatment is still being sprinkled around rather than genuinely retired.
+- Grep the codebase for `fp-label` (class usage, not the `FPLabel` component name) — the only remaining matches should be in `schedule-grid.tsx` and `slot-matrix-timetable.tsx`, both exempt from this plan and owned by a separate structural track (their slot-code/header cells legitimately stay monospace). `label.tsx` never emits the literal string `fp-label` at all. Any other match means the old treatment is still being sprinkled around rather than genuinely retired.
 - Live pass across Landing, Planner (Courses + Preferences), Results, Compare, Saved, Settings in both dark and light theme: confirm nav/step-nav/tab-active states read as neutral selection (not green), confirm buttons/inputs/cards/badges have no default border, confirm the resizable divider is invisible at rest and appears on hover/drag, confirm slot/course codes still render in monospace, confirm the primary CTA and checkbox-checked states are still green, confirm "Best overall"/"Recommended" badges are still green and semester/constraints badges are not.
 - Confirm the real timetable grid (`slot-matrix-timetable.tsx`) and preview grid (`schedule-grid.tsx`) are visually unchanged — this spec must not touch them.
 - Spot-check that no page reads as "boxed" — most surfaces should differentiate via background-color step and spacing alone.

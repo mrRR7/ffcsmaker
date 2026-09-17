@@ -128,13 +128,13 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
               value={courseCode}
               onChange={(event) => setCourseCode(event.target.value)}
               placeholder="Course code"
-              className="rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-2 font-fp-mono text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-strong focus:outline-none"
+              className="rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-2 font-fp-mono text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-[var(--border-selected)] focus:outline-none"
             />
             <input
               value={courseName}
               onChange={(event) => setCourseName(event.target.value)}
               placeholder="Course name"
-              className="rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-2 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-strong focus:outline-none"
+              className="rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-2 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-[var(--border-selected)] focus:outline-none"
             />
             <input
               type="number"
@@ -143,7 +143,7 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
               value={credits}
               onChange={(event) => setCredits(event.target.value)}
               placeholder="Credits"
-              className="rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-2 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-strong focus:outline-none"
+              className="rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-2 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-[var(--border-selected)] focus:outline-none"
             />
             <FPButton variant="primary" size="md" onClick={submitCourse}>
               <Plus className="h-4 w-4" />
@@ -359,12 +359,12 @@ function CourseCard({
               <input
                 value={course.courseCode}
                 onChange={(event) => updateCourse(course.id, { courseCode: event.target.value.toUpperCase() })}
-                className="rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 font-fp-mono text-[length:var(--text-small)] text-fp-text-body focus:border-fp-border-strong focus:outline-none"
+                className="rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 font-fp-mono text-[length:var(--text-small)] text-fp-text-body focus:border-[var(--border-selected)] focus:outline-none"
               />
               <input
                 value={course.courseName}
                 onChange={(event) => updateCourse(course.id, { courseName: event.target.value })}
-                className="rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-fp-border-strong focus:outline-none"
+                className="rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-[var(--border-selected)] focus:outline-none"
               />
               <input
                 type="number"
@@ -372,7 +372,7 @@ function CourseCard({
                 max={8}
                 value={course.credits}
                 onChange={(event) => updateCourse(course.id, { credits: Number(event.target.value) })}
-                className="rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-fp-border-strong focus:outline-none"
+                className="rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-[var(--border-selected)] focus:outline-none"
               />
               <input
                 aria-label="Course color"
@@ -471,7 +471,7 @@ function CourseCard({
               value={draft.professorName}
               placeholder="Professor name"
               onChange={(event) => setDraft((current) => ({ ...current, professorName: event.target.value }))}
-              className="w-full rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-strong focus:outline-none"
+              className="w-full rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-[var(--border-selected)] focus:outline-none"
             />
             <div className="mt-3 grid gap-3 xl:grid-cols-2">
               <TheoryPicker
@@ -496,7 +496,7 @@ function CourseCard({
               placeholder="Notes (optional)"
               rows={2}
               onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))}
-              className="mt-3 w-full rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-strong focus:outline-none"
+              className="mt-3 w-full rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-[var(--border-selected)] focus:outline-none"
             />
             <FPButton variant="primary" size="sm" className="mt-3" onClick={submitOption}>
               <Plus className="h-3.5 w-3.5" />
@@ -620,7 +620,7 @@ function SortableOptionRow({
             <input
               value={option.professorName}
               onChange={(e) => onUpdate({ professorName: e.target.value })}
-              className="w-full rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-surface px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-fp-border-strong focus:outline-none"
+              className="w-full rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-surface px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-[var(--border-selected)] focus:outline-none"
             />
           </div>
           <TheoryPicker
@@ -640,7 +640,7 @@ function SortableOptionRow({
               onChange={(e) => onUpdate({ notes: e.target.value })}
               placeholder="Notes (optional)"
               rows={2}
-              className="w-full rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-surface px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-strong focus:outline-none"
+              className="w-full rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-surface px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-[var(--border-selected)] focus:outline-none"
             />
           ) : null}
         </div>

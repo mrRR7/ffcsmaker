@@ -181,8 +181,11 @@
   --busy-ink: var(--muted);
 }
 
-/* the system's signature: mono, uppercase, generously tracked micro-labels —
-   used on nearly every panel header, step, metric and button */
+/* LEGACY — do not use for new code. Kept only because schedule-grid.tsx
+   and slot-matrix-timetable.tsx (the FFCS timetable grid, exempt from
+   this visual-system pass) still reference it for their slot-code/header
+   cells. Everything else uses fp-text/fp-eyebrow/fp-code. Removable once
+   those two files migrate off it on their own (separate) track. */
 .fp-label {
   font-family: var(--font-mono);
   letter-spacing: var(--track-label);

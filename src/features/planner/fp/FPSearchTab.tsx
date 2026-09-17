@@ -219,7 +219,7 @@ export function FPSearchTab() {
   return (
     <div className="space-y-4 p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex flex-1 items-center gap-2.5 rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-[14px] py-[11px] focus-within:border-fp-border-strong">
+        <div className="flex flex-1 items-center gap-2.5 rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-[14px] py-[11px] focus-within:border-[var(--border-selected)]">
           <span className="font-fp-mono text-fp-text-dim">/</span>
           <input
             value={query}
@@ -231,7 +231,7 @@ export function FPSearchTab() {
         <select
           value={semesterId}
           onChange={(event) => setSemesterId(event.target.value)}
-          className="fp-text rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-[11px] text-[length:var(--text-micro)] text-fp-text-dim focus:border-fp-border-strong focus:outline-none sm:max-w-[220px]"
+          className="fp-text rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-[11px] text-[length:var(--text-micro)] text-fp-text-dim focus:border-[var(--border-selected)] focus:outline-none sm:max-w-[220px]"
         >
           {semesters.length === 0 ? (
             <option value="">No semester</option>

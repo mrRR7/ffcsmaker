@@ -81,7 +81,7 @@ export default function NewSettingsPage() {
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <FPPanel title="CAMPUS" className="lg:col-span-2">
+        <FPPanel title="Campus" className="lg:col-span-2">
           <div className="space-y-4 p-4">
             <Row
               label="Current campus"
@@ -95,7 +95,7 @@ export default function NewSettingsPage() {
           </div>
         </FPPanel>
 
-        <FPPanel title="DATA & CACHE">
+        <FPPanel title="Data & cache">
           <div className="space-y-4 p-4">
             <Row
               label="Course catalog cache"
@@ -136,7 +136,7 @@ export default function NewSettingsPage() {
           </div>
         </FPPanel>
 
-        <FPPanel title="APPEARANCE">
+        <FPPanel title="Appearance">
           <div className="space-y-5 p-4">
             <div className="grid grid-cols-2 gap-3">
               <ThemeOption
@@ -180,7 +180,7 @@ export default function NewSettingsPage() {
           </div>
         </FPPanel>
 
-        <FPPanel title="EXPORT">
+        <FPPanel title="Export">
           <div className="space-y-3 p-4">
             <CheckRow
               checked={uiPreferences.exportPreferences.includeMetrics}
@@ -215,7 +215,7 @@ export default function NewSettingsPage() {
           </div>
         </FPPanel>
 
-        <FPPanel title="LOCAL DATA" className="lg:col-span-2">
+        <FPPanel title="Local data" className="lg:col-span-2">
           <div className="p-4">
             <FPButton
               variant="secondary"

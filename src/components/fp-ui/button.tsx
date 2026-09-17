@@ -5,22 +5,21 @@ import { cn } from "@/utils/cn";
 
 /**
  * Button — the only action control in the FFCS Planner system.
- * Mono, uppercase, .14em tracked. Exact spec from the design handoff's own
- * component bundle (components/core/Button.jsx): primary/secondary/ghost,
+ * Plain text, no default border on secondary. primary/secondary/ghost,
  * sm/md sizes, hover = raise a value step or brighten accent, never opacity.
  */
 const fpButtonVariants = cva(
-  "fp-text inline-flex items-center gap-2 rounded-[var(--radius-md)] border border-transparent leading-none transition-[background-color,border-color,color,transform,outline-offset] duration-[var(--dur-fast)] ease-[var(--ease-standard)] active:scale-[0.98] disabled:cursor-not-allowed disabled:border-fp-border-default disabled:bg-fp-bg-inset disabled:text-fp-text-dim disabled:active:scale-100",
+  "fp-text inline-flex items-center gap-2 rounded-[var(--radius-md)] border border-transparent transition-[background-color,border-color,color,transform,outline-offset] duration-[var(--dur-fast)] ease-[var(--ease-standard)] active:scale-[0.98] disabled:cursor-not-allowed disabled:border-fp-border-default disabled:bg-fp-bg-inset disabled:text-fp-text-dim disabled:active:scale-100",
   {
     variants: {
       variant: {
         primary: "bg-fp-accent text-fp-text-on-accent font-medium hover:bg-fp-accent-bright",
-        secondary: "bg-fp-bg-raised text-fp-text-body hover:bg-fp-bg-inset",
+        secondary: "bg-fp-bg-raised text-fp-text-body hover:bg-[var(--surface-selected)]",
         ghost: "bg-transparent text-fp-text-dim hover:text-fp-text-body"
       },
       size: {
-        sm: "text-[length:var(--text-micro)] px-3 py-[7px]",
-        md: "text-[length:var(--text-small)] px-[18px] py-[11px]"
+        sm: "text-[length:var(--text-micro)] px-3 py-[7px] leading-none",
+        md: "text-[length:var(--text-small)] px-[18px] py-[11px] leading-none"
       }
     },
     defaultVariants: {

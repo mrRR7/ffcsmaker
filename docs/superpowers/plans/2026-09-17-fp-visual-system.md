@@ -1,6 +1,6 @@
 # FP Visual System Redesign Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Retire the mono/uppercase/tracked/green-everywhere/boxed-everything visual language of the `/new` FFCS Planner skin in favor of a disciplined three-tier typography system, a neutral "selected" state distinct from green, and borders used only where they communicate real structure.
 
@@ -28,7 +28,7 @@
 **Interfaces:**
 - Produces: three CSS classes (`.fp-text`, `.fp-eyebrow`, `.fp-code`) and two new custom properties (`--surface-selected`, `--border-selected`, defined in both `.fp-root` and `.fp-root.light`) that every later task consumes. `.fp-label` keeps its current visual behavior unchanged in this task — nothing consumes the new classes yet, so this step must not change what the app looks like.
 
-- [ ] **Step 1: Add the three typography classes**
+- [x] **Step 1: Add the three typography classes**
 
 In `src/app/new/fp-tokens.css`, immediately after the existing `.fp-label` block (currently lines 180–186), add:
 
@@ -60,7 +60,7 @@ In `src/app/new/fp-tokens.css`, immediately after the existing `.fp-label` block
 }
 ```
 
-- [ ] **Step 2: Add the two neutral selection tokens**
+- [x] **Step 2: Add the two neutral selection tokens**
 
 In the same file, inside the `.fp-root` block (dark theme, after the line `--border-accent: var(--accent);` around line 48), add:
 
@@ -78,14 +78,14 @@ Inside the `.fp-root.light` block (after `--border-accent: #25794a;` around line
 
 (Reasoning for the literal values: `--surface-selected` sits one perceptible step lighter than `--bg-raised` (`#1b2228` dark / `#ffffff` light — light theme already tops out at white, so `#e2ddd0` sits between `--bg-page` `#efede7` and `--border-strong` `#ada393` as a warm neutral highlight) so a selected item is visibly the brightest neutral surface in the stack. `--border-selected` starts at a literal value close to `--border-strong` but is its own token — not an alias — so it can be tuned independently later without touching the general "strong border" role.)
 
-- [ ] **Step 3: Verify no visual change yet**
+- [x] **Step 3: Verify no visual change yet**
 
 Run: `npx tsc --noEmit`
 Expected: clean, no output (this is a CSS-only change; this check just confirms nothing else broke).
 
 Start the dev server if not already running (`npm run dev`), then using the Claude Browser pane tools, navigate to `http://localhost:3000/new` and take a screenshot. Expected: pixel-identical to before this change — nothing in the app yet references `.fp-text`, `.fp-eyebrow`, `.fp-code`, `--surface-selected`, or `--border-selected`, so nothing should look different.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/app/new/fp-tokens.css
@@ -108,7 +108,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 - Consumes: `.fp-text`, `.fp-eyebrow` classes from Task 1.
 - Produces: `FPLabel` keeps its existing prop signature (`tone?: "dim" | "accent" | "strong" | "warn"`) and adds `variant?: "text" | "eyebrow"` (default `"text"`). Every existing call site (`<FPLabel tone="...">`) keeps compiling unchanged and now renders plain text instead of mono/uppercase/tracked — this is the single highest-leverage change in the plan since `FPLabel` is used for most metadata app-wide.
 
-- [ ] **Step 1: Update FPLabel to default to `.fp-text`, add the eyebrow opt-in**
+- [x] **Step 1: Update FPLabel to default to `.fp-text`, add the eyebrow opt-in**
 
 Replace the full contents of `src/components/fp-ui/label.tsx`:
 
@@ -151,7 +151,7 @@ export function FPLabel({ className, tone = "dim", variant = "text", ...props }:
 
 Note the size change: the old default was always `--text-micro` (11px) regardless of context, because that size was doing double duty as "this is a mono label" sizing. Under the new system, `.fp-eyebrow` supplies its own `--text-micro` sizing for the rare kicker case, and the default text path uses `--text-small` (13px) since it's now reading as normal small body text, not a shouty micro-label. If a specific existing call site looks too large after this change, that call site should pass a `text-[var(--text-micro)]` override via `className`, not change the component default.
 
-- [ ] **Step 2: Find and convert genuine section-kicker call sites to `variant="eyebrow"`**
+- [x] **Step 2: Find and convert genuine section-kicker call sites to `variant="eyebrow"`**
 
 Run: `grep -rn "FPLabel tone=\"accent\"" src/app/new src/features/planner/fp src/components/fp-ui`
 
@@ -174,7 +174,7 @@ Change the first line to:
 
 Leave every other `grep` match from this step as plain text unless it fits the same "standalone kicker directly above a heading" pattern — most will not, and should NOT be converted (the spec is explicit that eyebrow stays rare).
 
-- [ ] **Step 3: Verify**
+- [x] **Step 3: Verify**
 
 Run: `npx tsc --noEmit`
 Expected: clean.
@@ -183,7 +183,7 @@ Using the Claude Browser pane, navigate to `http://localhost:3000/new` and scree
 
 Check the browser console for errors: `mcp__Claude_Browser__read_console_messages` with `onlyErrors: true`. Expected: no errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/components/fp-ui/label.tsx
@@ -205,7 +205,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 - Consumes: `.fp-text`, `.fp-code` from Task 1.
 - Produces: `FPBadge` gains a `mono?: boolean` prop (default `false`). Its `tone="neutral"` default no longer renders a border. Existing `tone`/`pill` props are unchanged.
 
-- [ ] **Step 1: Update FPBadge — drop border, plain text default, mono opt-in**
+- [x] **Step 1: Update FPBadge — drop border, plain text default, mono opt-in**
 
 Replace the full contents of `src/components/fp-ui/badge.tsx`:
 
@@ -260,7 +260,7 @@ export function FPBadge({ className, tone = "neutral", pill = false, mono = fals
 
 Note what changed from before: the `border` class and each tone's `border-fp-border-*` color are gone entirely (badges no longer have a visible border in any tone, per the spec's borders section). The wash background (`toneWash`) is unchanged — a badge can still have a soft tinted background, just no outline.
 
-- [ ] **Step 2: Re-triage which existing badges use `tone="accent"`**
+- [x] **Step 2: Re-triage which existing badges use `tone="accent"`**
 
 Run: `grep -rn 'tone="accent"' src/app/new src/features/planner/fp src/components/fp-ui | grep -i badge`
 
@@ -302,7 +302,7 @@ becomes unconditionally neutral (a constraint count is informational, not an ach
 
 Leave "Best overall" and "Recommended" badges as `tone="accent"` — do not change those.
 
-- [ ] **Step 3: Apply `mono` to the credit counter**
+- [x] **Step 3: Apply `mono` to the credit counter**
 
 In `src/features/planner/fp/FPCreditSummary.tsx`, change:
 
@@ -324,14 +324,14 @@ to:
   );
 ```
 
-- [ ] **Step 4: Verify**
+- [x] **Step 4: Verify**
 
 Run: `npx tsc --noEmit`
 Expected: clean.
 
 Using the Claude Browser pane, navigate to `http://localhost:3000/new` — confirm the header's "Fall 2026" pill no longer has a green border/wash (plain neutral chip). Navigate to `/new/planner` (with a campus selected) and confirm the constraints-count badge in the action row is neutral regardless of count, and the credit counter (e.g. "0 / 27 CR") renders in monospace. Navigate to `/new/results` with at least one generated schedule and confirm the "Best overall" badge is still green. Check console for errors (`onlyErrors: true`).
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/components/fp-ui/badge.tsx src/components/fp-ui/fp-shell.tsx src/features/planner/fp/FPCreditSummary.tsx
@@ -355,7 +355,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 - Consumes: `.fp-text` from Task 1.
 - Produces: `FPButton`'s existing `variant`/`size`/`loading` props are unchanged; only the underlying classes change. `secondary` variant no longer has a visible border — it distinguishes via a raised background fill instead.
 
-- [ ] **Step 1: Update the button variants**
+- [x] **Step 1: Update the button variants**
 
 In `src/components/fp-ui/button.tsx`, change the `cva` base class (currently starts with `"fp-label inline-flex..."`) to start with `"fp-text inline-flex..."` instead — i.e. replace the literal string `"fp-label "` with `"fp-text "` at the start of the base className argument.
 
@@ -382,14 +382,14 @@ to:
 
 (`border border-transparent` stays in the base class — it's harmless since no variant sets a visible border color anymore, and keeping it avoids a layout shift on any state that might still set a border, like `disabled:border-fp-border-default` which the base class already has for the disabled state — leave that disabled-state border as-is, since a disabled control benefits from a boundary and this isn't a "decorative" border, it's communicating an inert-but-present control.)
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Run: `npx tsc --noEmit`
 Expected: clean.
 
 Using the Claude Browser pane, navigate to `http://localhost:3000/new/planner` and find a secondary button (e.g. "Cancel" in a dialog, or the theme toggle). Confirm it now reads as a filled raised chip with no outline, and the label text is plain sans-serif, not mono/uppercase. Confirm the primary "Find my weeks" button is unchanged (still solid green). Check console for errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/components/fp-ui/button.tsx
@@ -412,7 +412,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 - Consumes: `--surface-selected`, `--border-selected` from Task 1.
 - Produces: `FPCard`'s `selected`/`padding`/`onClick` props are unchanged; only the underlying styling changes.
 
-- [ ] **Step 1: Update FPCard**
+- [x] **Step 1: Update FPCard**
 
 Replace the full contents of `src/components/fp-ui/card.tsx`:
 
@@ -464,14 +464,14 @@ FPCard.displayName = "FPCard";
 
 (`border border-transparent` on the unselected state keeps the box model identical between selected/unselected — no layout shift when a card becomes selected — while rendering no visible line.)
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Run: `npx tsc --noEmit`
 Expected: clean.
 
 Using the Claude Browser pane, navigate to `http://localhost:3000/new/planner` and confirm the ranking-profile dropdown in the Courses page's action row still works (it's a plain `<select>`, unaffected by this task, but worth a quick sanity check since it sits next to `FPCard`-based controls). Then navigate to `/new/results` and select a "Shape N" card in the sidebar. Confirm the selected card now shows a neutral lightened background with a subtle neutral border, not a green wash/border. Check console for errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/components/fp-ui/card.tsx
@@ -491,7 +491,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 - Consumes: `.fp-text`, `--surface-selected` from Task 1.
 - Produces: `FPStep`'s `number` field becomes unused for display (kept in the type for now since removing it would touch every call site's data — see note below) but is no longer rendered. `label`/`status`/`suffix`/`onClick`/`disabled` are unchanged.
 
-- [ ] **Step 1: Update FPStepNav**
+- [x] **Step 1: Update FPStepNav**
 
 Replace the full contents of `src/components/fp-ui/step-nav.tsx`:
 
@@ -562,14 +562,14 @@ export function FPStepNav({ steps, className, ...props }: FPStepNavProps) {
 
 What changed: the `step.number` field is no longer rendered at all (the `<span>{step.number}</span>`/`{isDone ? <Check/> : step.number}` block is gone — a done step now only shows a leading check icon, no digit ever renders). The active state's `border-b-2 border-b-fp-accent` + `accent-wash` background is replaced with `--surface-selected` and bold `text-strong`. The `number` field stays in the `FPStep` type/interface so `src/app/new/planner/page.tsx`'s existing `steps={[{number: "01", ...}, ...]}` array literal keeps compiling without edits — it's just inert data now. Do not remove the field from the type or the call site in this task; that's a structural/IA cleanup out of scope for this plan.
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Run: `npx tsc --noEmit`
 Expected: clean (the `number` prop is still accepted by the type, so the existing call site in `src/app/new/planner/page.tsx` needs no changes).
 
 Using the Claude Browser pane, navigate to `http://localhost:3000/new/planner`. Confirm the step nav shows "Courses" / "Preferences" with no leading "01"/"02", and the active step has a neutral highlighted background (not a green underline). Check console for errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/components/fp-ui/step-nav.tsx
@@ -589,7 +589,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 - Consumes: `.fp-text`, `--surface-selected` from Task 1.
 - Produces: no prop/signature changes — `FPShell` and `FPCampusGate` keep their existing external interface.
 
-- [ ] **Step 1: Replace the nav's accent pill with a neutral surface-selected treatment**
+- [x] **Step 1: Replace the nav's accent pill with a neutral surface-selected treatment**
 
 In `src/components/fp-ui/fp-shell.tsx`, find the nav rendering block (inside the `<nav className="fp-label hidden items-center...">` element). Change the outer `<nav>` className from:
 
@@ -657,7 +657,7 @@ with:
 
 (The sliding-motion mechanic from the earlier nav-pill work is kept — `layoutId` still animates the highlight between items — only its shape (pill → rounded-md rectangle, matching the "no pill for navigation" rule) and color (accent wash+border → neutral `--surface-selected`, no border) change. Renamed `layoutId` from `"fp-nav-pill"` to `"fp-nav-selected"` since it's no longer a pill — this is safe, `layoutId` only needs to be consistent within itself, not match any prior value.)
 
-- [ ] **Step 2: Campus dropdown trigger and menu — typography only, border stays (real affordance exception)**
+- [x] **Step 2: Campus dropdown trigger and menu — typography only, border stays (real affordance exception)**
 
 Find:
 
@@ -686,11 +686,11 @@ Inside the dropdown menu, find the per-option button's className:
 
 This one has no `fp-label` reference and no accent border — leave it unchanged.
 
-- [ ] **Step 3: Theme toggle button — no change needed**
+- [x] **Step 3: Theme toggle button — no change needed**
 
 The theme toggle already uses `<FPButton variant="secondary" size="sm">` with only an icon child (no text label), so Task 4's `FPButton` change already applies here automatically. No edit needed in this file for it.
 
-- [ ] **Step 4: FPCampusGate — campus card typography and "Ready" label**
+- [x] **Step 4: FPCampusGate — campus card typography and "Ready" label**
 
 Find:
 
@@ -703,14 +703,14 @@ Find:
 
 Leave the heading `<div>` as-is (it already uses `font-fp-display`, the display font, which is correct — display headings were never part of the mono/uppercase complaint). The `FPLabel` call below it is a short inline status word ("Ready" / "Not yet"), not a section kicker — it correctly stays at the new `FPLabel` default (plain `.fp-text`, no `variant="eyebrow"` needed) after Task 2's change. No edit needed here beyond what Task 2 already did.
 
-- [ ] **Step 5: Verify**
+- [x] **Step 5: Verify**
 
 Run: `npx tsc --noEmit`
 Expected: clean.
 
 Using the Claude Browser pane, navigate to `http://localhost:3000/new` and confirm: the primary nav's active item ("Home") shows a neutral rounded-rectangle highlight (not a green pill/border), nav label text is plain sans-serif not mono/uppercase, the campus dropdown trigger still has its neutral border and now reads in plain sans-serif. Click between nav items and confirm the highlight still slides smoothly (the `layoutId` animation still works). Toggle the campus dropdown open and confirm it still opens/closes correctly. Check console for errors.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/components/fp-ui/fp-shell.tsx
@@ -735,7 +735,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 - Consumes: `.fp-text`, `--surface-selected` from Task 1.
 - Produces: no prop/signature changes.
 
-- [ ] **Step 1: Tab buttons — plain text, no icon, neutral active state**
+- [x] **Step 1: Tab buttons — plain text, no icon, neutral active state**
 
 Find the tab-button rendering block:
 
@@ -789,7 +789,7 @@ Replace with:
 
 (`const Icon = item.icon;` and the `<Icon>` element are removed — per the spec, Search Catalog/Paste Text/Import File/Manual Entry drop their icons. If `Icon`/`item.icon` is otherwise unused after this edit and TypeScript or lint flags it, that's expected — `PLANNER_TABS`'s `icon` field itself lives in `src/features/planner/constants.ts` and stays defined there for potential reuse elsewhere; this task only stops rendering it here.)
 
-- [ ] **Step 2: Divider — invisible at rest**
+- [x] **Step 2: Divider — invisible at rest**
 
 Find:
 
@@ -815,14 +815,14 @@ Replace with:
 
 (At rest: fully transparent — the divider is whitespace only. On hover: a neutral `border-strong`-toned line appears, giving discoverability. While actively dragging: the neutral `--border-selected` token, still no green — dragging is an interaction state, not an action/confirmation.)
 
-- [ ] **Step 3: Verify**
+- [x] **Step 3: Verify**
 
 Run: `npx tsc --noEmit`
 Expected: clean.
 
 Using the Claude Browser pane, navigate to `http://localhost:3000/new/planner` (Courses tab, campus selected). Confirm: the Search Catalog/Paste Text/Import File/Manual Entry buttons show text only, no icons; the active tab has a neutral highlighted background, not a green border/wash. Confirm the vertical divider between the course rail and the timetable preview is invisible when not hovered, and shows a subtle neutral line on hover (use `mcp__Claude_Browser__computer` with a `hover` action at the divider's coordinates, or inspect via `read_page`/`javascript_tool` computed style before and during a simulated `pointerenter`). Check console for errors.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add src/features/planner/fp/FPCoursesPane.tsx
@@ -841,7 +841,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 **Interfaces:** none (presentation-only).
 
-- [ ] **Step 1: Find every Delete/Delete-all button with a leading icon**
+- [x] **Step 1: Find every Delete/Delete-all button with a leading icon**
 
 Run: `grep -n "Trash2" src/features/planner/fp/FPCourseList.tsx src/app/new/saved/SavedWeekCard.tsx`
 
@@ -879,14 +879,14 @@ And further down in the same file, the confirm-dialog's destructive button:
 
 already has no icon — leave unchanged.
 
-- [ ] **Step 2: Verify**
+- [x] **Step 2: Verify**
 
 Run: `npx tsc --noEmit`
 Expected: clean (confirms no orphaned `Trash2` import broke anything and no unused-but-still-imported identifier causes a build error — this repo's `tsconfig.json` doesn't enable `noUnusedLocals`, so a leftover unused import won't fail this check, but remove it anyway for cleanliness per Step 1's instruction).
 
 Using the Claude Browser pane, navigate to `http://localhost:3000/new/planner` with at least one course added, and to `http://localhost:3000/new/saved` with at least one saved schedule. Confirm "Delete all" and "Delete" render as text-only buttons. Check console for errors.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add src/features/planner/fp/FPCourseList.tsx src/app/new/saved/SavedWeekCard.tsx
@@ -911,7 +911,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 **Interfaces:** none (presentation-only).
 
-- [ ] **Step 1: Input border — shared `fpInputClass`**
+- [x] **Step 1: Input border — shared `fpInputClass`**
 
 In `src/features/planner/fp/FPPrefControls.tsx`, find:
 
@@ -929,7 +929,7 @@ export const fpInputClass =
 
 (The `font-fp-mono` in the original was inconsistent with the spec — a time-input field showing e.g. `09:00` is arguably a compact data value, but per the spec's own list of what stays mono ("slot codes, course codes, compact numeric/time-token displays... only if you want the slot/time treatment to feel like a compact timetable token") this specific field is a plain HTML `<input type="time">` control for setting a preference, not a rendered timetable token — it moves to `.fp-text` like other interface text. The border goes fully transparent at rest (relying on the `bg-fp-bg-inset` surface step for definition) and appears only on focus, using the neutral `--border-strong` token, never accent.)
 
-- [ ] **Step 2: Search bar border**
+- [x] **Step 2: Search bar border**
 
 In `src/features/planner/fp/FPSearchTab.tsx`, find the search input's wrapper:
 
@@ -945,7 +945,7 @@ Replace with:
 
 (`focus-within` applies the border when the inner `<input>` has focus, matching the "border only on focus" rule.)
 
-- [ ] **Step 3: Manual-entry form field borders**
+- [x] **Step 3: Manual-entry form field borders**
 
 In `src/features/planner/fp/FPCourseList.tsx`, find each of the manual-entry `<input>` elements sharing this className pattern (there are three — course code, course name, credits — plus the same pattern reused in the course-edit row further down):
 
@@ -955,7 +955,7 @@ In `src/features/planner/fp/FPCourseList.tsx`, find each of the manual-entry `<i
 
 Replace `border border-fp-border-strong` with `border border-transparent`, and `focus:border-fp-border-accent` with `focus:border-fp-border-strong` in every occurrence of this pattern in the file (there are several near-identical field className strings — apply the same two substitutions to each). Leave `font-fp-mono` on the course-code field specifically (course codes are exactly the kind of value the spec keeps mono for); for the course-name and credits fields, change `font-fp-mono` to `fp-text` since a free-text name and a plain integer aren't FFCS tokens.
 
-- [ ] **Step 4: Empty-state boxes**
+- [x] **Step 4: Empty-state boxes**
 
 In `src/features/planner/fp/FPCourseList.tsx`, find:
 
@@ -1009,14 +1009,14 @@ This one is a deliberate exception: it sits on top of the grid behind it and nee
 
 In `src/app/new/results/ZeroResultsFP.tsx`, find the outer empty-state container (a bordered card wrapping the "no schedules" message) and remove its `border` class the same way, keeping only background/padding/text classes. Search for `border-fp-border-default` or `border-dashed` in that file to locate it precisely, since the exact surrounding className may include additional layout classes not reproduced here — remove only the border-related class(es), leave spacing/background/text classes intact.
 
-- [ ] **Step 5: Verify**
+- [x] **Step 5: Verify**
 
 Run: `npx tsc --noEmit`
 Expected: clean.
 
 Using the Claude Browser pane: navigate to `http://localhost:3000/new/planner`, confirm the search input and manual-entry fields have no visible border at rest, and a neutral (not green) border appears when you click into one (verify via `read_page`/`javascript_tool` computed `border-color` before/after a simulated focus, or visually via screenshot after clicking). Confirm the "No courses added yet." and "Type at least 2 characters to search." messages no longer sit in a dashed box. Navigate to `http://localhost:3000/new/results` with no generated schedules and confirm the zero-results message has no enclosing border. Check console for errors.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/features/planner/fp/FPPrefControls.tsx src/features/planner/fp/FPSearchTab.tsx src/features/planner/fp/FPCourseList.tsx src/features/planner/fp/FPWeekSoFarPreview.tsx src/app/new/results/ZeroResultsFP.tsx
@@ -1040,7 +1040,7 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 
 This task exists because Tasks 1–10 covered the highest-traffic shared primitives and the most-cited call sites, but the spec's own "Files touched" section is explicit that "the principles in this spec apply system-wide, not only to the files named [individually]." This task is the sweep that makes that true.
 
-- [ ] **Step 1: Find every remaining `.fp-label` usage**
+- [x] **Step 1: Find every remaining `.fp-label` usage**
 
 Run: `grep -rln "fp-label" src/app/new src/components/fp-ui src/features/planner/fp`
 
@@ -1048,7 +1048,7 @@ For every file in the result **except** `src/components/fp-ui/label.tsx` (which 
 
 For each remaining match: open the file, find the `className` containing `fp-label`, and replace it with `fp-text` (or, if the specific instance is a genuine section-kicker sitting directly above a heading, use the `FPLabel`-with-`variant="eyebrow"` pattern from Task 2 instead of a bare `.fp-eyebrow` class, so the color/tone logic stays centralized in the component rather than duplicated ad hoc). Re-run the grep after each fix.
 
-- [ ] **Step 2: Find remaining accent-wash-on-selection patterns**
+- [x] **Step 2: Find remaining accent-wash-on-selection patterns**
 
 Run: `grep -rn 'backgroundColor: "var(--accent-wash)"' src/app/new src/components/fp-ui src/features/planner/fp`
 
@@ -1059,7 +1059,7 @@ Known remaining call sites to check explicitly (their status may have already be
 - `src/features/planner/fp/FPSearchTab.tsx` and `FPCourseList.tsx` — the theory/lab slot-picker chip "active" states (`TheoryPicker`/`LabPicker` in `FPCourseList.tsx`, and the option-row `selected` state in `FPSearchTab.tsx`'s `optionRow`) — these represent the user actively choosing a specific slot/professor option, which is closer to "affirmative selection of a concrete value" than passive navigation. Treat these the same as the checkbox exception: **leave them accent-colored**, since ticking/choosing a specific slot or professor is an affirmative action, not a "current location" signal — this mirrors the spec's explicit checkbox reasoning.
 - `src/features/planner/fp/FPPreferencesPane.tsx` — none expected after the earlier Preferences simplification (single-page, no more tabbed sections), but verify with the grep.
 
-- [ ] **Step 3: Fix links that default to accent color**
+- [x] **Step 3: Fix links that default to accent color**
 
 Run: `grep -rn "text-fp-accent\|text-fp-text-accent" src/app/new src/components/fp-ui src/features/planner/fp`
 
@@ -1081,13 +1081,13 @@ Change to:
 
 Apply the same neutral-default/accent-on-hover pattern to any other plain reference link the grep surfaces that isn't already covered by Step 2's selection-state logic or explicitly named as a CTA exception.
 
-- [ ] **Step 4: Find remaining accent-border-on-selection patterns not yet caught**
+- [x] **Step 4: Find remaining accent-border-on-selection patterns not yet caught**
 
 Run: `grep -rn "border-fp-border-accent" src/app/new src/components/fp-ui src/features/planner/fp`
 
 Apply the same test as Step 2 to each match. Convert selection/navigation uses to `border-[var(--border-selected)]`; leave affirmative-action/meaningful-status uses (recommended/best-overall card borders if any exist independently of `FPCard`, the slot-picker chips) unchanged.
 
-- [ ] **Step 5: Verify**
+- [x] **Step 5: Verify**
 
 Run: `npx tsc --noEmit`
 Expected: clean.
@@ -1097,7 +1097,7 @@ Expected: **no output anywhere, including `label.tsx`.** This is stricter than t
 
 Using the Claude Browser pane, do a full page-by-page pass in dark theme: `/new`, `/new/planner` (Courses + Preferences), `/new/results` (with a generated schedule), `/new/compare`, `/new/saved` (with a saved schedule), `/new/settings`. Screenshot each. Confirm: no stray mono/uppercase/tracked text remains anywhere, the only green surfaces are primary CTAs, checked checkboxes, slot/professor-option selection chips, and "Best overall"/"Recommended" badges. Confirm the Landing page's "40-second explainer" link is neutral by default and only turns accent on hover. Toggle to light theme (`Toggle theme` button) and repeat the same pass — confirm the neutral selection tokens render sensibly in light mode too (not washed out, not indistinguishable from the page background). Check console for errors on every page (`onlyErrors: true`).
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add -A
@@ -1116,6 +1116,8 @@ Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>"
 ---
 
 ## Task 12: Retire `.fp-label`'s CSS definition
+
+**STATUS: SKIPPED.** This task's own precondition (Step 1's grep returning zero matches) is permanently false: `schedule-grid.tsx` and `slot-matrix-timetable.tsx` are deliberately exempt from this entire plan (see Global Constraints) and still legitimately reference `.fp-label` for their slot-code/header cells, which the spec says should stay monospace anyway. The `.fp-label` CSS rule in `fp-tokens.css` remains load-bearing for those two files and must NOT be removed until (if ever) that separate structural track migrates them off it. Do not "complete" this task by deleting the rule — doing so will silently break the timetable's slot-label styling.
 
 **Files:**
 - Modify: `src/app/new/fp-tokens.css`

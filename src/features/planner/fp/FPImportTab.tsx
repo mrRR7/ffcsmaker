@@ -29,7 +29,7 @@ const STEPS: { id: WizardStep; label: string }[] = [
 
 function inputClass(extra?: string) {
   return cn(
-    "w-full rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2 py-1.5 text-[12px] text-fp-text-body focus:border-fp-border-strong focus:outline-none",
+    "w-full rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2 py-1.5 text-[12px] text-fp-text-body focus:border-[var(--border-selected)] focus:outline-none",
     extra
   );
 }
