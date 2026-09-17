@@ -183,7 +183,7 @@ function FPLegalPage({
   return (
     <div className="mx-auto max-w-3xl pb-16">
       <header className="space-y-4">
-        <FPLabel tone="accent">Legal</FPLabel>
+        <FPLabel tone="accent" variant="eyebrow">Legal</FPLabel>
         <h1 className="font-fp-display text-[28px] font-bold tracking-[-0.01em] text-fp-text-strong sm:text-[32px]">
           {title}
         </h1>

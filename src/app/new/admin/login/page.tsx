@@ -46,7 +46,7 @@ export default function NewAdminLoginPage() {
         >
           <LockKeyhole className="h-5 w-5" />
         </div>
-        <FPLabel tone="accent">FFCS admin</FPLabel>
+        <FPLabel tone="accent" variant="eyebrow">FFCS admin</FPLabel>
         <h1 className="mt-2 font-fp-display text-[var(--text-title)] font-bold text-fp-text-strong">Admin login</h1>
 
         <form onSubmit={onSubmit} className="mt-5 space-y-4">

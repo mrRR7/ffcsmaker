@@ -307,7 +307,7 @@ function FPCampusGate({ onPick }: { onPick: (campus: Campus) => void }) {
   return (
     <div className="flex min-h-[calc(100vh-14rem)] items-center justify-center py-8">
       <div className="w-full max-w-2xl text-center">
-        <FPLabel tone="accent">FFCS Planner</FPLabel>
+        <FPLabel tone="accent" variant="eyebrow">FFCS Planner</FPLabel>
         <h1 className="mt-3 font-fp-display text-[var(--text-display)] font-bold tracking-[-0.01em] text-fp-text-strong">
           Which campus are you from?
         </h1>

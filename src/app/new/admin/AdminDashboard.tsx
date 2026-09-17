@@ -184,7 +184,7 @@ export function AdminDashboard() {
       <FPPanel>
         <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <FPLabel tone="accent">FFCS admin</FPLabel>
+            <FPLabel tone="accent" variant="eyebrow">FFCS admin</FPLabel>
             <h1 className="mt-2 font-fp-display text-[var(--text-title)] font-bold text-fp-text-strong">Course upload</h1>
             <p className="mt-1 text-[var(--text-small)] text-fp-text-dim">
               Seed or replace the searchable course catalog for one semester.

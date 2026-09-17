@@ -370,7 +370,7 @@ function ResultsContent() {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <FPCard padding="lg" className="max-w-md text-center">
-          <FPLabel tone="accent">Results</FPLabel>
+          <FPLabel tone="accent" variant="eyebrow">Results</FPLabel>
           <h1 className="mt-3 font-fp-display text-[22px] font-bold text-fp-text-strong">
             No schedules generated yet
           </h1>

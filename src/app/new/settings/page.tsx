@@ -76,7 +76,7 @@ export default function NewSettingsPage() {
   return (
     <div className="space-y-6 pb-16">
       <div>
-        <FPLabel tone="accent">Preferences</FPLabel>
+        <FPLabel tone="accent" variant="eyebrow">Preferences</FPLabel>
         <h1 className="mt-2 font-fp-display text-[28px] font-bold text-fp-text-strong">Settings</h1>
       </div>
 
