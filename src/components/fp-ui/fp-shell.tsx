@@ -140,7 +140,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
         <Link href="/new" className="select-none font-fp-display text-[length:var(--text-h)] font-bold tracking-[-0.01em] text-fp-text-strong">
           FFCS Planner
         </Link>
-        <nav className="fp-label hidden items-center gap-[6px] text-[length:var(--text-micro)] lg:flex">
+        <nav className="fp-text hidden items-center gap-[6px] text-[length:var(--text-small)] lg:flex">
           {navItems.map((item) => {
             const active = item.href === activeHref;
             const Icon = item.icon;
@@ -149,15 +149,15 @@ export function FPShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "relative inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] px-2.5 py-1.5 transition-colors duration-[var(--dur-fast)] ease-[var(--ease-standard)]",
-                  active ? "text-fp-accent" : "text-fp-text-dim hover:text-fp-text-body"
+                  "relative inline-flex items-center gap-1.5 rounded-[var(--radius-md)] px-2.5 py-1.5 transition-colors duration-[var(--dur-fast)] ease-[var(--ease-standard)]",
+                  active ? "text-fp-text-strong font-medium" : "text-fp-text-dim hover:text-fp-text-body"
                 )}
               >
                 {active ? (
                   <motion.div
-                    layoutId="fp-nav-pill"
-                    className="absolute inset-0 rounded-[var(--radius-pill)] border border-fp-border-accent"
-                    style={{ backgroundColor: "var(--accent-wash)", zIndex: -1 }}
+                    layoutId="fp-nav-selected"
+                    className="absolute inset-0 rounded-[var(--radius-md)]"
+                    style={{ backgroundColor: "var(--surface-selected)", zIndex: -1 }}
                     transition={navPillSpring}
                   />
                 ) : null}
@@ -175,7 +175,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 onClick={() => setCampusMenuOpen((v) => !v)}
-                className="fp-label inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-fp-border-default px-2.5 py-1.5 text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
+                className="fp-text inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-fp-border-default px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-dim hover:text-fp-text-body"
               >
                 {CAMPUS_LABELS[campus]}
                 <ChevronDown className="h-3.5 w-3.5" />
