@@ -12,7 +12,7 @@ import { FPLabel } from "@/components/fp-ui/label";
  */
 
 export const fpInputClass =
-  "w-full rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset px-2.5 py-[7px] text-[13px] font-fp-mono text-fp-text-body outline-none transition-colors focus:border-fp-accent disabled:opacity-50";
+  "w-full rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-[7px] text-[length:var(--text-small)] fp-text text-fp-text-body outline-none transition-colors focus:border-[var(--border-selected)] disabled:opacity-50";
 
 export function FPFieldGroup({
   label,

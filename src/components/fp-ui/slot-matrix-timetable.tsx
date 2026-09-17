@@ -71,8 +71,8 @@ export function FPSlotMatrixTimetable({
     return (
       <FPCard padding="lg" className="flex min-h-[300px] items-center justify-center text-center">
         <div>
-          <p className="font-fp-display text-[15px] font-bold text-fp-text-strong">No schedule selected</p>
-          <p className="mt-2 max-w-md text-[13px] text-fp-text-dim">
+          <p className="font-fp-display text-[length:var(--text-body-size)] font-bold text-fp-text-strong">No schedule selected</p>
+          <p className="mt-2 max-w-md text-[length:var(--text-small)] text-fp-text-dim">
             Generate schedules in the planner or reopen one from saved timetables.
           </p>
         </div>
@@ -87,7 +87,7 @@ export function FPSlotMatrixTimetable({
       return (
         <div className="flex h-full flex-col items-center justify-center gap-[2px] font-fp-mono">
           <span className="fp-label text-[9px] opacity-75">{cell.slotLabel}</span>
-          <span className="text-[11px] font-bold leading-tight tracking-tight">{cell.courseCode}</span>
+          <span className="text-[length:var(--text-micro)] font-bold leading-tight tracking-tight">{cell.courseCode}</span>
           <span className="line-clamp-1 text-[9px] font-medium leading-tight opacity-85">
             {cell.professorName}
           </span>
@@ -127,8 +127,8 @@ export function FPSlotMatrixTimetable({
   }
 
   const headCellClass = "fp-label border border-fp-border-default bg-fp-bg-surface px-1 py-1 text-[9px] text-fp-text-dim";
-  const groupHeadClass = "fp-label border border-fp-border-default bg-fp-bg-inset px-1 py-1 text-[11px] text-fp-text-strong";
-  const dayLabelClass = "fp-label whitespace-nowrap border border-fp-border-default bg-fp-bg-inset px-1 py-2 align-middle text-[11px] text-fp-text-strong";
+  const groupHeadClass = "fp-label border border-fp-border-default bg-fp-bg-inset px-1 py-1 text-[length:var(--text-micro)] text-fp-text-strong";
+  const dayLabelClass = "fp-label whitespace-nowrap border border-fp-border-default bg-fp-bg-inset px-1 py-2 align-middle text-[length:var(--text-micro)] text-fp-text-strong";
   const trackLabelClass = "fp-label border border-fp-border-default bg-fp-bg-surface px-1 py-1 text-[9px] text-fp-text-dim";
 
   return (
@@ -142,7 +142,7 @@ export function FPSlotMatrixTimetable({
               <FPBadge tone="neutral">{totalCredits} credits</FPBadge>
             </div>
           </div>
-          <div className="flex gap-2 text-[11px] text-fp-text-dim">
+          <div className="flex gap-2 text-[length:var(--text-micro)] text-fp-text-dim">
             <FPBadge tone="neutral" pill>
               {schedule.metrics.freeDays} free days
             </FPBadge>

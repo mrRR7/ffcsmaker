@@ -76,12 +76,12 @@ export default function NewSettingsPage() {
   return (
     <div className="space-y-6 pb-16">
       <div>
-        <FPLabel tone="accent">Preferences</FPLabel>
+        <FPLabel tone="accent" variant="eyebrow">Preferences</FPLabel>
         <h1 className="mt-2 font-fp-display text-[28px] font-bold text-fp-text-strong">Settings</h1>
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <FPPanel title="CAMPUS" className="lg:col-span-2">
+        <FPPanel title="Campus" className="lg:col-span-2">
           <div className="space-y-4 p-4">
             <Row
               label="Current campus"
@@ -95,7 +95,7 @@ export default function NewSettingsPage() {
           </div>
         </FPPanel>
 
-        <FPPanel title="DATA & CACHE">
+        <FPPanel title="Data & cache">
           <div className="space-y-4 p-4">
             <Row
               label="Course catalog cache"
@@ -120,7 +120,7 @@ export default function NewSettingsPage() {
               onClick={toggleBanner}
             />
             <div className="rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset p-4">
-              <div className="flex items-center justify-between gap-4 text-[13px]">
+              <div className="flex items-center justify-between gap-4 text-[length:var(--text-small)]">
                 <span className="text-fp-text-body">Local storage used</span>
                 <span className="font-fp-mono text-fp-text-dim">
                   {formatBytes(storage.usedBytes)} / ~5 MB
@@ -128,7 +128,7 @@ export default function NewSettingsPage() {
               </div>
               <div className="mt-3 h-1.5 overflow-hidden rounded-[var(--radius-pill)] bg-fp-bg-page">
                 <div
-                  className="h-full rounded-[var(--radius-pill)] bg-fp-accent transition-[width] duration-200"
+                  className="h-full rounded-[var(--radius-pill)] bg-fp-accent transition-[width] duration-[var(--dur-base)]"
                   style={{ width: `${storage.percentUsed}%` }}
                 />
               </div>
@@ -136,7 +136,7 @@ export default function NewSettingsPage() {
           </div>
         </FPPanel>
 
-        <FPPanel title="APPEARANCE">
+        <FPPanel title="Appearance">
           <div className="space-y-5 p-4">
             <div className="grid grid-cols-2 gap-3">
               <ThemeOption
@@ -180,7 +180,7 @@ export default function NewSettingsPage() {
           </div>
         </FPPanel>
 
-        <FPPanel title="EXPORT">
+        <FPPanel title="Export">
           <div className="space-y-3 p-4">
             <CheckRow
               checked={uiPreferences.exportPreferences.includeMetrics}
@@ -215,7 +215,7 @@ export default function NewSettingsPage() {
           </div>
         </FPPanel>
 
-        <FPPanel title="LOCAL DATA" className="lg:col-span-2">
+        <FPPanel title="Local data" className="lg:col-span-2">
           <div className="p-4">
             <FPButton
               variant="secondary"
@@ -235,10 +235,10 @@ export default function NewSettingsPage() {
           style={{ backgroundColor: "var(--overlay-scrim)" }}
         >
           <FPCard className="w-full max-w-md" padding="lg">
-            <h2 className="font-fp-display text-[19px] font-bold text-fp-text-strong">
+            <h2 className="font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong">
               Change campus?
             </h2>
-            <p className="mt-3 text-[13px] leading-[1.5] text-fp-text-dim">
+            <p className="mt-3 text-[length:var(--text-small)] leading-[1.5] text-fp-text-dim">
               This will clear your current course list and generated timetables. Your saved
               timetables will stay.
             </p>
@@ -271,7 +271,7 @@ function Row({
   return (
     <div className="flex items-center justify-between gap-4 rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset p-4">
       <div>
-        <p className="text-[13px] font-medium text-fp-text-body">{label}</p>
+        <p className="text-[length:var(--text-small)] font-medium text-fp-text-body">{label}</p>
         <p className="mt-1 text-[12px] text-fp-text-dim">{detail}</p>
       </div>
       <FPButton type="button" variant="secondary" size="sm" onClick={onClick}>
@@ -296,7 +296,7 @@ function CheckRow({
       <button
         type="button"
         onClick={onToggle}
-        className="text-left text-[13px] text-fp-text-body"
+        className="text-left text-[length:var(--text-small)] text-fp-text-body"
       >
         {label}
       </button>
@@ -322,13 +322,13 @@ function ThemeOption({
       className={cn(
         "rounded-[var(--radius-md)] border px-4 py-3 text-left transition-colors",
         active
-          ? "border-fp-border-accent text-fp-accent"
+          ? "border-[var(--border-selected)] text-fp-text-strong"
           : "border-fp-border-default text-fp-text-dim hover:border-fp-border-strong hover:text-fp-text-body"
       )}
-      style={active ? { backgroundColor: "var(--accent-wash)" } : undefined}
+      style={active ? { backgroundColor: "var(--surface-selected)" } : undefined}
     >
       <span className="mb-2 block">{icon}</span>
-      <span className="fp-label text-[11px]">{label}</span>
+      <span className="fp-text text-[length:var(--text-micro)]">{label}</span>
     </button>
   );
 }
@@ -347,12 +347,12 @@ function RankingOption({
       type="button"
       onClick={onClick}
       className={cn(
-        "fp-label rounded-[var(--radius-sm)] border px-3 py-[7px] text-[11px] transition-colors",
+        "fp-text rounded-[var(--radius-sm)] border px-3 py-[7px] text-[length:var(--text-micro)] transition-colors",
         active
-          ? "border-fp-border-accent text-fp-accent"
+          ? "border-[var(--border-selected)] text-fp-text-strong"
           : "border-fp-border-default text-fp-text-dim hover:border-fp-border-strong hover:text-fp-text-body"
       )}
-      style={active ? { backgroundColor: "var(--accent-wash)" } : undefined}
+      style={active ? { backgroundColor: "var(--surface-selected)" } : undefined}
     >
       {label}
     </button>

@@ -49,7 +49,7 @@ export function FPVtopRecommendation({
       >
         <div className="min-w-0 flex-1">
           <FPLabel tone="accent">Need your exact FFCS data</FPLabel>
-          <p className="mt-1 text-[13px] leading-[1.5] text-fp-text-body">
+          <p className="mt-1 text-[length:var(--text-small)] leading-[1.5] text-fp-text-body">
             Can&apos;t find your course or faculty in the catalog. Import your actual VTOP registration data
             with a one-click bookmark &mdash; no install required.
           </p>

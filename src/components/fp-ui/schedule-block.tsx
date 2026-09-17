@@ -51,7 +51,7 @@ export function FPScheduleBlock({
     return (
       <div
         className={cn(
-          "fp-label flex items-center px-2 text-[11px] text-fp-warn border border-dashed border-fp-warn bg-fp-bg-page",
+          "fp-text flex items-center px-2 text-[length:var(--text-micro)] text-fp-warn border border-dashed border-fp-warn bg-fp-bg-page",
           className
         )}
         style={{ minHeight, ...style }}
@@ -69,7 +69,7 @@ export function FPScheduleBlock({
 
   return (
     <div
-      className={cn("font-fp-mono px-2 py-1 text-[11px] tracking-[0.02em] overflow-hidden", className)}
+      className={cn("font-fp-mono px-2 py-1 text-[length:var(--text-micro)] tracking-[0.02em] overflow-hidden", className)}
       style={{ minHeight, background: bg, color: textColor ?? "#0b0e11", ...style }}
       {...props}
     >

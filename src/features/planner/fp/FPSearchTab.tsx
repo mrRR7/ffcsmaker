@@ -200,7 +200,7 @@ export function FPSearchTab() {
       >
         <FPCheckbox checked={selected} />
         <span className="min-w-0 flex-1">
-          <span className={cn("flex flex-wrap items-center gap-2 text-[13px]", selected ? "text-fp-text-strong" : "text-fp-text-body")}>
+          <span className={cn("flex flex-wrap items-center gap-2 text-[length:var(--text-small)]", selected ? "text-fp-text-strong" : "text-fp-text-body")}>
             {option.professor_name}
             {option.program ? <FPLabel>{option.program}</FPLabel> : null}
             {!option.verified ? <FPLabel tone="warn">Unverified</FPLabel> : null}
@@ -219,19 +219,19 @@ export function FPSearchTab() {
   return (
     <div className="space-y-4 p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex flex-1 items-center gap-2.5 rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-inset px-[14px] py-[11px]">
+        <div className="flex flex-1 items-center gap-2.5 rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-[14px] py-[11px] focus-within:border-[var(--border-selected)]">
           <span className="font-fp-mono text-fp-text-dim">/</span>
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Course code or name"
-            className="w-full bg-transparent text-[13px] text-fp-text-body placeholder:text-fp-text-dim focus:outline-none"
+            className="w-full bg-transparent text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:outline-none"
           />
         </div>
         <select
           value={semesterId}
           onChange={(event) => setSemesterId(event.target.value)}
-          className="fp-label rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset px-3 py-[11px] text-[11px] text-fp-text-dim focus:border-fp-border-accent focus:outline-none sm:max-w-[220px]"
+          className="fp-text rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-[11px] text-[length:var(--text-micro)] text-fp-text-dim focus:border-[var(--border-selected)] focus:outline-none sm:max-w-[220px]"
         >
           {semesters.length === 0 ? (
             <option value="">No semester</option>
@@ -249,7 +249,7 @@ export function FPSearchTab() {
       {activeSemester ? (
         <FPMetricRun
           items={[
-            <FPBadge tone="accent" key="sem">
+            <FPBadge tone="neutral" key="sem">
               {activeSemester.label}
             </FPBadge>,
             activeSemester.is_active ? "Active catalog" : "Selected catalog"
@@ -262,7 +262,7 @@ export function FPSearchTab() {
       {catalogError ? <FPNote tone="warn">{catalogError}</FPNote> : null}
 
       {query.trim().length < 2 ? (
-        <div className="rounded-[var(--radius-lg)] border border-dashed border-fp-border-default bg-fp-bg-inset p-8 text-center text-[13px] text-fp-text-dim">
+        <div className="p-8 text-center text-[length:var(--text-small)] text-fp-text-dim">
           Type at least 2 characters to search.
         </div>
       ) : isLoading ? (
@@ -272,7 +272,7 @@ export function FPSearchTab() {
           ))}
         </div>
       ) : courses.length === 0 ? (
-        <div className="rounded-[var(--radius-lg)] border border-dashed border-fp-border-default bg-fp-bg-inset p-8 text-center text-[13px] text-fp-text-dim">
+        <div className="p-8 text-center text-[length:var(--text-small)] text-fp-text-dim">
           No courses found for &quot;{query}&quot;. Try paste text, file import, or manual entry.
         </div>
       ) : (
@@ -300,11 +300,11 @@ export function FPSearchTab() {
                   className="flex w-full items-center gap-3 border-b border-fp-border-default px-4 py-[14px] text-left"
                 >
                   <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2 font-fp-mono text-[13px] text-fp-text-strong">
+                    <div className="flex flex-wrap items-center gap-2 font-fp-mono text-[length:var(--text-small)] text-fp-text-strong">
                       {course.verified ? <ShieldCheck className="h-3.5 w-3.5 text-fp-accent" /> : null}
                       {course.course_code}
                     </div>
-                    <div className="mt-0.5 truncate text-[13px] text-fp-text-dim">
+                    <div className="mt-0.5 truncate text-[length:var(--text-small)] text-fp-text-dim">
                       {course.course_name} &middot; {course.credits} credits &middot; {course.course_options.length} professor
                       {course.course_options.length === 1 ? "" : "s"}
                     </div>
@@ -365,7 +365,7 @@ export function FPSearchTab() {
             <button
               type="button"
               onClick={() => setShowAllResults(true)}
-              className="fp-label w-full rounded-[var(--radius-md)] border border-dashed border-fp-border-strong px-4 py-3 text-center text-[11px] text-fp-text-dim hover:text-fp-text-body"
+              className="fp-text w-full rounded-[var(--radius-md)] border border-dashed border-fp-border-strong px-4 py-3 text-center text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
             >
               {courses.length - SEARCH_RESULTS_CAP} more result{courses.length - SEARCH_RESULTS_CAP === 1 ? "" : "s"}
             </button>

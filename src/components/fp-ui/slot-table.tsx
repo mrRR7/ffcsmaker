@@ -26,7 +26,7 @@ export function FPSlotTable<T>({ columns, rows, rowKey, className, footer }: FPS
   return (
     <div className={cn("overflow-hidden rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface", className)}>
       <div
-        className="fp-label grid gap-4 border-b border-fp-border-default px-4 py-[11px] text-[11px] text-fp-text-dim"
+        className="fp-text grid gap-4 border-b border-fp-border-default px-4 py-[11px] text-[length:var(--text-micro)] text-fp-text-dim"
         style={{ gridTemplateColumns }}
       >
         {columns.map((col) => (
@@ -39,7 +39,7 @@ export function FPSlotTable<T>({ columns, rows, rowKey, className, footer }: FPS
         <div
           key={rowKey(row, index)}
           className={cn(
-            "grid items-center gap-4 px-4 py-[13px] text-[13px]",
+            "grid items-center gap-4 px-4 py-[13px] text-[length:var(--text-small)]",
             index < rows.length - 1 && "border-b border-fp-border-default"
           )}
           style={{ gridTemplateColumns }}

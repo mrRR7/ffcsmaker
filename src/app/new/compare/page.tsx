@@ -82,7 +82,7 @@ export default function NewComparePage() {
   return (
     <div className="-mx-4 -my-8 sm:-mx-6 lg:-mx-8">
       <div className="flex items-center justify-end border-b border-fp-border-default px-7 py-3">
-        <span className="font-fp-mono text-[11px] text-fp-text-dim">
+        <span className="font-fp-mono text-[length:var(--text-micro)] text-fp-text-dim">
           {selected.length} of {allSchedules.length} week{allSchedules.length === 1 ? "" : "s"} selected &middot; max 3
         </span>
       </div>
@@ -90,8 +90,8 @@ export default function NewComparePage() {
       <section className="px-7 pb-4 pt-7">
         <div className="flex flex-wrap items-end gap-4">
           <div>
-            <h1 className="font-fp-display text-[34px] font-bold tracking-[-0.01em] text-fp-text-strong">{headline}</h1>
-            <p className="mt-1.5 max-w-xl text-[15px] text-fp-text-body">
+            <h1 className="font-fp-display text-[length:var(--text-display)] font-bold tracking-[-0.01em] text-fp-text-strong">{headline}</h1>
+            <p className="mt-1.5 max-w-xl text-[length:var(--text-body-size)] text-fp-text-body">
               {allSchedules.length === 0
                 ? "Generate a few weeks in the planner, then bring them here to compare."
                 : "Pick from your generated and saved weeks below to see exactly where they differ."}
@@ -103,7 +103,7 @@ export default function NewComparePage() {
               onChange={(event) => {
                 if (event.target.value) addCompareSchedule(event.target.value);
               }}
-              className="fp-label h-full rounded-[var(--radius-md)] border border-fp-border-strong bg-transparent px-3 py-[7px] text-[11px] text-fp-text-body hover:border-fp-accent"
+              className="fp-text h-full rounded-[var(--radius-md)] border border-fp-border-strong bg-transparent px-3 py-[7px] text-[length:var(--text-micro)] text-fp-text-body hover:border-fp-accent"
             >
               <option value="">Add a week</option>
               {allSchedules.map((schedule, index) => (
@@ -128,7 +128,7 @@ export default function NewComparePage() {
           <div className="mt-5 flex flex-wrap items-center gap-5 rounded-[6px] border border-fp-border-default bg-fp-bg-surface px-4 py-3">
             <FPLabel>What differs</FPLabel>
             {diffs.map((diff) => (
-              <span key={diff.label} className="text-[13px] text-fp-text-body">
+              <span key={diff.label} className="text-[length:var(--text-small)] text-fp-text-body">
                 {diff.label} &middot;{" "}
                 <span className="font-fp-mono text-[12px] text-fp-text-dim">{diff.values.join(" / ")}</span>
               </span>
@@ -140,8 +140,8 @@ export default function NewComparePage() {
       {allSchedules.length === 0 ? (
         <div className="px-7 pb-10">
           <FPCard className="flex min-h-72 flex-col items-center justify-center gap-3 text-center">
-            <p className="font-fp-display text-[19px] font-bold text-fp-text-strong">No weeks to compare yet</p>
-            <p className="max-w-sm text-[13px] text-fp-text-dim">
+            <p className="font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong">No weeks to compare yet</p>
+            <p className="max-w-sm text-[length:var(--text-small)] text-fp-text-dim">
               Generate schedules in the planner, then add them here.
             </p>
             <Link href="/new/planner" className="mt-2 inline-block">
@@ -155,7 +155,7 @@ export default function NewComparePage() {
         <div className="px-7 pb-10">
           <FPCard className="flex min-h-56 flex-col items-center justify-center gap-2 text-center">
             <p className="font-fp-display text-[17px] font-bold text-fp-text-strong">Nothing selected</p>
-            <p className="max-w-sm text-[13px] text-fp-text-dim">Choose up to three weeks from the selector above.</p>
+            <p className="max-w-sm text-[length:var(--text-small)] text-fp-text-dim">Choose up to three weeks from the selector above.</p>
           </FPCard>
         </div>
       ) : (
@@ -177,7 +177,7 @@ export default function NewComparePage() {
                   key={`ghost-${i}`}
                   type="button"
                   onClick={addAnotherWeek}
-                  className="flex min-h-24 items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-fp-border-strong text-[13px] text-fp-text-dim transition-colors hover:border-fp-accent hover:text-fp-text-body"
+                  className="flex min-h-24 items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-fp-border-strong text-[length:var(--text-small)] text-fp-text-dim transition-colors hover:border-fp-accent hover:text-fp-text-body"
                 >
                   + Add a week to compare
                 </button>

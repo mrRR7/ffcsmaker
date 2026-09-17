@@ -18,7 +18,7 @@ export function FPCreditSummary() {
   const tone = isOver ? "danger" : isNear ? "warn" : "neutral";
 
   return (
-    <FPBadge tone={tone}>
+    <FPBadge tone={tone} mono>
       {totalCredits} / {VIT_CREDIT_CAP} CR{isOver ? " · OVER" : ""}
     </FPBadge>
   );

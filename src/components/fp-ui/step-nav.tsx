@@ -3,9 +3,10 @@ import { Check } from "lucide-react";
 import { cn } from "@/utils/cn";
 
 /**
- * StepNav — "01 COURSES / 02 PREFERENCES / 03 RESULTS". Active step gets an
- * accent bottom border and an accent-colored number; completed steps show a
- * check instead of their number.
+ * StepNav — plain-text step tabs ("Courses / Preferences"). No number
+ * prefix (that was decoration reinforcing a retired terminal motif) and no
+ * accent-colored active state — "you are here" is a neutral surface, not
+ * a green one.
  */
 export interface FPStep {
   number: string;
@@ -38,21 +39,19 @@ export function FPStepNav({ steps, className, ...props }: FPStepNavProps) {
             disabled={Wrapper === "button" ? step.disabled : undefined}
             onClick={isClickable ? step.onClick : undefined}
             className={cn(
-              "fp-label flex flex-1 items-center gap-3 px-5 py-3 text-[11px] text-left transition-colors",
+              "fp-text flex flex-1 items-center gap-2 px-5 py-3 text-[length:var(--text-small)] text-left transition-colors",
               index < steps.length - 1 && "border-r border-fp-border-default",
               isActive
-                ? "border-b-2 border-b-fp-accent text-fp-text-strong"
+                ? "text-fp-text-strong font-medium"
                 : step.disabled
                   ? "cursor-not-allowed text-fp-text-dim opacity-40"
                   : isClickable
                     ? "cursor-pointer text-fp-text-dim hover:text-fp-text-body"
                     : "text-fp-text-dim"
             )}
-            style={isActive ? { backgroundColor: "var(--accent-wash)" } : undefined}
+            style={isActive ? { backgroundColor: "var(--surface-selected)" } : undefined}
           >
-            <span className={isActive || isDone ? "text-fp-accent" : undefined}>
-              {isDone ? <Check className="h-3.5 w-3.5" strokeWidth={1.5} /> : step.number}
-            </span>
+            {isDone ? <Check className="h-3.5 w-3.5 text-fp-accent" strokeWidth={1.5} /> : null}
             <span>{step.label}</span>
             {step.suffix}
           </Wrapper>

@@ -91,7 +91,7 @@ export function FPCoursesPane({ actions }: { actions?: ReactNode } = {}) {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="font-fp-display text-[22px] font-bold text-fp-text-strong">Add every course you&apos;re taking</h2>
-              <p className="mt-1.5 text-[13px] text-fp-text-dim">
+              <p className="mt-1.5 text-[length:var(--text-small)] text-fp-text-dim">
                 Tick every professor you&apos;d accept. More ticks, more working weeks.
               </p>
             </div>
@@ -100,7 +100,6 @@ export function FPCoursesPane({ actions }: { actions?: ReactNode } = {}) {
 
           <div className="mt-5 flex flex-wrap gap-2">
             {PLANNER_TABS.map((item) => {
-              const Icon = item.icon;
               const active = tab === item.id;
               return (
                 <button
@@ -108,12 +107,11 @@ export function FPCoursesPane({ actions }: { actions?: ReactNode } = {}) {
                   type="button"
                   onClick={() => setTab(item.id)}
                   className={cn(
-                    "fp-label inline-flex items-center gap-2 rounded-[var(--radius-sm)] border px-3 py-[7px] text-[11px] transition-colors",
-                    active ? "border-fp-border-accent text-fp-accent" : "border-fp-border-default text-fp-text-dim hover:text-fp-text-body"
+                    "fp-text rounded-[var(--radius-sm)] px-3 py-[7px] text-[length:var(--text-small)] transition-colors",
+                    active ? "text-fp-text-strong font-medium" : "text-fp-text-dim hover:text-fp-text-body"
                   )}
-                  style={active ? { backgroundColor: "var(--accent-wash)" } : undefined}
+                  style={active ? { backgroundColor: "var(--surface-selected)" } : undefined}
                 >
-                  <Icon className="h-3.5 w-3.5" />
                   {item.label}
                 </button>
               );
@@ -141,7 +139,7 @@ export function FPCoursesPane({ actions }: { actions?: ReactNode } = {}) {
         <div
           className={cn(
             "h-full w-px transition-colors",
-            isDragging ? "bg-fp-accent" : "bg-fp-border-default group-hover:bg-fp-accent"
+            isDragging ? "bg-[var(--border-selected)]" : "bg-transparent group-hover:bg-fp-border-strong"
           )}
         />
       </div>

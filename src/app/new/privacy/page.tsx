@@ -181,11 +181,11 @@ function FPLegalPage({
   return (
     <div className="mx-auto max-w-3xl pb-16">
       <header className="space-y-4">
-        <FPLabel tone="accent">Legal</FPLabel>
+        <FPLabel tone="accent" variant="eyebrow">Legal</FPLabel>
         <h1 className="font-fp-display text-[28px] font-bold tracking-[-0.01em] text-fp-text-strong sm:text-[32px]">
           {title}
         </h1>
-        <p className="max-w-2xl text-[14px] leading-[1.6] text-fp-text-dim sm:text-[15px]">
+        <p className="max-w-2xl text-[14px] leading-[1.6] text-fp-text-dim sm:text-[length:var(--text-body-size)]">
           {description}
         </p>
       </header>
@@ -198,10 +198,10 @@ function FPLegalPage({
 function FPLegalSection({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="space-y-3 border-t border-fp-border-default pt-8 first:border-t-0 first:pt-0">
-      <h2 className="font-fp-display text-[17px] font-bold tracking-[-0.01em] text-fp-text-strong sm:text-[19px]">
+      <h2 className="font-fp-display text-[17px] font-bold tracking-[-0.01em] text-fp-text-strong sm:text-[length:var(--text-h)]">
         {title}
       </h2>
-      <div className="space-y-3 text-[13px] leading-[1.7] text-fp-text-dim sm:text-[14px]">
+      <div className="space-y-3 text-[length:var(--text-small)] leading-[1.7] text-fp-text-dim sm:text-[14px]">
         {children}
       </div>
     </section>

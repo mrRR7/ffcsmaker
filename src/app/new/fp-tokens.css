@@ -46,6 +46,8 @@
   --border-default: var(--rule);
   --border-strong: #3a464e;
   --border-accent: var(--accent);
+  --surface-selected: #232b31;
+  --border-selected: #3f4c54;
   --focus-ring: var(--accent);
   --surface-card: var(--surface);
   --overlay-scrim: rgba(5, 8, 10, 0.72);
@@ -161,6 +163,8 @@
   --border-default: #c9c2b3;
   --border-strong: #ada393;
   --border-accent: #25794a;
+  --surface-selected: #e2ddd0;
+  --border-selected: #b9ae9c;
   --surface-card: #faf9f5;
 
   --c1: #dcf0e4;
@@ -177,12 +181,41 @@
   --busy-ink: var(--muted);
 }
 
-/* the system's signature: mono, uppercase, generously tracked micro-labels —
-   used on nearly every panel header, step, metric and button */
+/* LEGACY — do not use for new code. Kept only because schedule-grid.tsx
+   and slot-matrix-timetable.tsx (the FFCS timetable grid, exempt from
+   this visual-system pass) still reference it for their slot-code/header
+   cells. Everything else uses fp-text/fp-eyebrow/fp-code. Removable once
+   those two files migrate off it on their own (separate) track. */
 .fp-label {
   font-family: var(--font-mono);
   letter-spacing: var(--track-label);
   text-transform: uppercase;
+}
+
+/* the interface's normal voice — sans, normal case, normal tracking.
+   the default for ~90-95% of interface text: nav, buttons, tabs,
+   badges, status text, headings, helper text, dialogs. */
+.fp-text {
+  font-family: var(--font-body);
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+/* small secondary labels/kickers only — not a default. used sparingly
+   for a section eyebrow sitting above a heading. */
+.fp-eyebrow {
+  font-family: var(--font-body);
+  font-size: var(--text-micro);
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+/* actual FFCS tokens/codes and compact numeric data — slot codes,
+   course codes, credit counts. the only place monospace survives. */
+.fp-code {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .fp-root {

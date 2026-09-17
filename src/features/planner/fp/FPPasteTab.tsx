@@ -72,7 +72,7 @@ export function FPPasteTab() {
     <div className="space-y-4 p-6">
       <div>
         <h3 className="font-fp-display text-[17px] font-bold text-fp-text-strong">Paste text</h3>
-        <p className="mt-1 text-[13px] text-fp-text-dim">
+        <p className="mt-1 text-[length:var(--text-small)] text-fp-text-dim">
           Paste WhatsApp forwards, copied Excel rows, or multiline course blocks.
         </p>
       </div>
@@ -82,7 +82,7 @@ export function FPPasteTab() {
         onChange={(event) => setRawText(event.target.value)}
         placeholder={PLACEHOLDER}
         rows={8}
-        className="w-full rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-inset px-[14px] py-[11px] font-fp-mono text-[13px] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
+        className="w-full rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-[14px] py-[11px] font-fp-mono text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-[var(--border-selected)] focus:outline-none"
       />
 
       <div className="flex flex-wrap items-center gap-3">
@@ -100,7 +100,7 @@ export function FPPasteTab() {
       </div>
 
       {rows.length === 0 ? (
-        <div className="rounded-[var(--radius-lg)] border border-dashed border-fp-border-default bg-fp-bg-inset p-8 text-center text-[13px] text-fp-text-dim">
+        <div className="p-8 text-center text-[length:var(--text-small)] text-fp-text-dim">
           Parsed course options will appear here.
         </div>
       ) : (

@@ -29,7 +29,7 @@ const STEPS: { id: WizardStep; label: string }[] = [
 
 function inputClass(extra?: string) {
   return cn(
-    "w-full rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset px-2 py-1.5 text-[12px] text-fp-text-body focus:border-fp-border-accent focus:outline-none",
+    "w-full rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2 py-1.5 text-[12px] text-fp-text-body focus:border-[var(--border-selected)] focus:outline-none",
     extra
   );
 }
@@ -176,7 +176,7 @@ export function FPImportTab() {
           >
             <input {...getInputProps()} />
             <UploadCloud className="mb-3 h-9 w-9 text-fp-text-dim" />
-            <p className="text-[13px] font-medium text-fp-text-body">
+            <p className="text-[length:var(--text-small)] font-medium text-fp-text-body">
               {isDragActive ? "Drop the file here" : "Drag & drop a CSV or XLSX file here"}
             </p>
             <p className="mt-1 text-[12px] text-fp-text-dim">or click to select a file</p>
@@ -226,7 +226,7 @@ export function FPImportTab() {
           <div className="flex items-center gap-3 rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset px-4 py-3">
             <BookOpen className="h-4 w-4 text-fp-accent" />
             <div>
-              <div className="text-[13px] font-medium text-fp-text-strong">Extracted courses</div>
+              <div className="text-[length:var(--text-small)] font-medium text-fp-text-strong">Extracted courses</div>
               <FPLabel>
                 {validRows.length} valid options across {groupedCourses.length} courses
               </FPLabel>
@@ -249,8 +249,8 @@ export function FPImportTab() {
                       ) : (
                         <ChevronRight className="h-4 w-4 text-fp-text-dim" />
                       )}
-                      <span className="font-fp-mono text-[13px] text-fp-text-strong">{code}</span>
-                      <span className="hidden text-[13px] text-fp-text-dim sm:inline">{name}</span>
+                      <span className="font-fp-mono text-[length:var(--text-small)] text-fp-text-strong">{code}</span>
+                      <span className="hidden text-[length:var(--text-small)] text-fp-text-dim sm:inline">{name}</span>
                     </div>
                     <FPBadge>{rows.length} option{rows.length === 1 ? "" : "s"}</FPBadge>
                   </button>
@@ -301,7 +301,7 @@ export function FPImportTab() {
           <CheckCircle2 className="h-8 w-8 text-fp-accent" />
           <div>
             <h3 className="font-fp-display text-[17px] font-bold text-fp-text-strong">Ready to import</h3>
-            <p className="mx-auto mt-2 max-w-sm text-[13px] text-fp-text-dim">
+            <p className="mx-auto mt-2 max-w-sm text-[length:var(--text-small)] text-fp-text-dim">
               You are about to import {validRows.length} valid {validRows.length === 1 ? "row" : "rows"}. These will be
               merged with your existing planner courses and professor options.
             </p>

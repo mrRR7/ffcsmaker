@@ -137,10 +137,10 @@ export function FPShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-fp-bg-page text-fp-text-body">
       <header className="sticky top-0 z-40 flex items-center gap-5 border-b border-fp-border-default bg-fp-bg-surface px-6 py-3">
-        <Link href="/new" className="select-none font-fp-display text-[19px] font-bold tracking-[-0.01em] text-fp-text-strong">
+        <Link href="/new" className="select-none font-fp-display text-[length:var(--text-h)] font-bold tracking-[-0.01em] text-fp-text-strong">
           FFCS Planner
         </Link>
-        <nav className="fp-label hidden items-center gap-[6px] text-[11px] lg:flex">
+        <nav className="fp-text hidden items-center gap-[6px] text-[length:var(--text-small)] lg:flex">
           {navItems.map((item) => {
             const active = item.href === activeHref;
             const Icon = item.icon;
@@ -149,15 +149,15 @@ export function FPShell({ children }: { children: React.ReactNode }) {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "relative inline-flex items-center gap-1.5 rounded-[var(--radius-pill)] px-2.5 py-1.5 transition-colors duration-[var(--dur-fast)] ease-[var(--ease-standard)]",
-                  active ? "text-fp-accent" : "text-fp-text-dim hover:text-fp-text-body"
+                  "relative inline-flex items-center gap-1.5 rounded-[var(--radius-md)] px-2.5 py-1.5 transition-colors duration-[var(--dur-fast)] ease-[var(--ease-standard)]",
+                  active ? "text-fp-text-strong font-medium" : "text-fp-text-dim hover:text-fp-text-body"
                 )}
               >
                 {active ? (
                   <motion.div
-                    layoutId="fp-nav-pill"
-                    className="absolute inset-0 rounded-[var(--radius-pill)] border border-fp-border-accent"
-                    style={{ backgroundColor: "var(--accent-wash)", zIndex: -1 }}
+                    layoutId="fp-nav-selected"
+                    className="absolute inset-0 rounded-[var(--radius-md)]"
+                    style={{ backgroundColor: "var(--surface-selected)", zIndex: -1 }}
                     transition={navPillSpring}
                   />
                 ) : null}
@@ -175,7 +175,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
               <button
                 type="button"
                 onClick={() => setCampusMenuOpen((v) => !v)}
-                className="fp-label inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-fp-border-default px-2.5 py-1.5 text-[11px] text-fp-text-dim hover:text-fp-text-body"
+                className="fp-text inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-fp-border-default px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-dim hover:text-fp-text-body"
               >
                 {CAMPUS_LABELS[campus]}
                 <ChevronDown className="h-3.5 w-3.5" />
@@ -204,7 +204,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
                             setPendingCampus(option.campus);
                           }}
                           className={cn(
-                            "flex w-full items-center justify-between rounded-[var(--radius-sm)] px-3 py-2 text-left text-[13px]",
+                            "flex w-full items-center justify-between rounded-[var(--radius-sm)] px-3 py-2 text-left text-[length:var(--text-small)]",
                             option.active
                               ? "text-fp-text-body hover:bg-fp-bg-raised"
                               : "cursor-not-allowed text-fp-text-dim opacity-50"
@@ -223,7 +223,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
               </AnimatePresence>
             </div>
           ) : null}
-          <FPBadge tone="accent" pill>
+          <FPBadge tone="neutral" pill>
             Fall 2026
           </FPBadge>
           <FPButton
@@ -254,7 +254,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
 
       <footer className="flex items-center gap-4 border-t border-fp-border-default bg-fp-bg-surface px-6 py-5">
         <FPLabel>Not affiliated with VIT University</FPLabel>
-        <div className="ml-auto flex gap-5 text-[13px] text-fp-text-dim">
+        <div className="ml-auto flex gap-5 text-[length:var(--text-small)] text-fp-text-dim">
           <Link href="/new/privacy" className="hover:text-fp-text-body">
             Privacy
           </Link>
@@ -282,10 +282,10 @@ export function FPShell({ children }: { children: React.ReactNode }) {
       {pendingCampus ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(5,8,10,0.72)] p-4">
           <FPCard className="w-full max-w-md" padding="lg">
-            <h2 className="font-fp-display text-[19px] font-bold text-fp-text-strong">
+            <h2 className="font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong">
               Switch to {CAMPUS_LABELS[pendingCampus]}?
             </h2>
-            <p className="mt-3 text-[13px] leading-[1.5] text-fp-text-dim">
+            <p className="mt-3 text-[length:var(--text-small)] leading-[1.5] text-fp-text-dim">
               This clears your current course list and generated timetables. Saved timetables stay.
             </p>
             <div className="mt-5 flex justify-end gap-2.5">
@@ -307,11 +307,11 @@ function FPCampusGate({ onPick }: { onPick: (campus: Campus) => void }) {
   return (
     <div className="flex min-h-[calc(100vh-14rem)] items-center justify-center py-8">
       <div className="w-full max-w-2xl text-center">
-        <FPLabel tone="accent">FFCS Planner</FPLabel>
-        <h1 className="mt-3 font-fp-display text-[34px] font-bold tracking-[-0.01em] text-fp-text-strong">
+        <FPLabel tone="accent" variant="eyebrow">FFCS Planner</FPLabel>
+        <h1 className="mt-3 font-fp-display text-[length:var(--text-display)] font-bold tracking-[-0.01em] text-fp-text-strong">
           Which campus are you from?
         </h1>
-        <p className="mx-auto mt-3 max-w-xl text-[15px] leading-[1.5] text-fp-text-dim">
+        <p className="mx-auto mt-3 max-w-xl text-[length:var(--text-body-size)] leading-[1.5] text-fp-text-dim">
           Choose once to load the right catalog, course data, and timetable slots.
         </p>
         <div className="mt-8 grid grid-cols-2 gap-4">
@@ -322,13 +322,13 @@ function FPCampusGate({ onPick }: { onPick: (campus: Campus) => void }) {
               disabled={!option.active}
               onClick={() => onPick(option.campus)}
               className={cn(
-                "rounded-[var(--radius-md)] border p-5 text-left transition-[border-color,background-color,transform] duration-150",
+                "rounded-[var(--radius-md)] border p-5 text-left transition-[border-color,background-color,transform] duration-[var(--dur-fast)]",
                 option.active
                   ? "border-fp-border-default bg-fp-bg-surface hover:border-fp-border-accent active:scale-[0.98]"
                   : "cursor-not-allowed border-fp-border-default bg-fp-bg-inset opacity-60"
               )}
             >
-              <div className="font-fp-display text-[19px] font-bold text-fp-text-strong">
+              <div className="font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong">
                 {CAMPUS_LABELS[option.campus]}
               </div>
               <FPLabel tone={option.active ? "accent" : "dim"} className="mt-3.5 inline-flex items-center gap-1">
@@ -343,7 +343,7 @@ function FPCampusGate({ onPick }: { onPick: (campus: Campus) => void }) {
             </button>
           ))}
         </div>
-        <p className="mt-6 text-[13px] text-fp-text-dim">You can change this anytime in Settings.</p>
+        <p className="mt-6 text-[length:var(--text-small)] text-fp-text-dim">You can change this anytime in Settings.</p>
       </div>
     </div>
   );

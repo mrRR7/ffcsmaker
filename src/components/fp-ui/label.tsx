@@ -2,11 +2,15 @@ import * as React from "react";
 import { cn } from "@/utils/cn";
 
 /**
- * Label — the signature mono uppercase micro-label. Pure text primitive used
- * for panel headers, step numbers, and metadata; not interactive.
+ * Label — small metadata/status text. Defaults to the interface's normal
+ * typographic voice (sans, normal case). Pass `variant="eyebrow"` only for
+ * a genuine section kicker sitting directly above a heading — that's the
+ * one place the old mono-uppercase-tracked treatment survives, and it
+ * should stay rare.
  */
 export interface FPLabelProps extends React.HTMLAttributes<HTMLSpanElement> {
   tone?: "dim" | "accent" | "strong" | "warn";
+  variant?: "text" | "eyebrow";
 }
 
 const toneMap = {
@@ -16,6 +20,15 @@ const toneMap = {
   warn: "text-fp-warn"
 } as const;
 
-export function FPLabel({ className, tone = "dim", ...props }: FPLabelProps) {
-  return <span className={cn("fp-label text-[11px]", toneMap[tone], className)} {...props} />;
+export function FPLabel({ className, tone = "dim", variant = "text", ...props }: FPLabelProps) {
+  return (
+    <span
+      className={cn(
+        variant === "eyebrow" ? "fp-eyebrow" : "fp-text text-[length:var(--text-small)]",
+        toneMap[tone],
+        className
+      )}
+      {...props}
+    />
+  );
 }
