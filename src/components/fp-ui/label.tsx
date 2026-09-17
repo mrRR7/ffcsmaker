@@ -24,7 +24,7 @@ export function FPLabel({ className, tone = "dim", variant = "text", ...props }:
   return (
     <span
       className={cn(
-        variant === "eyebrow" ? "fp-eyebrow" : "fp-text text-[var(--text-small)]",
+        variant === "eyebrow" ? "fp-eyebrow" : "fp-text text-[length:var(--text-small)]",
         toneMap[tone],
         className
       )}

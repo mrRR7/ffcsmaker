@@ -89,10 +89,10 @@ export function FPBlockedWindowsPanel() {
     <div className="space-y-6">
       <div className="overflow-hidden rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-surface select-none">
         <div className="flex flex-wrap items-center gap-3 border-b border-fp-border-default px-4 py-[13px]">
-          <span className="font-fp-display text-[var(--text-body-size)] font-bold text-fp-text-strong">
+          <span className="font-fp-display text-[length:var(--text-body-size)] font-bold text-fp-text-strong">
             Times you&apos;re busy
           </span>
-          <span className="text-[var(--text-small)] text-fp-text-dim">
+          <span className="text-[length:var(--text-small)] text-fp-text-dim">
             Drag over the grid &mdash; class, club, gym, commute
           </span>
           <FPLabel tone="accent" className="ml-auto">
@@ -182,7 +182,7 @@ export function FPBlockedWindowsPanel() {
           {constraints.blockedWindows.map((win) => (
             <span
               key={win.id}
-              className="fp-label inline-flex items-center gap-2 rounded-[var(--radius-pill)] border border-fp-border-default bg-fp-bg-surface py-1.5 pl-3 pr-1.5 text-[var(--text-micro)] text-fp-text-body"
+              className="fp-label inline-flex items-center gap-2 rounded-[var(--radius-pill)] border border-fp-border-default bg-fp-bg-surface py-1.5 pl-3 pr-1.5 text-[length:var(--text-micro)] text-fp-text-body"
             >
               {win.label || "Busy"} &middot; {win.day === "All" ? "All days" : win.day.slice(0, 3)} &middot; {win.startTime}
               &ndash;{win.endTime}
@@ -198,7 +198,7 @@ export function FPBlockedWindowsPanel() {
           ))}
         </div>
       ) : (
-        <p className="text-[var(--text-small)] text-fp-text-dim">No busy times yet &mdash; drag over the grid above to add some.</p>
+        <p className="text-[length:var(--text-small)] text-fp-text-dim">No busy times yet &mdash; drag over the grid above to add some.</p>
       )}
     </div>
   );

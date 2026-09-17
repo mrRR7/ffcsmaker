@@ -13,7 +13,7 @@ export function FPNote({ className, tone = "default", ...props }: FPNoteProps) {
   return (
     <p
       className={cn(
-        "border-l-2 pl-4 text-[var(--text-small)] leading-[1.5]",
+        "border-l-2 pl-4 text-[length:var(--text-small)] leading-[1.5]",
         tone === "warn" ? "border-fp-warn text-fp-warn" : "border-fp-accent text-fp-text-dim",
         className
       )}

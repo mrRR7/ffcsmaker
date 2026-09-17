@@ -120,7 +120,7 @@ export default function NewSettingsPage() {
               onClick={toggleBanner}
             />
             <div className="rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset p-4">
-              <div className="flex items-center justify-between gap-4 text-[var(--text-small)]">
+              <div className="flex items-center justify-between gap-4 text-[length:var(--text-small)]">
                 <span className="text-fp-text-body">Local storage used</span>
                 <span className="font-fp-mono text-fp-text-dim">
                   {formatBytes(storage.usedBytes)} / ~5 MB
@@ -235,10 +235,10 @@ export default function NewSettingsPage() {
           style={{ backgroundColor: "var(--overlay-scrim)" }}
         >
           <FPCard className="w-full max-w-md" padding="lg">
-            <h2 className="font-fp-display text-[var(--text-h)] font-bold text-fp-text-strong">
+            <h2 className="font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong">
               Change campus?
             </h2>
-            <p className="mt-3 text-[var(--text-small)] leading-[1.5] text-fp-text-dim">
+            <p className="mt-3 text-[length:var(--text-small)] leading-[1.5] text-fp-text-dim">
               This will clear your current course list and generated timetables. Your saved
               timetables will stay.
             </p>
@@ -271,7 +271,7 @@ function Row({
   return (
     <div className="flex items-center justify-between gap-4 rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset p-4">
       <div>
-        <p className="text-[var(--text-small)] font-medium text-fp-text-body">{label}</p>
+        <p className="text-[length:var(--text-small)] font-medium text-fp-text-body">{label}</p>
         <p className="mt-1 text-[12px] text-fp-text-dim">{detail}</p>
       </div>
       <FPButton type="button" variant="secondary" size="sm" onClick={onClick}>
@@ -296,7 +296,7 @@ function CheckRow({
       <button
         type="button"
         onClick={onToggle}
-        className="text-left text-[var(--text-small)] text-fp-text-body"
+        className="text-left text-[length:var(--text-small)] text-fp-text-body"
       >
         {label}
       </button>
@@ -328,7 +328,7 @@ function ThemeOption({
       style={active ? { backgroundColor: "var(--accent-wash)" } : undefined}
     >
       <span className="mb-2 block">{icon}</span>
-      <span className="fp-label text-[var(--text-micro)]">{label}</span>
+      <span className="fp-label text-[length:var(--text-micro)]">{label}</span>
     </button>
   );
 }
@@ -347,7 +347,7 @@ function RankingOption({
       type="button"
       onClick={onClick}
       className={cn(
-        "fp-label rounded-[var(--radius-sm)] border px-3 py-[7px] text-[var(--text-micro)] transition-colors",
+        "fp-label rounded-[var(--radius-sm)] border px-3 py-[7px] text-[length:var(--text-micro)] transition-colors",
         active
           ? "border-fp-border-accent text-fp-accent"
           : "border-fp-border-default text-fp-text-dim hover:border-fp-border-strong hover:text-fp-text-body"

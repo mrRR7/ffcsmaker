@@ -38,7 +38,7 @@ export function FPScheduleGrid({
       {columnHeaders.map((header, index) => (
         <div
           key={index}
-          className="fp-label px-1.5 py-1.5 text-center text-[var(--text-micro)] text-fp-text-dim"
+          className="fp-label px-1.5 py-1.5 text-center text-[length:var(--text-micro)] text-fp-text-dim"
         >
           {header}
         </div>
@@ -50,7 +50,7 @@ export function FPScheduleGrid({
 
 export function FPScheduleRowLabel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="fp-label flex items-start justify-end px-2 py-1 text-[var(--text-micro)] text-fp-text-dim">
+    <div className="fp-label flex items-start justify-end px-2 py-1 text-[length:var(--text-micro)] text-fp-text-dim">
       {children}
     </div>
   );
@@ -65,7 +65,7 @@ export function FPScheduleLunchRow({
 }) {
   return (
     <div
-      className="fp-label bg-fp-bg-inset px-2.5 py-1 text-right text-[var(--text-micro)] text-fp-text-dim"
+      className="fp-label bg-fp-bg-inset px-2.5 py-1 text-right text-[length:var(--text-micro)] text-fp-text-dim"
       style={{ gridColumn: `1 / span ${span}` }}
     >
       {label}

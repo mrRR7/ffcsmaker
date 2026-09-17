@@ -67,7 +67,7 @@ export default function NewPlannerPage() {
       {showNotice ? (
         <div className="flex items-center gap-4 border-b border-fp-border-default px-6 py-[11px]" style={{ backgroundColor: "var(--accent-wash)" }}>
           <FPLabel tone="accent">First time here</FPLabel>
-          <span className="text-[var(--text-small)] text-fp-text-body">
+          <span className="text-[length:var(--text-small)] text-fp-text-body">
             Add your courses and tick every professor you&apos;d accept &middot; set anything you&apos;d rather avoid &middot; pick from
             the weeks that work.
           </span>
@@ -77,7 +77,7 @@ export default function NewPlannerPage() {
               localStorage.setItem("dismissed_preliminary_notice", "true");
               setShowNotice(false);
             }}
-            className="fp-label -m-2 ml-auto flex shrink-0 items-center gap-1 p-2 text-[var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
+            className="fp-label -m-2 ml-auto flex shrink-0 items-center gap-1 p-2 text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
           >
             Got it
             <X className="h-3 w-3" strokeWidth={1.5} />
@@ -97,7 +97,7 @@ export default function NewPlannerPage() {
             <FPLabel>
               Checked {checked} branches, accepted {accepted}
             </FPLabel>
-            <span className="font-fp-mono text-[var(--text-small)] text-fp-text-strong">{Math.round(progress)}%</span>
+            <span className="font-fp-mono text-[length:var(--text-small)] text-fp-text-strong">{Math.round(progress)}%</span>
           </div>
           <div className="h-1.5 overflow-hidden rounded-[var(--radius-pill)] bg-fp-bg-inset">
             <div
@@ -126,7 +126,7 @@ export default function NewPlannerPage() {
                     value={rankingMode}
                     onChange={(event) => setRankingMode(event.target.value as RankingMode)}
                     aria-label="Ranking profile"
-                    className="fp-label rounded-[var(--radius-md)] border border-fp-border-strong bg-transparent px-2.5 py-[7px] text-[var(--text-micro)] text-fp-text-body outline-none hover:border-fp-accent"
+                    className="fp-label rounded-[var(--radius-md)] border border-fp-border-strong bg-transparent px-2.5 py-[7px] text-[length:var(--text-micro)] text-fp-text-body outline-none hover:border-fp-accent"
                   >
                     {rankingProfiles.map((profile) => (
                       <option key={profile} value={profile}>
@@ -134,7 +134,7 @@ export default function NewPlannerPage() {
                       </option>
                     ))}
                   </select>
-                  <label className="fp-label inline-flex cursor-pointer items-center gap-1.5 text-[var(--text-micro)] text-fp-text-dim">
+                  <label className="fp-label inline-flex cursor-pointer items-center gap-1.5 text-[length:var(--text-micro)] text-fp-text-dim">
                     <FPCheckbox checked={usePriorityRanking} onCheckedChange={setUsePriorityRanking} />
                     My list order
                   </label>

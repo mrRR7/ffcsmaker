@@ -120,7 +120,7 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
     <div className="space-y-4 p-6">
       {showAddForm ? (
         <div className="rounded-[var(--radius-lg)] border border-fp-border-default bg-fp-bg-surface p-4">
-          <FPLabel tone="strong" className="block text-[var(--text-small)] normal-case">
+          <FPLabel tone="strong" className="block text-[length:var(--text-small)] normal-case">
             Add a course manually
           </FPLabel>
           <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_2fr_100px_auto]">
@@ -128,13 +128,13 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
               value={courseCode}
               onChange={(event) => setCourseCode(event.target.value)}
               placeholder="Course code"
-              className="rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-inset px-3 py-2 font-fp-mono text-[var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
+              className="rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-inset px-3 py-2 font-fp-mono text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
             />
             <input
               value={courseName}
               onChange={(event) => setCourseName(event.target.value)}
               placeholder="Course name"
-              className="rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-inset px-3 py-2 text-[var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
+              className="rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-inset px-3 py-2 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
             />
             <input
               type="number"
@@ -143,7 +143,7 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
               value={credits}
               onChange={(event) => setCredits(event.target.value)}
               placeholder="Credits"
-              className="rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-inset px-3 py-2 text-[var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
+              className="rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-inset px-3 py-2 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
             />
             <FPButton variant="primary" size="md" onClick={submitCourse}>
               <Plus className="h-4 w-4" />
@@ -164,7 +164,7 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
           </div>
 
           {courses.length === 0 ? (
-            <div className="rounded-[var(--radius-lg)] border border-dashed border-fp-border-default bg-fp-bg-inset p-8 text-center text-[var(--text-small)] text-fp-text-dim">
+            <div className="rounded-[var(--radius-lg)] border border-dashed border-fp-border-default bg-fp-bg-inset p-8 text-center text-[length:var(--text-small)] text-fp-text-dim">
               No courses added yet.
             </div>
           ) : (
@@ -182,7 +182,7 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
                 <button
                   type="button"
                   onClick={() => setShowAllCourses(true)}
-                  className="fp-label w-full rounded-[var(--radius-md)] border border-dashed border-fp-border-strong px-4 py-3 text-center text-[var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
+                  className="fp-label w-full rounded-[var(--radius-md)] border border-dashed border-fp-border-strong px-4 py-3 text-center text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
                 >
                   {courses.length - COURSE_LIST_CAP} more course{courses.length - COURSE_LIST_CAP === 1 ? "" : "s"}
                 </button>
@@ -205,8 +205,8 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
             onClick={(event) => event.stopPropagation()}
           >
             <FPLabel tone="warn">Confirm delete</FPLabel>
-            <h2 className="mt-2 font-fp-display text-[var(--text-h)] font-bold text-fp-text-strong">Delete all courses?</h2>
-            <p className="mt-2 text-[var(--text-small)] text-fp-text-dim">
+            <h2 className="mt-2 font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong">Delete all courses?</h2>
+            <p className="mt-2 text-[length:var(--text-small)] text-fp-text-dim">
               This will remove all courses from the planner. This cannot be undone.
             </p>
             <div className="mt-6 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
@@ -328,7 +328,7 @@ function CourseCard({
           />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="truncate font-fp-mono text-[var(--text-small)] text-fp-text-strong">
+              <span className="truncate font-fp-mono text-[length:var(--text-small)] text-fp-text-strong">
                 {course.courseCode || "Untitled course"}
               </span>
               <FPBadge>{course.credits} credits</FPBadge>
@@ -338,7 +338,7 @@ function CourseCard({
               {lockedOptionCount > 0 ? <FPBadge tone="accent">{lockedOptionCount} locked</FPBadge> : null}
               {isRisky ? <FPLabel tone="warn">Add more &mdash; one clash and this course has nowhere to go</FPLabel> : null}
             </div>
-            <p className="mt-1 truncate text-[var(--text-small)] text-fp-text-dim">{course.courseName}</p>
+            <p className="mt-1 truncate text-[length:var(--text-small)] text-fp-text-dim">{course.courseName}</p>
           </div>
         </button>
         <button
@@ -360,12 +360,12 @@ function CourseCard({
               <input
                 value={course.courseCode}
                 onChange={(event) => updateCourse(course.id, { courseCode: event.target.value.toUpperCase() })}
-                className="rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset px-2.5 py-1.5 font-fp-mono text-[var(--text-small)] text-fp-text-body focus:border-fp-border-accent focus:outline-none"
+                className="rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset px-2.5 py-1.5 font-fp-mono text-[length:var(--text-small)] text-fp-text-body focus:border-fp-border-accent focus:outline-none"
               />
               <input
                 value={course.courseName}
                 onChange={(event) => updateCourse(course.id, { courseName: event.target.value })}
-                className="rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset px-2.5 py-1.5 text-[var(--text-small)] text-fp-text-body focus:border-fp-border-accent focus:outline-none"
+                className="rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-fp-border-accent focus:outline-none"
               />
               <input
                 type="number"
@@ -373,7 +373,7 @@ function CourseCard({
                 max={8}
                 value={course.credits}
                 onChange={(event) => updateCourse(course.id, { credits: Number(event.target.value) })}
-                className="rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset px-2.5 py-1.5 text-[var(--text-small)] text-fp-text-body focus:border-fp-border-accent focus:outline-none"
+                className="rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-fp-border-accent focus:outline-none"
               />
               <input
                 aria-label="Course color"
@@ -447,7 +447,7 @@ function CourseCard({
             <button
               type="button"
               onClick={() => setShowAddOptionForm(true)}
-              className="fp-label flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border border-dashed border-fp-border-accent p-3 text-[var(--text-micro)] text-fp-accent transition-colors hover:bg-fp-accent hover:text-fp-text-on-accent"
+              className="fp-label flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border border-dashed border-fp-border-accent p-3 text-[length:var(--text-micro)] text-fp-accent transition-colors hover:bg-fp-accent hover:text-fp-text-on-accent"
               style={{ backgroundColor: "var(--accent-wash)" }}
             >
               <UserRoundPlus className="h-3.5 w-3.5" />
@@ -463,7 +463,7 @@ function CourseCard({
               <button
                 type="button"
                 onClick={() => setShowAddOptionForm(false)}
-                className="fp-label text-[var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
+                className="fp-label text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
               >
                 Cancel
               </button>
@@ -472,7 +472,7 @@ function CourseCard({
               value={draft.professorName}
               placeholder="Professor name"
               onChange={(event) => setDraft((current) => ({ ...current, professorName: event.target.value }))}
-              className="w-full rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset px-2.5 py-1.5 text-[var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
+              className="w-full rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
             />
             <div className="mt-3 grid gap-3 xl:grid-cols-2">
               <TheoryPicker
@@ -497,7 +497,7 @@ function CourseCard({
               placeholder="Notes (optional)"
               rows={2}
               onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))}
-              className="mt-3 w-full rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset px-2.5 py-1.5 text-[var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
+              className="mt-3 w-full rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
             />
             <FPButton variant="primary" size="sm" className="mt-3" onClick={submitOption}>
               <Plus className="h-3.5 w-3.5" />
@@ -578,7 +578,7 @@ function SortableOptionRow({
           <span className="min-w-0 flex-1">
             <span className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
               <FPLabel>#{optionIndex + 1}</FPLabel>
-              <span className="truncate text-[var(--text-small)] font-medium text-fp-text-body">
+              <span className="truncate text-[length:var(--text-small)] font-medium text-fp-text-body">
                 {option.professorName || <span className="italic text-fp-text-dim">Unnamed</span>}
               </span>
               {locked ? <FPBadge tone="accent">Locked</FPBadge> : null}
@@ -621,7 +621,7 @@ function SortableOptionRow({
             <input
               value={option.professorName}
               onChange={(e) => onUpdate({ professorName: e.target.value })}
-              className="w-full rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-surface px-2.5 py-1.5 text-[var(--text-small)] text-fp-text-body focus:border-fp-border-accent focus:outline-none"
+              className="w-full rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-surface px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-fp-border-accent focus:outline-none"
             />
           </div>
           <TheoryPicker
@@ -641,7 +641,7 @@ function SortableOptionRow({
               onChange={(e) => onUpdate({ notes: e.target.value })}
               placeholder="Notes (optional)"
               rows={2}
-              className="w-full rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-surface px-2.5 py-1.5 text-[var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
+              className="w-full rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-surface px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
             />
           ) : null}
         </div>
@@ -679,7 +679,7 @@ function TheoryPicker({
                 type="button"
                 onClick={() => onSelect(option.slotIds)}
                 className={cn(
-                  "fp-label rounded-[var(--radius-sm)] border px-2.5 py-1.5 text-[var(--text-micro)] transition-colors",
+                  "fp-label rounded-[var(--radius-sm)] border px-2.5 py-1.5 text-[length:var(--text-micro)] transition-colors",
                   active ? "border-fp-border-accent text-fp-accent" : "border-fp-border-default text-fp-text-dim hover:text-fp-text-body"
                 )}
                 style={active ? { backgroundColor: "var(--accent-wash)" } : undefined}
@@ -721,7 +721,7 @@ function LabPicker({
                 type="button"
                 onClick={() => onToggle(option.slotIds)}
                 className={cn(
-                  "fp-label rounded-[var(--radius-sm)] border px-2.5 py-1.5 text-[var(--text-micro)] transition-colors",
+                  "fp-label rounded-[var(--radius-sm)] border px-2.5 py-1.5 text-[length:var(--text-micro)] transition-colors",
                   active ? "border-fp-border-accent text-fp-accent" : "border-fp-border-default text-fp-text-dim hover:text-fp-text-body"
                 )}
                 style={active ? { backgroundColor: "var(--accent-wash)" } : undefined}

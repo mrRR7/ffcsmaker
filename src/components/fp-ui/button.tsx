@@ -20,8 +20,8 @@ const fpButtonVariants = cva(
         ghost: "bg-transparent text-fp-text-dim hover:text-fp-text-body"
       },
       size: {
-        sm: "text-[var(--text-micro)] px-3 py-[7px]",
-        md: "text-[var(--text-small)] px-[18px] py-[11px]"
+        sm: "text-[length:var(--text-micro)] px-3 py-[7px]",
+        md: "text-[length:var(--text-small)] px-[18px] py-[11px]"
       }
     },
     defaultVariants: {

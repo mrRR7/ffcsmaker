@@ -96,8 +96,8 @@ export default function NewSavedPage() {
     <div className="-mx-4 -my-8 sm:-mx-6 lg:-mx-8">
       <section className="flex flex-wrap items-end gap-5 border-b border-fp-border-default px-6 py-8">
         <div>
-          <h1 className="font-fp-display text-[var(--text-display)] font-bold tracking-[-0.01em] text-fp-text-strong">My weeks</h1>
-          <p className="mt-1.5 max-w-xl text-[var(--text-body-size)] text-fp-text-body">
+          <h1 className="font-fp-display text-[length:var(--text-display)] font-bold tracking-[-0.01em] text-fp-text-strong">My weeks</h1>
+          <p className="mt-1.5 max-w-xl text-[length:var(--text-body-size)] text-fp-text-body">
             Your registration-day shortlist. Order them now &mdash; on the day you&apos;ll be typing slot codes, not
             deciding.
           </p>
@@ -115,8 +115,8 @@ export default function NewSavedPage() {
       {sorted.length === 0 ? (
         <div className="px-6 py-10">
           <FPCard className="flex min-h-72 flex-col items-center justify-center gap-3 text-center">
-            <p className="font-fp-display text-[var(--text-h)] font-bold text-fp-text-strong">No saved weeks yet</p>
-            <p className="max-w-sm text-[var(--text-small)] text-fp-text-dim">Save schedules from Results to see them here.</p>
+            <p className="font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong">No saved weeks yet</p>
+            <p className="max-w-sm text-[length:var(--text-small)] text-fp-text-dim">Save schedules from Results to see them here.</p>
             <Link href="/new/planner" className="mt-2 inline-block">
               <FPButton variant="primary" size="sm">
                 Open planner
@@ -167,7 +167,7 @@ export default function NewSavedPage() {
           <div className="mt-2 flex items-center gap-4 rounded-[var(--radius-lg)] border border-dashed border-fp-border-strong p-[18px]">
             <div>
               <FPLabel>Registration day</FPLabel>
-              <p className="mt-1 text-[var(--text-small)] text-fp-text-dim">
+              <p className="mt-1 text-[length:var(--text-small)] text-fp-text-dim">
                 Weeks live in this browser only &mdash; clearing site data clears them. Share a link if you want one
                 on your phone too.
               </p>
@@ -177,7 +177,7 @@ export default function NewSavedPage() {
               onClick={createShareLink}
               disabled={isSharing}
               aria-busy={isSharing}
-              className="fp-label ml-auto inline-flex shrink-0 items-center gap-1 text-[var(--text-micro)] text-fp-accent hover:text-fp-accent-bright disabled:cursor-not-allowed disabled:text-fp-text-dim"
+              className="fp-label ml-auto inline-flex shrink-0 items-center gap-1 text-[length:var(--text-micro)] text-fp-accent hover:text-fp-accent-bright disabled:cursor-not-allowed disabled:text-fp-text-dim"
             >
               Create share link
               {isSharing ? (
