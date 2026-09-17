@@ -23,10 +23,10 @@ import { FPSlotTable, FPSlotTableColumn } from "@/components/fp-ui/slot-table";
 type InputMode = "file" | "paste";
 
 const fieldClass =
-  "w-full rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset px-3 py-2 text-[13px] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none disabled:opacity-60";
+  "w-full rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset px-3 py-2 text-[var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none disabled:opacity-60";
 
 const fileInputClass =
-  "mt-2 block w-full text-[13px] text-fp-text-dim file:mr-3 file:rounded-[var(--radius-sm)] file:border-0 file:bg-fp-accent file:px-3 file:py-[7px] file:font-fp-mono file:text-[11px] file:font-medium file:uppercase file:tracking-[0.14em] file:text-fp-text-on-accent";
+  "mt-2 block w-full text-[var(--text-small)] text-fp-text-dim file:mr-3 file:rounded-[var(--radius-sm)] file:border-0 file:bg-fp-accent file:px-3 file:py-[7px] file:font-fp-mono file:text-[var(--text-micro)] file:font-medium file:uppercase file:tracking-[0.14em] file:text-fp-text-on-accent";
 
 const previewColumns: FPSlotTableColumn<ParsedImportRow>[] = [
   { key: "course", header: "Course", render: (row) => row.courseCode },
@@ -185,8 +185,8 @@ export function AdminDashboard() {
         <div className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <FPLabel tone="accent">FFCS admin</FPLabel>
-            <h1 className="mt-2 font-fp-display text-[24px] font-bold text-fp-text-strong">Course upload</h1>
-            <p className="mt-1 text-[13px] text-fp-text-dim">
+            <h1 className="mt-2 font-fp-display text-[var(--text-title)] font-bold text-fp-text-strong">Course upload</h1>
+            <p className="mt-1 text-[var(--text-small)] text-fp-text-dim">
               Seed or replace the searchable course catalog for one semester.
             </p>
           </div>
@@ -231,7 +231,7 @@ export function AdminDashboard() {
           </div>
           <label className="flex items-center gap-3 rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset px-3 py-[9px]">
             <FPCheckbox checked={isActive} onCheckedChange={setIsActive} />
-            <span className="text-[13px] text-fp-text-body">Set as active semester</span>
+            <span className="text-[var(--text-small)] text-fp-text-body">Set as active semester</span>
           </label>
           <div className="space-y-2">
             <FPLabel>FFCS opens</FPLabel>
@@ -326,12 +326,12 @@ export function AdminDashboard() {
 
       <FPPanel title="Preview">
         <div className="space-y-4 p-4">
-          <p className="text-[13px] text-fp-text-dim">
+          <p className="text-[var(--text-small)] text-fp-text-dim">
             {rows.length} rows, {summary.courseCount} unique courses, {summary.errorCount} errors
           </p>
 
           {rows.length === 0 ? (
-            <div className="rounded-[var(--radius-md)] border border-dashed border-fp-border-default bg-fp-bg-inset p-8 text-center text-[13px] text-fp-text-dim">
+            <div className="rounded-[var(--radius-md)] border border-dashed border-fp-border-default bg-fp-bg-inset p-8 text-center text-[var(--text-small)] text-fp-text-dim">
               Parsed rows will appear here.
             </div>
           ) : (
@@ -340,8 +340,8 @@ export function AdminDashboard() {
             </div>
           )}
 
-          {error ? <p className="text-[13px] text-fp-danger">{error}</p> : null}
-          {status ? <p className="text-[13px] text-fp-accent">{status}</p> : null}
+          {error ? <p className="text-[var(--text-small)] text-fp-danger">{error}</p> : null}
+          {status ? <p className="text-[var(--text-small)] text-fp-accent">{status}</p> : null}
 
           <FPButton type="button" disabled={isSubmitting || rows.length === 0} onClick={uploadToDatabase}>
             <Database className="h-3.5 w-3.5" />

@@ -33,11 +33,11 @@ export function FPComboCard({
       {thumbnail}
       <div className="flex items-baseline gap-2.5">
         <FPLabel tone={selected ? "accent" : "dim"}>{eyebrow}</FPLabel>
-        <span className={cn("ml-auto font-fp-mono text-[19px]", selected ? "text-fp-accent" : "text-fp-text-strong")}>
+        <span className={cn("ml-auto font-fp-mono text-[var(--text-h)]", selected ? "text-fp-accent" : "text-fp-text-strong")}>
           {score}
         </span>
       </div>
-      {title ? <div className="font-fp-display text-[15px] font-bold text-fp-text-strong">{title}</div> : null}
+      {title ? <div className="font-fp-display text-[var(--text-body-size)] font-bold text-fp-text-strong">{title}</div> : null}
       {meta ? <FPLabel className="block">{meta}</FPLabel> : null}
       {footer}
     </FPCard>

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
+import { Loader2 } from "lucide-react";
 import { cn } from "@/utils/cn";
 
 /**
@@ -19,8 +20,8 @@ const fpButtonVariants = cva(
         ghost: "bg-transparent text-fp-text-dim hover:text-fp-text-body"
       },
       size: {
-        sm: "text-[11px] px-3 py-[7px]",
-        md: "text-[13px] px-[18px] py-[11px]"
+        sm: "text-[var(--text-micro)] px-3 py-[7px]",
+        md: "text-[var(--text-small)] px-[18px] py-[11px]"
       }
     },
     defaultVariants: {
@@ -32,16 +33,24 @@ const fpButtonVariants = cva(
 
 export interface FPButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof fpButtonVariants> {}
+    VariantProps<typeof fpButtonVariants> {
+  /** Shows a spinner and disables the button — for actions with a real wait (network, computation). */
+  loading?: boolean;
+}
 
 export const FPButton = React.forwardRef<HTMLButtonElement, FPButtonProps>(
-  ({ className, variant, size, ...props }, ref) => (
+  ({ className, variant, size, loading, disabled, children, ...props }, ref) => (
     <button
       ref={ref}
       type="button"
+      aria-busy={loading || undefined}
+      disabled={disabled || loading}
       className={cn(fpButtonVariants({ variant, size, className }))}
       {...props}
-    />
+    >
+      {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" strokeWidth={2} /> : null}
+      {children}
+    </button>
   )
 );
 FPButton.displayName = "FPButton";

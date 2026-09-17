@@ -8,7 +8,7 @@ import { FPLabel } from "@/components/fp-ui/label";
 import { FPButton } from "@/components/fp-ui/button";
 
 const fieldClass =
-  "w-full rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset px-3 py-2 text-[13px] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none disabled:opacity-60";
+  "w-full rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset px-3 py-2 text-[var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none disabled:opacity-60";
 
 export default function NewAdminLoginPage() {
   const router = useRouter();
@@ -47,7 +47,7 @@ export default function NewAdminLoginPage() {
           <LockKeyhole className="h-5 w-5" />
         </div>
         <FPLabel tone="accent">FFCS admin</FPLabel>
-        <h1 className="mt-2 font-fp-display text-[24px] font-bold text-fp-text-strong">Admin login</h1>
+        <h1 className="mt-2 font-fp-display text-[var(--text-title)] font-bold text-fp-text-strong">Admin login</h1>
 
         <form onSubmit={onSubmit} className="mt-5 space-y-4">
           <div className="space-y-2">
@@ -63,7 +63,7 @@ export default function NewAdminLoginPage() {
               className={fieldClass}
             />
           </div>
-          {error ? <p className="text-[13px] text-fp-danger">{error}</p> : null}
+          {error ? <p className="text-[var(--text-small)] text-fp-danger">{error}</p> : null}
           <FPButton type="submit" className="w-full justify-center" disabled={isSubmitting}>
             {isSubmitting ? "Checking" : "Enter"}
           </FPButton>

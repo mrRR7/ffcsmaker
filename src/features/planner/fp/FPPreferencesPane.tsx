@@ -26,7 +26,7 @@ export function FPPreferencesPane() {
   return (
     <div className="mx-auto max-w-2xl px-6 py-7">
       <h2 className="text-[22px]">Anything you&apos;d rather avoid?</h2>
-      <p className="mb-6 mt-1.5 text-[13px] text-fp-text-dim">
+      <p className="mb-6 mt-1.5 text-[var(--text-small)] text-fp-text-dim">
         All optional. Skip and we&apos;ll show you every week that works.
       </p>
 
@@ -61,7 +61,7 @@ export function FPPreferencesPane() {
         <FPLabel tone="accent" className="block">
           Busy times
         </FPLabel>
-        <p className="mt-2 text-[13px] text-fp-text-dim">
+        <p className="mt-2 text-[var(--text-small)] text-fp-text-dim">
           Classes, gym, club, commute &mdash; anything that should never get a class scheduled over it.
         </p>
         <div className="mt-3">

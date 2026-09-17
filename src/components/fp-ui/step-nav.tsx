@@ -38,7 +38,7 @@ export function FPStepNav({ steps, className, ...props }: FPStepNavProps) {
             disabled={Wrapper === "button" ? step.disabled : undefined}
             onClick={isClickable ? step.onClick : undefined}
             className={cn(
-              "fp-label flex flex-1 items-center gap-3 px-5 py-3 text-[11px] text-left transition-colors",
+              "fp-label flex flex-1 items-center gap-3 px-5 py-3 text-[var(--text-micro)] text-left transition-colors",
               index < steps.length - 1 && "border-r border-fp-border-default",
               isActive
                 ? "border-b-2 border-b-fp-accent text-fp-text-strong"

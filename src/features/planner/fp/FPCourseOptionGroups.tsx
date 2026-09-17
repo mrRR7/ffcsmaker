@@ -131,7 +131,7 @@ export function FPTimeOfDayToggle({
             type="button"
             onClick={() => onChange(option.id)}
             className={cn(
-              "fp-label rounded-[var(--radius-sm)] border px-2.5 py-1 text-[11px] transition-colors",
+              "fp-label rounded-[var(--radius-sm)] border px-2.5 py-1 text-[var(--text-micro)] transition-colors",
               active ? "border-fp-border-accent text-fp-accent" : "border-fp-border-default text-fp-text-dim hover:text-fp-text-body"
             )}
             style={active ? { backgroundColor: "var(--accent-wash)" } : undefined}
@@ -168,7 +168,7 @@ export function FPSlotOptionChip({
       style={hasTicked && !expanded ? { backgroundColor: "var(--accent-wash)" } : undefined}
     >
       <button type="button" onClick={onToggle} className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left">
-        <span className="font-fp-mono text-[13px] text-fp-text-strong">{theoryLabel}</span>
+        <span className="font-fp-mono text-[var(--text-small)] text-fp-text-strong">{theoryLabel}</span>
         <FPLabel tone={hasTicked ? "accent" : "dim"}>
           {count} prof{count === 1 ? "" : "s"}
         </FPLabel>

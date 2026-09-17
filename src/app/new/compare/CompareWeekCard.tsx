@@ -41,13 +41,13 @@ export function CompareWeekCard({
     >
       <div className="flex items-center gap-3 border-b border-fp-border-default p-4">
         <div>
-          <div className="font-fp-display text-[19px] font-bold text-fp-text-strong">{eyebrow}</div>
+          <div className="font-fp-display text-[var(--text-h)] font-bold text-fp-text-strong">{eyebrow}</div>
           <FPBadge tone={recommended ? "accent" : "neutral"} pill className="mt-1">
             {recommended ? "Recommended" : "Alternative"}
           </FPBadge>
         </div>
         <span
-          className="ml-auto font-fp-mono text-[24px]"
+          className="ml-auto font-fp-mono text-[var(--text-title)]"
           style={{ color: recommended ? "var(--accent)" : "var(--text-strong)" }}
         >
           {Math.round(displayedScore)}
@@ -80,7 +80,7 @@ export function CompareWeekCard({
           {schedule.selections.map((selection) => {
             const course = courses.find((c) => c.id === selection.courseId);
             return (
-              <div key={selection.courseId} className="flex items-center gap-2.5 text-[13px]">
+              <div key={selection.courseId} className="flex items-center gap-2.5 text-[var(--text-small)]">
                 <span
                   className="h-2 w-2 shrink-0 rounded-full"
                   style={{ backgroundColor: course?.color ?? "var(--text-dim)" }}

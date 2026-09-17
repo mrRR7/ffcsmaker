@@ -93,7 +93,7 @@ export function SavedWeekCard({
         <button
           type="button"
           onClick={onToggleFavorite}
-          className="fp-label mr-2 text-[11px]"
+          className="fp-label mr-2 text-[var(--text-micro)]"
           style={{ color: saved.favorite ? "var(--accent)" : "var(--text-dim)" }}
         >
           {saved.favorite ? "First choice" : "Backup"}
@@ -118,14 +118,14 @@ export function SavedWeekCard({
                 setEditing(false);
               }
             }}
-            className="mt-1 block w-full border-b border-fp-border-accent bg-transparent font-fp-display text-[19px] font-bold text-fp-text-strong outline-none"
+            className="mt-1 block w-full border-b border-fp-border-accent bg-transparent font-fp-display text-[var(--text-h)] font-bold text-fp-text-strong outline-none"
           />
         ) : (
           <button
             type="button"
             onClick={() => setEditing(true)}
             title="Click to rename"
-            className="mt-1 block truncate text-left font-fp-display text-[19px] font-bold text-fp-text-strong transition-colors hover:text-fp-accent"
+            className="mt-1 block truncate text-left font-fp-display text-[var(--text-h)] font-bold text-fp-text-strong transition-colors hover:text-fp-accent"
           >
             {saved.name}
           </button>
@@ -143,7 +143,7 @@ export function SavedWeekCard({
           {schedule.selections.map((selection) => {
             const course = courses.find((c) => c.id === selection.courseId);
             return (
-              <span key={selection.courseId} className="fp-label inline-flex items-center gap-1.5 text-[11px] text-fp-text-dim">
+              <span key={selection.courseId} className="fp-label inline-flex items-center gap-1.5 text-[var(--text-micro)] text-fp-text-dim">
                 <span
                   className="h-1.5 w-1.5 shrink-0 rounded-full"
                   style={{ backgroundColor: course?.color ?? "var(--text-dim)" }}
@@ -167,7 +167,7 @@ export function SavedWeekCard({
 
       <div className="flex flex-col items-end gap-2.5">
         <span
-          className="font-fp-mono text-[24px]"
+          className="font-fp-mono text-[var(--text-title)]"
           style={{ color: saved.favorite ? "var(--accent)" : "var(--text-strong)" }}
         >
           {Math.round(displayedScore)}
@@ -189,7 +189,7 @@ export function SavedWeekCard({
         <button
           type="button"
           onClick={onDelete}
-          className="fp-label text-[11px] text-fp-text-dim hover:text-fp-danger"
+          className="fp-label text-[var(--text-micro)] text-fp-text-dim hover:text-fp-danger"
         >
           Delete
         </button>

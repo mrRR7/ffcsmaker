@@ -47,7 +47,7 @@ export default function NewLandingPage() {
         <h1 className="max-w-3xl font-fp-display text-[44px] font-bold leading-[1.08] tracking-[-0.015em] text-fp-text-strong">
           Your timetable, built for you in about a minute.
         </h1>
-        <p className="mt-4 max-w-xl text-[15px] leading-[1.5] text-fp-text-body">
+        <p className="mt-4 max-w-xl text-[var(--text-body-size)] leading-[1.5] text-fp-text-body">
           Free, no login, nothing sent to VTOP. Every conflict-free combination of your courses, ranked. First
           &mdash; which campus?
         </p>
@@ -68,7 +68,7 @@ export default function NewLandingPage() {
                 disabled={!card.active}
                 onClick={() => pickCampus(card.campus)}
                 className={cn(
-                  "rounded-[var(--radius-md)] border p-5 transition-[border-color,background-color,transform] duration-150",
+                  "rounded-[var(--radius-md)] border p-5 transition-[border-color,background-color,transform] duration-[var(--dur-fast)]",
                   !card.active
                     ? "cursor-not-allowed border-fp-border-default bg-fp-bg-inset"
                     : isCurrent
@@ -79,13 +79,13 @@ export default function NewLandingPage() {
               >
                 <div
                   className={cn(
-                    "font-fp-display text-[19px] font-bold",
+                    "font-fp-display text-[var(--text-h)] font-bold",
                     card.active ? "text-fp-text-strong" : "text-fp-text-dim"
                   )}
                 >
                   {CAMPUS_LABELS[card.campus]}
                 </div>
-                <div className="mt-1.5 text-[13px] text-fp-text-dim">{card.detail}</div>
+                <div className="mt-1.5 text-[var(--text-small)] text-fp-text-dim">{card.detail}</div>
                 <FPLabel tone={card.active ? "accent" : "dim"} className="mt-3.5 inline-flex items-center gap-1">
                   {card.active ? (
                     <>
@@ -100,7 +100,7 @@ export default function NewLandingPage() {
           })}
         </motion.div>
 
-        <p className="mt-7 text-[13px] text-fp-text-dim">
+        <p className="mt-7 text-[var(--text-small)] text-fp-text-dim">
           Never done FFCS before? <span className="cursor-pointer text-fp-text-accent underline underline-offset-[3px]">40-second explainer</span>
         </p>
       </section>
@@ -116,7 +116,7 @@ export default function NewLandingPage() {
           {steps.map((step) => (
             <motion.div key={step.label} variants={fadeUp} className="border-l-2 border-fp-accent pl-4">
               <FPLabel tone="accent">{step.label}</FPLabel>
-              <p className="mt-2.5 text-[15px] leading-[1.5] text-fp-text-body">{step.body}</p>
+              <p className="mt-2.5 text-[var(--text-body-size)] leading-[1.5] text-fp-text-body">{step.body}</p>
             </motion.div>
           ))}
         </motion.div>

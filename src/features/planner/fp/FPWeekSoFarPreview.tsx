@@ -42,7 +42,7 @@ function buildPreviewBlocks(courses: Course[], slots: TimeSlot[]): PreviewBlock[
         startHour: Math.floor(parseTime(slot.startTime) / 60),
         code: course.courseCode,
         slotLabel: slot.label,
-        color: course.color ?? "#3fa96b"
+        color: course.color ?? "var(--accent)"
       });
     }
   }
@@ -108,7 +108,7 @@ export function FPWeekSoFarPreview({
             ))}
           </FPScheduleGrid>
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <p className="rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-surface px-4 py-2.5 text-center text-[13px] text-fp-text-dim">
+            <p className="rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-surface px-4 py-2.5 text-center text-[var(--text-small)] text-fp-text-dim">
               Add a course to see a live preview here.
             </p>
           </div>
@@ -142,8 +142,8 @@ export function FPWeekSoFarPreview({
 
           <div className="mt-3.5 flex flex-wrap items-center gap-3.5">
             {courses.map((course) => (
-              <span key={course.id} className="fp-label flex items-center gap-1.5 text-[11px] text-fp-text-dim">
-                <span className="h-2.5 w-2.5 shrink-0 rounded-[2px]" style={{ background: course.color ?? "#3fa96b" }} />
+              <span key={course.id} className="fp-label flex items-center gap-1.5 text-[var(--text-micro)] text-fp-text-dim">
+                <span className="h-2.5 w-2.5 shrink-0 rounded-[2px]" style={{ background: course.color ?? "var(--accent)" }} />
                 {course.courseCode}
               </span>
             ))}

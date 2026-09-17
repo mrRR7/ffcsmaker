@@ -85,12 +85,12 @@ export function ZeroResultsFP() {
     <div className="grid grid-cols-1 gap-8 pb-16 lg:grid-cols-[minmax(0,1fr)_340px]">
       <div className="space-y-6">
         <div>
-          <h1 className="font-fp-display text-[28px] font-bold text-fp-text-strong sm:text-[34px]">
+          <h1 className="font-fp-display text-[28px] font-bold text-fp-text-strong sm:text-[var(--text-display)]">
             {findings.length > 0
               ? "No week survives all of your rules."
               : "No week survives this combination of courses and rules."}
           </h1>
-          <p className="mt-3 max-w-2xl text-[15px] leading-[1.5] text-fp-text-body">
+          <p className="mt-3 max-w-2xl text-[var(--text-body-size)] leading-[1.5] text-fp-text-body">
             We checked every combination of professors and slots your courses allow. None of them
             clear your constraints without a clash.
           </p>
@@ -104,7 +104,7 @@ export function ZeroResultsFP() {
             <FPLabel tone="accent">The one most likely to blame</FPLabel>
             <div className="mt-3 flex flex-col gap-5 sm:flex-row sm:items-center">
               <div className="min-w-0 flex-1">
-                <div className="font-fp-mono text-[19px] text-fp-text-strong sm:text-[22px]">
+                <div className="font-fp-mono text-[var(--text-h)] text-fp-text-strong sm:text-[22px]">
                   {topFinding.constraintLabel ??
                     [topFinding.courseCodeA, topFinding.courseCodeB].filter(Boolean).join(" + ")}
                 </div>
@@ -134,7 +134,7 @@ export function ZeroResultsFP() {
 
         {findings.length > 0 ? (
           <div className="overflow-hidden rounded-[var(--radius-md)] border border-fp-border-default">
-            <div className="fp-label grid grid-cols-[1fr_1fr_auto] gap-4 border-b border-fp-border-default bg-fp-bg-inset px-4 py-[11px] text-[11px] text-fp-text-dim">
+            <div className="fp-label grid grid-cols-[1fr_1fr_auto] gap-4 border-b border-fp-border-default bg-fp-bg-inset px-4 py-[11px] text-[var(--text-micro)] text-fp-text-dim">
               <span>Rule</span>
               <span>What it costs you</span>
               <span className="text-right">Action</span>
@@ -145,7 +145,7 @@ export function ZeroResultsFP() {
               return (
                 <div
                   key={`${finding.type}-${finding.courseCodeA}-${finding.courseCodeB ?? index}`}
-                  className="grid grid-cols-[1fr_1fr_auto] items-center gap-4 border-b border-fp-border-default px-4 py-[13px] text-[13px] last:border-b-0"
+                  className="grid grid-cols-[1fr_1fr_auto] items-center gap-4 border-b border-fp-border-default px-4 py-[13px] text-[var(--text-small)] last:border-b-0"
                   style={isWorst ? { backgroundColor: "var(--warn-wash)" } : undefined}
                 >
                   <span className={isWorst ? "text-fp-warn" : index > 2 ? "text-fp-text-dim" : "text-fp-text-body"}>
@@ -159,7 +159,7 @@ export function ZeroResultsFP() {
                     onClick={isConstraint ? relaxAndRegenerate : () => router.push("/new/planner")}
                     disabled={isConstraint && isGenerating}
                     className={
-                      "fp-label text-right text-[11px] " +
+                      "fp-label text-right text-[var(--text-micro)] " +
                       (isWorst ? "text-fp-warn" : index > 2 ? "text-fp-text-dim" : "text-fp-accent")
                     }
                   >
@@ -173,25 +173,25 @@ export function ZeroResultsFP() {
       </div>
 
       <aside className="h-fit rounded-[var(--radius-lg)] border border-fp-border-default bg-fp-bg-surface">
-        <div className="fp-label border-b border-fp-border-default px-4 py-[14px] text-[11px] text-fp-text-dim">
+        <div className="fp-label border-b border-fp-border-default px-4 py-[14px] text-[var(--text-micro)] text-fp-text-dim">
           Courses under strain
         </div>
         <div className="divide-y divide-fp-border-default">
           {courseNotes.length > 0 ? (
             courseNotes.map(([code, entry]) => (
               <FPNote key={code} tone="warn" className="m-4">
-                <span className="font-fp-mono text-[13px] text-fp-text-strong">{code}</span>
+                <span className="font-fp-mono text-[var(--text-small)] text-fp-text-strong">{code}</span>
                 <br />
                 {entry.lines[0]}
               </FPNote>
             ))
           ) : (
-            <p className="p-4 text-[13px] text-fp-text-dim">No single course stands out — see the rule list.</p>
+            <p className="p-4 text-[var(--text-small)] text-fp-text-dim">No single course stands out — see the rule list.</p>
           )}
         </div>
         <div className="border-t border-fp-border-default p-4">
           <FPLabel>If you change nothing</FPLabel>
-          <p className="mt-2 text-[13px] leading-[1.5] text-fp-text-dim">
+          <p className="mt-2 text-[var(--text-small)] leading-[1.5] text-fp-text-dim">
             Registration works without us — but you&apos;d be cross-checking{" "}
             {totalRawCombinations.toLocaleString()} raw combinations by hand.
           </p>

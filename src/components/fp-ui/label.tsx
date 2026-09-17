@@ -17,5 +17,5 @@ const toneMap = {
 } as const;
 
 export function FPLabel({ className, tone = "dim", ...props }: FPLabelProps) {
-  return <span className={cn("fp-label text-[11px]", toneMap[tone], className)} {...props} />;
+  return <span className={cn("fp-label text-[var(--text-micro)]", toneMap[tone], className)} {...props} />;
 }

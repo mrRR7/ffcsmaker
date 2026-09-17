@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import toast from "react-hot-toast";
 import { motion } from "framer-motion";
 import { staggerContainer, fadeUp } from "@/utils/motion";
-import { ArrowRight, Check, ChevronDown } from "lucide-react";
+import { ArrowRight, Check, ChevronDown, Loader2 } from "lucide-react";
 import { FPButton } from "@/components/fp-ui/button";
 import { FPCard } from "@/components/fp-ui/card";
 import { FPBadge } from "@/components/fp-ui/badge";
@@ -269,7 +269,11 @@ function ResultsContent() {
     setActiveBlockAnchor(null);
   }
 
+  const [isSharing, setIsSharing] = useState(false);
+  const [exportingType, setExportingType] = useState<"png" | "pdf" | null>(null);
+
   async function shareActive(schedule: ScoredTimetable) {
+    setIsSharing(true);
     try {
       const url = await createSharedTimetableUrl({
         schedule,
@@ -283,11 +287,14 @@ function ResultsContent() {
       toast.success("Shared timetable URL copied.");
     } catch {
       toast.error("Failed to share timetable.");
+    } finally {
+      setIsSharing(false);
     }
   }
 
   async function exportActive(type: "png" | "pdf") {
     if (!activeSchedule || !exportRef.current) return;
+    setExportingType(type);
     try {
       if (type === "png") {
         await exportElementPng(exportRef.current, `ultimate-ffcs-${activeSchedule.id}.png`);
@@ -298,6 +305,7 @@ function ResultsContent() {
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "Export failed.");
     } finally {
+      setExportingType(null);
       setExportMenuOpen(false);
     }
   }
@@ -381,7 +389,7 @@ function ResultsContent() {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <FPCard padding="lg" className="max-w-md text-center">
-          <h1 className="font-fp-display text-[19px] font-bold text-fp-text-strong">
+          <h1 className="font-fp-display text-[var(--text-h)] font-bold text-fp-text-strong">
             No schedules match the current filters.
           </h1>
           <p className="mt-2 text-[14px] leading-[1.5] text-fp-text-dim">
@@ -415,7 +423,7 @@ function ResultsContent() {
         <div className="border-b border-fp-border-default px-6 py-3">
           <FPNote tone="warn" className="flex flex-wrap items-center justify-between gap-3">
             <span>These results are over 24 hours old. Regenerate for the latest schedule.</span>
-            <Link href="/new/planner" className="fp-label text-[11px] text-fp-warn underline">
+            <Link href="/new/planner" className="fp-label text-[var(--text-micro)] text-fp-warn underline">
               Redo
             </Link>
           </FPNote>
@@ -426,7 +434,7 @@ function ResultsContent() {
         {/* Shapes rail */}
         <aside className="w-full shrink-0 border-b border-fp-border-default bg-fp-bg-surface px-4 py-5 lg:w-[212px] lg:border-b-0 lg:border-r lg:px-4">
           <FPLabel>Shapes · {filteredGroups.length}</FPLabel>
-          <p className="mt-2 text-[13px] leading-[1.4] text-fp-text-dim">
+          <p className="mt-2 text-[var(--text-small)] leading-[1.4] text-fp-text-dim">
             Each one is a different week layout. Best first.
           </p>
 
@@ -477,7 +485,7 @@ function ResultsContent() {
                       )}
                       <span
                         className={
-                          "ml-auto font-fp-mono text-[15px] " +
+                          "ml-auto font-fp-mono text-[var(--text-body-size)] " +
                           (selected ? "text-fp-accent" : "text-fp-text-strong")
                         }
                       >
@@ -493,7 +501,7 @@ function ResultsContent() {
               <button
                 type="button"
                 onClick={() => setShowAllShapes(true)}
-                className="fp-label rounded-[var(--radius-md)] border border-dashed border-fp-border-strong px-4 py-4 text-center text-[11px] text-fp-text-dim hover:text-fp-text-body"
+                className="fp-label rounded-[var(--radius-md)] border border-dashed border-fp-border-strong px-4 py-4 text-center text-[var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
               >
                 {hiddenGroupCount} more
               </button>
@@ -501,12 +509,12 @@ function ResultsContent() {
           </motion.div>
 
           <div className="mt-5 flex flex-col items-start gap-2.5 border-t border-fp-border-default pt-4">
-            <label className="fp-label flex items-center gap-1 text-[11px] text-fp-text-dim">
+            <label className="fp-label flex items-center gap-1 text-[var(--text-micro)] text-fp-text-dim">
               Sort
               <select
                 value={sortMode}
                 onChange={(event) => setSortMode(event.target.value as SortMode)}
-                className="fp-label border-none bg-transparent text-[11px] text-fp-text-body outline-none"
+                className="fp-label border-none bg-transparent text-[var(--text-micro)] text-fp-text-body outline-none"
               >
                 <option value="score">Best first</option>
                 <option value="lowGaps">Fewest gaps</option>
@@ -515,7 +523,7 @@ function ResultsContent() {
             </label>
             <button
               type="button"
-              className="fp-label inline-flex items-center gap-1 whitespace-nowrap text-[11px] text-fp-accent"
+              className="fp-label inline-flex items-center gap-1 whitespace-nowrap text-[var(--text-micro)] text-fp-accent"
               onClick={() => {
                 if (activeSchedule) addCompareSchedule(activeSchedule.id);
                 router.push("/new/compare");
@@ -534,11 +542,11 @@ function ResultsContent() {
               <div className="flex flex-wrap items-start gap-5">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-3.5">
-                    <h1 className="font-fp-display text-[28px] font-bold text-fp-text-strong sm:text-[34px]">
+                    <h1 className="font-fp-display text-[28px] font-bold text-fp-text-strong sm:text-[var(--text-display)]">
                       {activeShapeIndex === 0 ? "Best overall" : `Shape ${activeShapeIndex + 1}`}
                     </h1>
                     <span
-                      className="rounded-[var(--radius-sm)] px-3 py-1.5 font-fp-mono text-[17px] text-fp-accent sm:text-[19px]"
+                      className="rounded-[var(--radius-sm)] px-3 py-1.5 font-fp-mono text-[17px] text-fp-accent sm:text-[var(--text-h)]"
                       style={{ backgroundColor: "var(--accent-wash-strong)" }}
                     >
                       {Math.round(displayedScore)} / 100
@@ -567,7 +575,12 @@ function ResultsContent() {
                     {isSaved ? <Check className="h-3.5 w-3.5" /> : null}
                     {isSaved ? "Saved" : "Save"}
                   </FPButton>
-                  <FPButton variant="secondary" size="sm" onClick={() => shareActive(activeSchedule)}>
+                  <FPButton
+                    variant="secondary"
+                    size="sm"
+                    loading={isSharing}
+                    onClick={() => shareActive(activeSchedule)}
+                  >
                     Share
                   </FPButton>
                   <FPButton variant="secondary" size="sm" onClick={() => setShareCardOpen(true)}>
@@ -587,16 +600,22 @@ function ResultsContent() {
                         <button
                           type="button"
                           onClick={() => exportActive("png")}
-                          className="block w-full rounded-[var(--radius-sm)] px-3 py-2 text-left text-[13px] text-fp-text-body hover:bg-fp-bg-raised"
+                          disabled={exportingType !== null}
+                          aria-busy={exportingType === "png"}
+                          className="flex w-full items-center justify-between rounded-[var(--radius-sm)] px-3 py-2 text-left text-[var(--text-small)] text-fp-text-body hover:bg-fp-bg-raised disabled:cursor-not-allowed disabled:text-fp-text-dim"
                         >
                           PNG image
+                          {exportingType === "png" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
                         </button>
                         <button
                           type="button"
                           onClick={() => exportActive("pdf")}
-                          className="block w-full rounded-[var(--radius-sm)] px-3 py-2 text-left text-[13px] text-fp-text-body hover:bg-fp-bg-raised"
+                          disabled={exportingType !== null}
+                          aria-busy={exportingType === "pdf"}
+                          className="flex w-full items-center justify-between rounded-[var(--radius-sm)] px-3 py-2 text-left text-[var(--text-small)] text-fp-text-body hover:bg-fp-bg-raised disabled:cursor-not-allowed disabled:text-fp-text-dim"
                         >
                           PDF document
+                          {exportingType === "pdf" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
                         </button>
                         <button
                           type="button"
@@ -604,7 +623,7 @@ function ResultsContent() {
                             exportScheduleJson(activeSchedule);
                             setExportMenuOpen(false);
                           }}
-                          className="block w-full rounded-[var(--radius-sm)] px-3 py-2 text-left text-[13px] text-fp-text-body hover:bg-fp-bg-raised"
+                          className="block w-full rounded-[var(--radius-sm)] px-3 py-2 text-left text-[var(--text-small)] text-fp-text-body hover:bg-fp-bg-raised"
                         >
                           JSON data
                         </button>
@@ -638,7 +657,7 @@ function ResultsContent() {
               {allVariants.length > 1 ? (
                 <section className="mt-7 border-t border-fp-border-default pt-6">
                   <div className="flex flex-wrap items-baseline gap-3">
-                    <h2 className="font-fp-display text-[17px] font-bold text-fp-text-strong sm:text-[19px]">
+                    <h2 className="font-fp-display text-[17px] font-bold text-fp-text-strong sm:text-[var(--text-h)]">
                       Same layout, different professors
                     </h2>
                     <FPLabel>{allVariants.length} combos · the grid above doesn&apos;t move</FPLabel>
@@ -699,7 +718,7 @@ function ResultsContent() {
                                 style={{ backgroundColor: row.color }}
                               />
                               <div className="min-w-0">
-                                <div className="font-fp-mono text-[13px] text-fp-text-strong">
+                                <div className="font-fp-mono text-[var(--text-small)] text-fp-text-strong">
                                   {row.courseCode}
                                 </div>
                                 <div className="truncate text-[12px] text-fp-text-dim">
@@ -722,7 +741,7 @@ function ResultsContent() {
                               : undefined;
                             return (
                               <div className="min-w-0">
-                                <div className="truncate text-[13px] text-fp-text-body">
+                                <div className="truncate text-[var(--text-small)] text-fp-text-body">
                                   {row.professorName}
                                 </div>
                                 {notes ? (
@@ -740,7 +759,7 @@ function ResultsContent() {
                             const { code, detail } = splitSlotGroup(row.theorySlots[0]);
                             return (
                               <div>
-                                <div className="font-fp-mono text-[13px] text-fp-text-body">{code}</div>
+                                <div className="font-fp-mono text-[var(--text-small)] text-fp-text-body">{code}</div>
                                 {detail ? (
                                   <div className="text-[12px] text-fp-text-dim">{detail}</div>
                                 ) : null}
@@ -756,7 +775,7 @@ function ResultsContent() {
                             const { code, detail } = splitSlotGroup(row.labSlots[0]);
                             return (
                               <div>
-                                <div className="font-fp-mono text-[13px] text-fp-text-body">{code}</div>
+                                <div className="font-fp-mono text-[var(--text-small)] text-fp-text-body">{code}</div>
                                 {detail ? (
                                   <div className="text-[12px] text-fp-text-dim">{detail}</div>
                                 ) : null}
@@ -779,7 +798,7 @@ function ResultsContent() {
                               <button
                                 type="button"
                                 onClick={() => swapProfessorFor(row.courseId, selection.optionId)}
-                                className="fp-label inline-flex items-center gap-1 text-[11px] text-fp-accent"
+                                className="fp-label inline-flex items-center gap-1 text-[var(--text-micro)] text-fp-accent"
                               >
                                 Swap
                                 <ChevronDown className="h-3 w-3" strokeWidth={1.5} />
@@ -798,7 +817,7 @@ function ResultsContent() {
                           <button
                             type="button"
                             onClick={() => copySlotList(activeSchedule)}
-                            className="fp-label text-[11px] text-fp-accent"
+                            className="fp-label text-[var(--text-micro)] text-fp-accent"
                           >
                             Copy slot list
                           </button>
@@ -832,7 +851,7 @@ function ResultsContent() {
                                 style={{ backgroundColor: row.color }}
                               />
                               <div className="min-w-0">
-                                <div className="font-fp-mono text-[13px] text-fp-text-strong">
+                                <div className="font-fp-mono text-[var(--text-small)] text-fp-text-strong">
                                   {row.courseCode}
                                 </div>
                                 <div className="truncate text-[12px] text-fp-text-dim">
@@ -865,7 +884,7 @@ function ResultsContent() {
                           <button
                             type="button"
                             onClick={() => copySlotList(activeSchedule)}
-                            className="fp-label text-[11px] text-fp-accent"
+                            className="fp-label text-[var(--text-micro)] text-fp-accent"
                           >
                             Copy slot list
                           </button>
