@@ -158,7 +158,6 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
           <div className="flex items-center justify-between">
             <FPLabel>Your courses &middot; {courses.length}</FPLabel>
             <FPButton variant="ghost" size="sm" onClick={() => setIsDeleteAllOpen(true)} disabled={courses.length === 0}>
-              <Trash2 className="h-3.5 w-3.5" />
               Delete all
             </FPButton>
           </div>
