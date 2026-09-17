@@ -319,7 +319,7 @@ function CourseCard({
           type="button"
           onClick={() => onToggleCollapse(course.id)}
           aria-expanded={!collapsed}
-          className="flex flex-1 items-start gap-3 text-left"
+          className="flex min-w-0 flex-1 items-start gap-3 text-left"
         >
           <span
             className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full border border-fp-border-strong"
@@ -354,33 +354,35 @@ function CourseCard({
       {!collapsed ? (
         <div className="space-y-5 border-t border-fp-border-default bg-fp-bg-surface p-4">
           {/* Course edit row */}
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div className="grid flex-1 gap-2 sm:grid-cols-[140px_minmax(0,1fr)_88px_56px]">
-              <input
-                value={course.courseCode}
-                onChange={(event) => updateCourse(course.id, { courseCode: event.target.value.toUpperCase() })}
-                className="rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 font-fp-mono text-[length:var(--text-small)] text-fp-text-body focus:border-[var(--border-selected)] focus:outline-none"
-              />
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-1 flex-col gap-2">
               <input
                 value={course.courseName}
                 onChange={(event) => updateCourse(course.id, { courseName: event.target.value })}
-                className="rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-[var(--border-selected)] focus:outline-none"
+                className="w-full rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-[var(--border-selected)] focus:outline-none"
               />
-              <input
-                type="number"
-                min={1}
-                max={8}
-                value={course.credits}
-                onChange={(event) => updateCourse(course.id, { credits: Number(event.target.value) })}
-                className="rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-[var(--border-selected)] focus:outline-none"
-              />
-              <input
-                aria-label="Course color"
-                type="color"
-                value={course.color ?? "var(--accent)"}
-                onChange={(event) => updateCourse(course.id, { color: event.target.value })}
-                className="h-[34px] w-full cursor-pointer rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset p-1"
-              />
+              <div className="grid grid-cols-[1fr_64px_34px] gap-2">
+                <input
+                  value={course.courseCode}
+                  onChange={(event) => updateCourse(course.id, { courseCode: event.target.value.toUpperCase() })}
+                  className="rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 font-fp-mono text-[length:var(--text-small)] text-fp-text-body focus:border-[var(--border-selected)] focus:outline-none"
+                />
+                <input
+                  type="number"
+                  min={1}
+                  max={8}
+                  value={course.credits}
+                  onChange={(event) => updateCourse(course.id, { credits: Number(event.target.value) })}
+                  className="rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-[var(--border-selected)] focus:outline-none"
+                />
+                <input
+                  aria-label="Course color"
+                  type="color"
+                  value={course.color ?? "var(--accent)"}
+                  onChange={(event) => updateCourse(course.id, { color: event.target.value })}
+                  className="h-[34px] w-full cursor-pointer rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset p-1"
+                />
+              </div>
             </div>
             <div className="flex shrink-0 gap-2">
               <button type="button" title="Duplicate course" onClick={() => duplicateCourse(course.id)} className={iconButtonClass(false)}>

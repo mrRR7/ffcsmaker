@@ -119,14 +119,14 @@ export function FPLiveSlotMatrix({
       <td key={key} className="border border-fp-border-default p-0 align-top">
         <div
           className="relative flex h-[52px] flex-col items-center justify-center"
-          style={{ background: `linear-gradient(135deg, ${colorA} 50%, ${colorB} 50%)` }}
+          style={{ background: `linear-gradient(135deg, ${colorA} 50%, ${colorB} 50%)`, color: readableTextColor(colorA) }}
           title={`Clashing: ${codes}`}
         >
           <span className="absolute right-[2px] top-[1px] text-[9px]" style={{ textShadow: "0 0 2px rgba(0,0,0,0.6)" }}>
             ⚠
           </span>
           <span
-            className="fp-text text-[9px] font-bold leading-tight text-fp-text-strong"
+            className="fp-text text-[9px] font-bold leading-tight"
             style={{ textShadow: "0 0 3px rgba(0,0,0,0.5)" }}
           >
             {slotPicks.length} courses
@@ -136,7 +136,7 @@ export function FPLiveSlotMatrix({
     );
   }
 
-  const headCellClass = "fp-code border border-fp-border-default bg-fp-bg-surface px-1 py-1 text-[9px] text-fp-text-dim";
+  const headCellClass = "border border-fp-border-default bg-fp-bg-surface px-1 py-1 text-[9px] text-fp-text-dim";
   const groupHeadClass =
     "fp-code border border-fp-border-default bg-fp-bg-inset px-1 py-1 text-[length:var(--text-micro)] text-fp-text-strong";
   const dayLabelClass =
@@ -181,7 +181,7 @@ export function FPLiveSlotMatrix({
       ) : (
         <>
           <div className="mt-3.5 overflow-x-auto rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-page">
-            <table className="w-full table-fixed border-collapse text-center">
+            <table className="w-full min-w-[860px] table-fixed border-collapse text-center">
               <colgroup>
                 <col style={{ width: "30px" }} />
                 <col style={{ width: "34px" }} />
@@ -194,17 +194,17 @@ export function FPLiveSlotMatrix({
                   <th rowSpan={2} className={groupHeadClass}>
                     TH
                   </th>
-                  <th className={headCellClass}>Start</th>
+                  <th className={`fp-text ${headCellClass}`}>Start</th>
                   {columns.theory.map((col, i) => (
-                    <th key={`t-s-${i}`} className={headCellClass}>
+                    <th key={`t-s-${i}`} className={col.kind === "lunch" ? `fp-text ${headCellClass}` : `fp-code ${headCellClass}`}>
                       {col.kind === "lunch" ? "Lunch" : col.startTime}
                     </th>
                   ))}
                 </tr>
                 <tr>
-                  <th className={headCellClass}>End</th>
+                  <th className={`fp-text ${headCellClass}`}>End</th>
                   {columns.theory.map((col, i) => (
-                    <th key={`t-e-${i}`} className={headCellClass}>
+                    <th key={`t-e-${i}`} className={col.kind === "lunch" ? `fp-text ${headCellClass}` : `fp-code ${headCellClass}`}>
                       {col.kind === "lunch" ? "Lunch" : col.endTime}
                     </th>
                   ))}
@@ -215,17 +215,17 @@ export function FPLiveSlotMatrix({
                       <th rowSpan={2} className={groupHeadClass}>
                         LAB
                       </th>
-                      <th className={headCellClass}>Start</th>
+                      <th className={`fp-text ${headCellClass}`}>Start</th>
                       {columns.lab.map((col, i) => (
-                        <th key={`l-s-${i}`} className={headCellClass}>
+                        <th key={`l-s-${i}`} className={col.kind === "lunch" ? `fp-text ${headCellClass}` : `fp-code ${headCellClass}`}>
                           {col.kind === "lunch" ? "Lunch" : col.startTime}
                         </th>
                       ))}
                     </tr>
                     <tr>
-                      <th className={headCellClass}>End</th>
+                      <th className={`fp-text ${headCellClass}`}>End</th>
                       {columns.lab.map((col, i) => (
-                        <th key={`l-e-${i}`} className={headCellClass}>
+                        <th key={`l-e-${i}`} className={col.kind === "lunch" ? `fp-text ${headCellClass}` : `fp-code ${headCellClass}`}>
                           {col.kind === "lunch" ? "Lunch" : col.endTime}
                         </th>
                       ))}
@@ -282,8 +282,8 @@ export function FPLiveSlotMatrix({
 
           <FPNote className="mt-4">
             Brightness has no meaning here &mdash; each course keeps its own color. This is a preview of your
-            first-choice professors, not a generated schedule; a striped cell means two of your picks land on the
-            same slot.
+            first-choice professors, not a generated schedule; a split-colored cell means two or more of your picks
+            land on the same slot.
           </FPNote>
         </>
       )}
