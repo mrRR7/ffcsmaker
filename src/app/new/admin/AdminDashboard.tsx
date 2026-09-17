@@ -23,7 +23,7 @@ import { FPSlotTable, FPSlotTableColumn } from "@/components/fp-ui/slot-table";
 type InputMode = "file" | "paste";
 
 const fieldClass =
-  "w-full rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset px-3 py-2 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none disabled:opacity-60";
+  "w-full rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-2 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-strong focus:outline-none disabled:opacity-60";
 
 const fileInputClass =
   "mt-2 block w-full text-[length:var(--text-small)] text-fp-text-dim file:mr-3 file:rounded-[var(--radius-sm)] file:border-0 file:bg-fp-accent file:px-3 file:py-[7px] file:font-fp-mono file:text-[length:var(--text-micro)] file:font-medium file:uppercase file:tracking-[0.14em] file:text-fp-text-on-accent";

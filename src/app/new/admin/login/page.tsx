@@ -8,7 +8,7 @@ import { FPLabel } from "@/components/fp-ui/label";
 import { FPButton } from "@/components/fp-ui/button";
 
 const fieldClass =
-  "w-full rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset px-3 py-2 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none disabled:opacity-60";
+  "w-full rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-2 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-strong focus:outline-none disabled:opacity-60";
 
 export default function NewAdminLoginPage() {
   const router = useRouter();

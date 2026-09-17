@@ -93,7 +93,7 @@ export function SavedWeekCard({
         <button
           type="button"
           onClick={onToggleFavorite}
-          className="fp-label mr-2 text-[length:var(--text-micro)]"
+          className="fp-text mr-2 text-[length:var(--text-micro)]"
           style={{ color: saved.favorite ? "var(--accent)" : "var(--text-dim)" }}
         >
           {saved.favorite ? "First choice" : "Backup"}
@@ -118,7 +118,7 @@ export function SavedWeekCard({
                 setEditing(false);
               }
             }}
-            className="mt-1 block w-full border-b border-fp-border-accent bg-transparent font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong outline-none"
+            className="mt-1 block w-full border-b border-fp-border-strong bg-transparent font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong outline-none"
           />
         ) : (
           <button
@@ -143,7 +143,7 @@ export function SavedWeekCard({
           {schedule.selections.map((selection) => {
             const course = courses.find((c) => c.id === selection.courseId);
             return (
-              <span key={selection.courseId} className="fp-label inline-flex items-center gap-1.5 text-[length:var(--text-micro)] text-fp-text-dim">
+              <span key={selection.courseId} className="fp-text inline-flex items-center gap-1.5 text-[length:var(--text-micro)] text-fp-text-dim">
                 <span
                   className="h-1.5 w-1.5 shrink-0 rounded-full"
                   style={{ backgroundColor: course?.color ?? "var(--text-dim)" }}
@@ -189,7 +189,7 @@ export function SavedWeekCard({
         <button
           type="button"
           onClick={onDelete}
-          className="fp-label text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-danger"
+          className="fp-text text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-danger"
         >
           Delete
         </button>

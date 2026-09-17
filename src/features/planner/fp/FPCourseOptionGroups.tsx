@@ -131,10 +131,10 @@ export function FPTimeOfDayToggle({
             type="button"
             onClick={() => onChange(option.id)}
             className={cn(
-              "fp-label rounded-[var(--radius-sm)] border px-2.5 py-1 text-[length:var(--text-micro)] transition-colors",
-              active ? "border-fp-border-accent text-fp-accent" : "border-fp-border-default text-fp-text-dim hover:text-fp-text-body"
+              "fp-text rounded-[var(--radius-sm)] border px-2.5 py-1 text-[length:var(--text-micro)] transition-colors",
+              active ? "border-[var(--border-selected)] text-fp-text-strong" : "border-fp-border-default text-fp-text-dim hover:text-fp-text-body"
             )}
-            style={active ? { backgroundColor: "var(--accent-wash)" } : undefined}
+            style={active ? { backgroundColor: "var(--surface-selected)" } : undefined}
           >
             {option.label}
           </button>

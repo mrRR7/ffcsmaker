@@ -231,7 +231,7 @@ export function FPSearchTab() {
         <select
           value={semesterId}
           onChange={(event) => setSemesterId(event.target.value)}
-          className="fp-label rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset px-3 py-[11px] text-[length:var(--text-micro)] text-fp-text-dim focus:border-fp-border-accent focus:outline-none sm:max-w-[220px]"
+          className="fp-text rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-[11px] text-[length:var(--text-micro)] text-fp-text-dim focus:border-fp-border-strong focus:outline-none sm:max-w-[220px]"
         >
           {semesters.length === 0 ? (
             <option value="">No semester</option>
@@ -365,7 +365,7 @@ export function FPSearchTab() {
             <button
               type="button"
               onClick={() => setShowAllResults(true)}
-              className="fp-label w-full rounded-[var(--radius-md)] border border-dashed border-fp-border-strong px-4 py-3 text-center text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
+              className="fp-text w-full rounded-[var(--radius-md)] border border-dashed border-fp-border-strong px-4 py-3 text-center text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
             >
               {courses.length - SEARCH_RESULTS_CAP} more result{courses.length - SEARCH_RESULTS_CAP === 1 ? "" : "s"}
             </button>

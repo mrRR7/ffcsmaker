@@ -32,8 +32,8 @@ export function FPComboCard({
     <FPCard selected={selected} padding="md" className={cn("flex flex-col gap-2", className)} {...props}>
       {thumbnail}
       <div className="flex items-baseline gap-2.5">
-        <FPLabel tone={selected ? "accent" : "dim"}>{eyebrow}</FPLabel>
-        <span className={cn("ml-auto font-fp-mono text-[length:var(--text-h)]", selected ? "text-fp-accent" : "text-fp-text-strong")}>
+        <FPLabel tone={selected ? "strong" : "dim"}>{eyebrow}</FPLabel>
+        <span className="ml-auto font-fp-mono text-[length:var(--text-h)] text-fp-text-strong">
           {score}
         </span>
       </div>

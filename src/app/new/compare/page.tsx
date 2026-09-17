@@ -103,7 +103,7 @@ export default function NewComparePage() {
               onChange={(event) => {
                 if (event.target.value) addCompareSchedule(event.target.value);
               }}
-              className="fp-label h-full rounded-[var(--radius-md)] border border-fp-border-strong bg-transparent px-3 py-[7px] text-[length:var(--text-micro)] text-fp-text-body hover:border-fp-accent"
+              className="fp-text h-full rounded-[var(--radius-md)] border border-fp-border-strong bg-transparent px-3 py-[7px] text-[length:var(--text-micro)] text-fp-text-body hover:border-fp-accent"
             >
               <option value="">Add a week</option>
               {allSchedules.map((schedule, index) => (

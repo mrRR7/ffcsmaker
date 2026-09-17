@@ -177,7 +177,7 @@ export default function NewSavedPage() {
               onClick={createShareLink}
               disabled={isSharing}
               aria-busy={isSharing}
-              className="fp-label ml-auto inline-flex shrink-0 items-center gap-1 text-[length:var(--text-micro)] text-fp-accent hover:text-fp-accent-bright disabled:cursor-not-allowed disabled:text-fp-text-dim"
+              className="fp-text ml-auto inline-flex shrink-0 items-center gap-1 text-[length:var(--text-micro)] text-fp-accent hover:text-fp-accent-bright disabled:cursor-not-allowed disabled:text-fp-text-dim"
             >
               Create share link
               {isSharing ? (

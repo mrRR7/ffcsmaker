@@ -82,7 +82,7 @@ export function FPPasteTab() {
         onChange={(event) => setRawText(event.target.value)}
         placeholder={PLACEHOLDER}
         rows={8}
-        className="w-full rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-inset px-[14px] py-[11px] font-fp-mono text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
+        className="w-full rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-[14px] py-[11px] font-fp-mono text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-strong focus:outline-none"
       />
 
       <div className="flex flex-wrap items-center gap-3">

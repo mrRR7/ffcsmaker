@@ -134,7 +134,7 @@ export function ZeroResultsFP() {
 
         {findings.length > 0 ? (
           <div className="overflow-hidden rounded-[var(--radius-md)] border border-fp-border-default">
-            <div className="fp-label grid grid-cols-[1fr_1fr_auto] gap-4 border-b border-fp-border-default bg-fp-bg-inset px-4 py-[11px] text-[length:var(--text-micro)] text-fp-text-dim">
+            <div className="fp-text grid grid-cols-[1fr_1fr_auto] gap-4 border-b border-fp-border-default bg-fp-bg-inset px-4 py-[11px] text-[length:var(--text-micro)] text-fp-text-dim">
               <span>Rule</span>
               <span>What it costs you</span>
               <span className="text-right">Action</span>
@@ -159,8 +159,8 @@ export function ZeroResultsFP() {
                     onClick={isConstraint ? relaxAndRegenerate : () => router.push("/new/planner")}
                     disabled={isConstraint && isGenerating}
                     className={
-                      "fp-label text-right text-[length:var(--text-micro)] " +
-                      (isWorst ? "text-fp-warn" : index > 2 ? "text-fp-text-dim" : "text-fp-accent")
+                      "fp-text text-right text-[length:var(--text-micro)] " +
+                      (isWorst ? "text-fp-warn" : index > 2 ? "text-fp-text-dim" : "text-fp-text-dim hover:text-fp-accent")
                     }
                   >
                     {isConstraint ? "Drop" : "Edit"}
@@ -173,7 +173,7 @@ export function ZeroResultsFP() {
       </div>
 
       <aside className="h-fit rounded-[var(--radius-lg)] border border-fp-border-default bg-fp-bg-surface">
-        <div className="fp-label border-b border-fp-border-default px-4 py-[14px] text-[length:var(--text-micro)] text-fp-text-dim">
+        <div className="fp-text border-b border-fp-border-default px-4 py-[14px] text-[length:var(--text-micro)] text-fp-text-dim">
           Courses under strain
         </div>
         <div className="divide-y divide-fp-border-default">

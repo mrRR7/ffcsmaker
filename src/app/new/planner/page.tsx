@@ -77,7 +77,7 @@ export default function NewPlannerPage() {
               localStorage.setItem("dismissed_preliminary_notice", "true");
               setShowNotice(false);
             }}
-            className="fp-label -m-2 ml-auto flex shrink-0 items-center gap-1 p-2 text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
+            className="fp-text -m-2 ml-auto flex shrink-0 items-center gap-1 p-2 text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
           >
             Got it
             <X className="h-3 w-3" strokeWidth={1.5} />
@@ -126,7 +126,7 @@ export default function NewPlannerPage() {
                     value={rankingMode}
                     onChange={(event) => setRankingMode(event.target.value as RankingMode)}
                     aria-label="Ranking profile"
-                    className="fp-label rounded-[var(--radius-md)] border border-fp-border-strong bg-transparent px-2.5 py-[7px] text-[length:var(--text-micro)] text-fp-text-body outline-none hover:border-fp-accent"
+                    className="fp-text rounded-[var(--radius-md)] border border-fp-border-strong bg-transparent px-2.5 py-[7px] text-[length:var(--text-micro)] text-fp-text-body outline-none hover:border-fp-accent"
                   >
                     {rankingProfiles.map((profile) => (
                       <option key={profile} value={profile}>
@@ -134,7 +134,7 @@ export default function NewPlannerPage() {
                       </option>
                     ))}
                   </select>
-                  <label className="fp-label inline-flex cursor-pointer items-center gap-1.5 text-[length:var(--text-micro)] text-fp-text-dim">
+                  <label className="fp-text inline-flex cursor-pointer items-center gap-1.5 text-[length:var(--text-micro)] text-fp-text-dim">
                     <FPCheckbox checked={usePriorityRanking} onCheckedChange={setUsePriorityRanking} />
                     My list order
                   </label>

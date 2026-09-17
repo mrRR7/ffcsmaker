@@ -72,10 +72,10 @@ export default function NewLandingPage() {
                   !card.active
                     ? "cursor-not-allowed border-fp-border-default bg-fp-bg-inset"
                     : isCurrent
-                      ? "border-fp-border-accent active:scale-[0.98]"
+                      ? "border-[var(--border-selected)] active:scale-[0.98]"
                       : "border-fp-border-default bg-fp-bg-surface hover:border-fp-border-accent active:scale-[0.98]"
                 )}
-                style={card.active && isCurrent ? { backgroundColor: "var(--accent-wash)" } : undefined}
+                style={card.active && isCurrent ? { backgroundColor: "var(--surface-selected)" } : undefined}
               >
                 <div
                   className={cn(
@@ -101,7 +101,7 @@ export default function NewLandingPage() {
         </motion.div>
 
         <p className="mt-7 text-[length:var(--text-small)] text-fp-text-dim">
-          Never done FFCS before? <span className="cursor-pointer text-fp-text-accent underline underline-offset-[3px]">40-second explainer</span>
+          Never done FFCS before? <span className="cursor-pointer text-fp-text-body underline underline-offset-[3px] hover:text-fp-accent">40-second explainer</span>
         </p>
       </section>
 

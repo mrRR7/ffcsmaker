@@ -142,7 +142,7 @@ export function FPWeekSoFarPreview({
 
           <div className="mt-3.5 flex flex-wrap items-center gap-3.5">
             {courses.map((course) => (
-              <span key={course.id} className="fp-label flex items-center gap-1.5 text-[length:var(--text-micro)] text-fp-text-dim">
+              <span key={course.id} className="fp-text flex items-center gap-1.5 text-[length:var(--text-micro)] text-fp-text-dim">
                 <span className="h-2.5 w-2.5 shrink-0 rounded-[2px]" style={{ background: course.color ?? "var(--accent)" }} />
                 {course.courseCode}
               </span>

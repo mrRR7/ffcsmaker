@@ -181,7 +181,7 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
                 <button
                   type="button"
                   onClick={() => setShowAllCourses(true)}
-                  className="fp-label w-full rounded-[var(--radius-md)] border border-dashed border-fp-border-strong px-4 py-3 text-center text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
+                  className="fp-text w-full rounded-[var(--radius-md)] border border-dashed border-fp-border-strong px-4 py-3 text-center text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
                 >
                   {courses.length - COURSE_LIST_CAP} more course{courses.length - COURSE_LIST_CAP === 1 ? "" : "s"}
                 </button>
@@ -446,7 +446,7 @@ function CourseCard({
             <button
               type="button"
               onClick={() => setShowAddOptionForm(true)}
-              className="fp-label flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border border-dashed border-fp-border-accent p-3 text-[length:var(--text-micro)] text-fp-accent transition-colors hover:bg-fp-accent hover:text-fp-text-on-accent"
+              className="fp-text flex w-full items-center justify-center gap-2 rounded-[var(--radius-md)] border border-dashed border-fp-border-accent p-3 text-[length:var(--text-micro)] text-fp-accent transition-colors hover:bg-fp-accent hover:text-fp-text-on-accent"
               style={{ backgroundColor: "var(--accent-wash)" }}
             >
               <UserRoundPlus className="h-3.5 w-3.5" />
@@ -462,7 +462,7 @@ function CourseCard({
               <button
                 type="button"
                 onClick={() => setShowAddOptionForm(false)}
-                className="fp-label text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
+                className="fp-text text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
               >
                 Cancel
               </button>
@@ -471,7 +471,7 @@ function CourseCard({
               value={draft.professorName}
               placeholder="Professor name"
               onChange={(event) => setDraft((current) => ({ ...current, professorName: event.target.value }))}
-              className="w-full rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
+              className="w-full rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-strong focus:outline-none"
             />
             <div className="mt-3 grid gap-3 xl:grid-cols-2">
               <TheoryPicker
@@ -496,7 +496,7 @@ function CourseCard({
               placeholder="Notes (optional)"
               rows={2}
               onChange={(event) => setDraft((current) => ({ ...current, notes: event.target.value }))}
-              className="mt-3 w-full rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
+              className="mt-3 w-full rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-strong focus:outline-none"
             />
             <FPButton variant="primary" size="sm" className="mt-3" onClick={submitOption}>
               <Plus className="h-3.5 w-3.5" />
@@ -620,7 +620,7 @@ function SortableOptionRow({
             <input
               value={option.professorName}
               onChange={(e) => onUpdate({ professorName: e.target.value })}
-              className="w-full rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-surface px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-fp-border-accent focus:outline-none"
+              className="w-full rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-surface px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-fp-border-strong focus:outline-none"
             />
           </div>
           <TheoryPicker
@@ -640,7 +640,7 @@ function SortableOptionRow({
               onChange={(e) => onUpdate({ notes: e.target.value })}
               placeholder="Notes (optional)"
               rows={2}
-              className="w-full rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-surface px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
+              className="w-full rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-surface px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-strong focus:outline-none"
             />
           ) : null}
         </div>
@@ -678,7 +678,7 @@ function TheoryPicker({
                 type="button"
                 onClick={() => onSelect(option.slotIds)}
                 className={cn(
-                  "fp-label rounded-[var(--radius-sm)] border px-2.5 py-1.5 text-[length:var(--text-micro)] transition-colors",
+                  "fp-text rounded-[var(--radius-sm)] border px-2.5 py-1.5 text-[length:var(--text-micro)] transition-colors",
                   active ? "border-fp-border-accent text-fp-accent" : "border-fp-border-default text-fp-text-dim hover:text-fp-text-body"
                 )}
                 style={active ? { backgroundColor: "var(--accent-wash)" } : undefined}
@@ -720,7 +720,7 @@ function LabPicker({
                 type="button"
                 onClick={() => onToggle(option.slotIds)}
                 className={cn(
-                  "fp-label rounded-[var(--radius-sm)] border px-2.5 py-1.5 text-[length:var(--text-micro)] transition-colors",
+                  "fp-text rounded-[var(--radius-sm)] border px-2.5 py-1.5 text-[length:var(--text-micro)] transition-colors",
                   active ? "border-fp-border-accent text-fp-accent" : "border-fp-border-default text-fp-text-dim hover:text-fp-text-body"
                 )}
                 style={active ? { backgroundColor: "var(--accent-wash)" } : undefined}

@@ -11,7 +11,7 @@ export interface FPMetricRunProps extends React.HTMLAttributes<HTMLSpanElement> 
 
 export function FPMetricRun({ items, className, ...props }: FPMetricRunProps) {
   return (
-    <span className={cn("fp-label inline-flex flex-wrap items-center gap-1 text-[length:var(--text-micro)] text-fp-text-dim", className)} {...props}>
+    <span className={cn("fp-text inline-flex flex-wrap items-center gap-1 text-[length:var(--text-micro)] text-fp-text-dim", className)} {...props}>
       {items.map((item, index) => (
         <React.Fragment key={index}>
           {index > 0 ? <span aria-hidden="true">·</span> : null}

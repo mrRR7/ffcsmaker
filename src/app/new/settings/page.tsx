@@ -322,13 +322,13 @@ function ThemeOption({
       className={cn(
         "rounded-[var(--radius-md)] border px-4 py-3 text-left transition-colors",
         active
-          ? "border-fp-border-accent text-fp-accent"
+          ? "border-[var(--border-selected)] text-fp-text-strong"
           : "border-fp-border-default text-fp-text-dim hover:border-fp-border-strong hover:text-fp-text-body"
       )}
-      style={active ? { backgroundColor: "var(--accent-wash)" } : undefined}
+      style={active ? { backgroundColor: "var(--surface-selected)" } : undefined}
     >
       <span className="mb-2 block">{icon}</span>
-      <span className="fp-label text-[length:var(--text-micro)]">{label}</span>
+      <span className="fp-text text-[length:var(--text-micro)]">{label}</span>
     </button>
   );
 }
@@ -347,12 +347,12 @@ function RankingOption({
       type="button"
       onClick={onClick}
       className={cn(
-        "fp-label rounded-[var(--radius-sm)] border px-3 py-[7px] text-[length:var(--text-micro)] transition-colors",
+        "fp-text rounded-[var(--radius-sm)] border px-3 py-[7px] text-[length:var(--text-micro)] transition-colors",
         active
-          ? "border-fp-border-accent text-fp-accent"
+          ? "border-[var(--border-selected)] text-fp-text-strong"
           : "border-fp-border-default text-fp-text-dim hover:border-fp-border-strong hover:text-fp-text-body"
       )}
-      style={active ? { backgroundColor: "var(--accent-wash)" } : undefined}
+      style={active ? { backgroundColor: "var(--surface-selected)" } : undefined}
     >
       {label}
     </button>

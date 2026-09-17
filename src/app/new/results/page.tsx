@@ -423,7 +423,7 @@ function ResultsContent() {
         <div className="border-b border-fp-border-default px-6 py-3">
           <FPNote tone="warn" className="flex flex-wrap items-center justify-between gap-3">
             <span>These results are over 24 hours old. Regenerate for the latest schedule.</span>
-            <Link href="/new/planner" className="fp-label text-[length:var(--text-micro)] text-fp-warn underline">
+            <Link href="/new/planner" className="fp-text text-[length:var(--text-micro)] text-fp-warn underline">
               Redo
             </Link>
           </FPNote>
@@ -481,14 +481,9 @@ function ResultsContent() {
                           {label}
                         </FPBadge>
                       ) : (
-                        <FPLabel tone={selected ? "accent" : "dim"}>{label}</FPLabel>
+                        <FPLabel tone={selected ? "strong" : "dim"}>{label}</FPLabel>
                       )}
-                      <span
-                        className={
-                          "ml-auto font-fp-mono text-[length:var(--text-body-size)] " +
-                          (selected ? "text-fp-accent" : "text-fp-text-strong")
-                        }
-                      >
+                      <span className="ml-auto font-fp-mono text-[length:var(--text-body-size)] text-fp-text-strong">
                         {Math.round(group.representative.score)}
                       </span>
                     </div>
@@ -501,7 +496,7 @@ function ResultsContent() {
               <button
                 type="button"
                 onClick={() => setShowAllShapes(true)}
-                className="fp-label rounded-[var(--radius-md)] border border-dashed border-fp-border-strong px-4 py-4 text-center text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
+                className="fp-text rounded-[var(--radius-md)] border border-dashed border-fp-border-strong px-4 py-4 text-center text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
               >
                 {hiddenGroupCount} more
               </button>
@@ -509,12 +504,12 @@ function ResultsContent() {
           </motion.div>
 
           <div className="mt-5 flex flex-col items-start gap-2.5 border-t border-fp-border-default pt-4">
-            <label className="fp-label flex items-center gap-1 text-[length:var(--text-micro)] text-fp-text-dim">
+            <label className="fp-text flex items-center gap-1 text-[length:var(--text-micro)] text-fp-text-dim">
               Sort
               <select
                 value={sortMode}
                 onChange={(event) => setSortMode(event.target.value as SortMode)}
-                className="fp-label border-none bg-transparent text-[length:var(--text-micro)] text-fp-text-body outline-none"
+                className="fp-text border-none bg-transparent text-[length:var(--text-micro)] text-fp-text-body outline-none"
               >
                 <option value="score">Best first</option>
                 <option value="lowGaps">Fewest gaps</option>
@@ -523,7 +518,7 @@ function ResultsContent() {
             </label>
             <button
               type="button"
-              className="fp-label inline-flex items-center gap-1 whitespace-nowrap text-[length:var(--text-micro)] text-fp-accent"
+              className="fp-text inline-flex items-center gap-1 whitespace-nowrap text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-accent"
               onClick={() => {
                 if (activeSchedule) addCompareSchedule(activeSchedule.id);
                 router.push("/new/compare");
@@ -798,7 +793,7 @@ function ResultsContent() {
                               <button
                                 type="button"
                                 onClick={() => swapProfessorFor(row.courseId, selection.optionId)}
-                                className="fp-label inline-flex items-center gap-1 text-[length:var(--text-micro)] text-fp-accent"
+                                className="fp-text inline-flex items-center gap-1 text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-accent"
                               >
                                 Swap
                                 <ChevronDown className="h-3 w-3" strokeWidth={1.5} />
@@ -817,7 +812,7 @@ function ResultsContent() {
                           <button
                             type="button"
                             onClick={() => copySlotList(activeSchedule)}
-                            className="fp-label text-[length:var(--text-micro)] text-fp-accent"
+                            className="fp-text text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-accent"
                           >
                             Copy slot list
                           </button>
@@ -884,7 +879,7 @@ function ResultsContent() {
                           <button
                             type="button"
                             onClick={() => copySlotList(activeSchedule)}
-                            className="fp-label text-[length:var(--text-micro)] text-fp-accent"
+                            className="fp-text text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-accent"
                           >
                             Copy slot list
                           </button>
