@@ -126,7 +126,7 @@ export function FPLiveSlotMatrix({
             ⚠
           </span>
           <span
-            className="fp-code text-[9px] font-bold leading-tight text-fp-text-strong"
+            className="fp-text text-[9px] font-bold leading-tight text-fp-text-strong"
             style={{ textShadow: "0 0 3px rgba(0,0,0,0.5)" }}
           >
             {slotPicks.length} courses
