@@ -10,13 +10,12 @@ import { cn } from "@/utils/cn";
  * sm/md sizes, hover = raise a value step or brighten accent, never opacity.
  */
 const fpButtonVariants = cva(
-  "fp-label inline-flex items-center gap-2 rounded-[var(--radius-md)] border border-transparent leading-none transition-[background-color,border-color,color,transform,outline-offset] duration-[var(--dur-fast)] ease-[var(--ease-standard)] active:scale-[0.98] disabled:cursor-not-allowed disabled:border-fp-border-default disabled:bg-fp-bg-inset disabled:text-fp-text-dim disabled:active:scale-100",
+  "fp-text inline-flex items-center gap-2 rounded-[var(--radius-md)] border border-transparent leading-none transition-[background-color,border-color,color,transform,outline-offset] duration-[var(--dur-fast)] ease-[var(--ease-standard)] active:scale-[0.98] disabled:cursor-not-allowed disabled:border-fp-border-default disabled:bg-fp-bg-inset disabled:text-fp-text-dim disabled:active:scale-100",
   {
     variants: {
       variant: {
         primary: "bg-fp-accent text-fp-text-on-accent font-medium hover:bg-fp-accent-bright",
-        secondary:
-          "bg-transparent text-fp-text-body border-fp-border-strong hover:bg-fp-bg-raised hover:border-fp-accent",
+        secondary: "bg-fp-bg-raised text-fp-text-body hover:bg-fp-bg-inset",
         ghost: "bg-transparent text-fp-text-dim hover:text-fp-text-body"
       },
       size: {
