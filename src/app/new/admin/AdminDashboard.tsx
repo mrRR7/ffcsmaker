@@ -41,7 +41,7 @@ const previewColumns: FPSlotTableColumn<ParsedImportRow>[] = [
     header: "Status",
     render: (row) =>
       row.isValid ? (
-        <FPBadge tone="accent">Ready</FPBadge>
+        <FPBadge tone="neutral">Ready</FPBadge>
       ) : (
         <FPBadge tone="danger">{row.errors.join("; ")}</FPBadge>
       )

@@ -33,7 +33,7 @@ export function FPBadge({ className, tone = "neutral", pill = false, mono = fals
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 px-[10px] py-[5px] text-[var(--text-micro)]",
+        "inline-flex items-center gap-1 px-[10px] py-[5px] text-[length:var(--text-micro)]",
         mono ? "fp-code" : "fp-text",
         pill ? "rounded-[var(--radius-pill)]" : "rounded-[var(--radius-sm)]",
         toneMap[tone],
