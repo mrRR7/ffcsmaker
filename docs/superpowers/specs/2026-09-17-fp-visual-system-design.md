@@ -13,6 +13,8 @@ This spec covers **only the visual system** (item 1). Structural/content changes
 
 The result should keep the dark/premium direction and the single green accent — the fix is disciplined **restraint**, not a different aesthetic.
 
+**Invariant**: no new color, spacing, radius, shadow, or typography token may be introduced during this pass unless an existing token cannot express the requirement. The two additions in this spec (`--surface-selected`, `--border-selected`) are the only tokens this pass expects to add — everything else routes through what already exists in `fp-tokens.css`. The point of this pass is to reduce visual improvisation, not add a new axis of it.
+
 ## Goals
 
 - Typography carries real hierarchy (size/weight/case) instead of one mono-uppercase-tracked treatment applied almost everywhere.
@@ -68,7 +70,7 @@ Add two genuinely neutral tokens to `fp-tokens.css` (dark and light theme blocks
 
 ```css
 --surface-selected: /* neutral, lighter than --bg-raised — the top of the surface ladder, reserved for "currently selected" */;
---border-selected: var(--border-strong); /* reuse the existing neutral border — no new hex needed */
+--border-selected: /* its own literal value, initially equal to --border-strong's — a genuinely distinct token, not an alias, so selection can be tuned independently of the general "strong border" role later */;
 ```
 
 Keep the existing `--bg-page → --bg-surface → --bg-raised` scale and `--text-strong` (primary) / `--text-body` (secondary) / `--text-dim` (muted) — these already express the right hierarchy, they're just under-used relative to how much green currently does the same job.
@@ -124,6 +126,7 @@ Default posture flips from "border by default" to "border only when it answers a
 ## Verification
 
 - `npx tsc --noEmit` clean.
+- Grep the codebase for `fp-label` (class usage, not the `FPLabel` component name) — the only remaining match should be inside `label.tsx` itself, on the compatibility path backing the explicit `variant="eyebrow"` opt-in. Any other match means the old treatment is still being sprinkled around rather than genuinely retired.
 - Live pass across Landing, Planner (Courses + Preferences), Results, Compare, Saved, Settings in both dark and light theme: confirm nav/step-nav/tab-active states read as neutral selection (not green), confirm buttons/inputs/cards/badges have no default border, confirm the resizable divider is invisible at rest and appears on hover/drag, confirm slot/course codes still render in monospace, confirm the primary CTA and checkbox-checked states are still green, confirm "Best overall"/"Recommended" badges are still green and semester/constraints badges are not.
 - Confirm the real timetable grid (`slot-matrix-timetable.tsx`) and preview grid (`schedule-grid.tsx`) are visually unchanged — this spec must not touch them.
 - Spot-check that no page reads as "boxed" — most surfaces should differentiate via background-color step and spacing alone.
