@@ -10,7 +10,7 @@ import { FPSearchTab } from "@/features/planner/fp/FPSearchTab";
 import { FPPasteTab } from "@/features/planner/fp/FPPasteTab";
 import { FPImportTab } from "@/features/planner/fp/FPImportTab";
 import { FPCourseList } from "@/features/planner/fp/FPCourseList";
-import { FPWeekSoFarPreview } from "@/features/planner/fp/FPWeekSoFarPreview";
+import { FPLiveSlotMatrix } from "@/features/planner/fp/FPLiveSlotMatrix";
 
 const DEFAULT_RAIL_WIDTH = 520;
 const MIN_RAIL_WIDTH = 380;
@@ -145,7 +145,7 @@ export function FPCoursesPane({ actions }: { actions?: ReactNode } = {}) {
       </div>
 
       <aside className="min-w-0 border-t border-fp-border-default bg-fp-bg-surface px-6 py-6 lg:border-t-0">
-        <FPWeekSoFarPreview courses={courses} slots={slots} actions={actions} />
+        <FPLiveSlotMatrix courses={courses} slots={slots} actions={actions} />
         <div className="mt-6 border-t border-fp-border-default pt-6">
           <FPCourseList showAddForm={false} showList />
         </div>
