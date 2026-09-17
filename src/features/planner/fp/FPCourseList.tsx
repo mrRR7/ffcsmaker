@@ -128,13 +128,13 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
               value={courseCode}
               onChange={(event) => setCourseCode(event.target.value)}
               placeholder="Course code"
-              className="rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-inset px-3 py-2 font-fp-mono text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
+              className="rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-2 font-fp-mono text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-strong focus:outline-none"
             />
             <input
               value={courseName}
               onChange={(event) => setCourseName(event.target.value)}
               placeholder="Course name"
-              className="rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-inset px-3 py-2 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
+              className="rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-2 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-strong focus:outline-none"
             />
             <input
               type="number"
@@ -143,7 +143,7 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
               value={credits}
               onChange={(event) => setCredits(event.target.value)}
               placeholder="Credits"
-              className="rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-inset px-3 py-2 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-accent focus:outline-none"
+              className="rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-2 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-fp-border-strong focus:outline-none"
             />
             <FPButton variant="primary" size="md" onClick={submitCourse}>
               <Plus className="h-4 w-4" />
@@ -163,7 +163,7 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
           </div>
 
           {courses.length === 0 ? (
-            <div className="rounded-[var(--radius-lg)] border border-dashed border-fp-border-default bg-fp-bg-inset p-8 text-center text-[length:var(--text-small)] text-fp-text-dim">
+            <div className="p-8 text-center text-[length:var(--text-small)] text-fp-text-dim">
               No courses added yet.
             </div>
           ) : (
@@ -359,12 +359,12 @@ function CourseCard({
               <input
                 value={course.courseCode}
                 onChange={(event) => updateCourse(course.id, { courseCode: event.target.value.toUpperCase() })}
-                className="rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset px-2.5 py-1.5 font-fp-mono text-[length:var(--text-small)] text-fp-text-body focus:border-fp-border-accent focus:outline-none"
+                className="rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 font-fp-mono text-[length:var(--text-small)] text-fp-text-body focus:border-fp-border-strong focus:outline-none"
               />
               <input
                 value={course.courseName}
                 onChange={(event) => updateCourse(course.id, { courseName: event.target.value })}
-                className="rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-fp-border-accent focus:outline-none"
+                className="rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-fp-border-strong focus:outline-none"
               />
               <input
                 type="number"
@@ -372,7 +372,7 @@ function CourseCard({
                 max={8}
                 value={course.credits}
                 onChange={(event) => updateCourse(course.id, { credits: Number(event.target.value) })}
-                className="rounded-[var(--radius-sm)] border border-fp-border-default bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-fp-border-accent focus:outline-none"
+                className="rounded-[var(--radius-sm)] border border-transparent bg-fp-bg-inset px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-body focus:border-fp-border-strong focus:outline-none"
               />
               <input
                 aria-label="Course color"

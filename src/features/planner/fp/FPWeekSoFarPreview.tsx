@@ -108,7 +108,7 @@ export function FPWeekSoFarPreview({
             ))}
           </FPScheduleGrid>
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <p className="rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-surface px-4 py-2.5 text-center text-[length:var(--text-small)] text-fp-text-dim">
+            <p className="rounded-[var(--radius-md)] bg-fp-bg-surface px-4 py-2.5 text-center text-[length:var(--text-small)] text-fp-text-dim">
               Add a course to see a live preview here.
             </p>
           </div>

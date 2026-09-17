@@ -219,7 +219,7 @@ export function FPSearchTab() {
   return (
     <div className="space-y-4 p-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="flex flex-1 items-center gap-2.5 rounded-[var(--radius-md)] border border-fp-border-strong bg-fp-bg-inset px-[14px] py-[11px]">
+        <div className="flex flex-1 items-center gap-2.5 rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-[14px] py-[11px] focus-within:border-fp-border-strong">
           <span className="font-fp-mono text-fp-text-dim">/</span>
           <input
             value={query}
@@ -262,7 +262,7 @@ export function FPSearchTab() {
       {catalogError ? <FPNote tone="warn">{catalogError}</FPNote> : null}
 
       {query.trim().length < 2 ? (
-        <div className="rounded-[var(--radius-lg)] border border-dashed border-fp-border-default bg-fp-bg-inset p-8 text-center text-[length:var(--text-small)] text-fp-text-dim">
+        <div className="p-8 text-center text-[length:var(--text-small)] text-fp-text-dim">
           Type at least 2 characters to search.
         </div>
       ) : isLoading ? (
@@ -272,7 +272,7 @@ export function FPSearchTab() {
           ))}
         </div>
       ) : courses.length === 0 ? (
-        <div className="rounded-[var(--radius-lg)] border border-dashed border-fp-border-default bg-fp-bg-inset p-8 text-center text-[length:var(--text-small)] text-fp-text-dim">
+        <div className="p-8 text-center text-[length:var(--text-small)] text-fp-text-dim">
           No courses found for &quot;{query}&quot;. Try paste text, file import, or manual entry.
         </div>
       ) : (
