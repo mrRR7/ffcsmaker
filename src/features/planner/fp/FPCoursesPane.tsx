@@ -12,9 +12,9 @@ import { FPImportTab } from "@/features/planner/fp/FPImportTab";
 import { FPCourseList } from "@/features/planner/fp/FPCourseList";
 import { FPLiveSlotMatrix } from "@/features/planner/fp/FPLiveSlotMatrix";
 
-const DEFAULT_RAIL_WIDTH = 520;
-const MIN_RAIL_WIDTH = 380;
-const MAX_RAIL_WIDTH = 760;
+const DEFAULT_RAIL_WIDTH = 400;
+const MIN_RAIL_WIDTH = 340;
+const MAX_RAIL_WIDTH = 480;
 const RAIL_WIDTH_STORAGE_KEY = "fp_planner_rail_width";
 
 function clampRailWidth(width: number) {
@@ -24,10 +24,11 @@ function clampRailWidth(width: number) {
 /**
  * FPCoursesPane — "01 Courses" tab of /new/planner.
  *
- * Two columns: a resizable course-adding rail on the left (search/paste/
- * import/manual tabs), and the "your week so far" live preview on the right
- * with the added-courses list underneath it — the whole right pane scrolls
- * normally with the page, nothing pinned.
+ * Two columns: a resizable rail on the left holding course-adding controls
+ * (search/paste/import/manual tabs) and the added-courses list stacked
+ * below them, and the live FFCS preview grid alone on the right, dominant
+ * and full-height — the whole pane scrolls normally with the page, nothing
+ * pinned.
  */
 export function FPCoursesPane({ actions }: { actions?: ReactNode } = {}) {
   const [tab, setTab] = useState<PlannerTabId>("search");
@@ -127,6 +128,10 @@ export function FPCoursesPane({ actions }: { actions?: ReactNode } = {}) {
           {tab === "import" ? <FPImportTab /> : null}
           {tab === "manual" ? <FPCourseList showAddForm showList={false} /> : null}
         </div>
+
+        <div className="mt-6 border-t border-fp-border-default pt-6">
+          <FPCourseList showAddForm={false} showList />
+        </div>
       </section>
 
       <div
@@ -146,9 +151,6 @@ export function FPCoursesPane({ actions }: { actions?: ReactNode } = {}) {
 
       <aside className="min-w-0 border-t border-fp-border-default bg-fp-bg-surface px-6 py-6 lg:border-t-0">
         <FPLiveSlotMatrix courses={courses} slots={slots} actions={actions} />
-        <div className="mt-6 border-t border-fp-border-default pt-6">
-          <FPCourseList showAddForm={false} showList />
-        </div>
       </aside>
     </div>
   );
