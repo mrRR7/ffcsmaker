@@ -114,11 +114,17 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     [cancelPoll, endTour, router]
   );
 
+  // Reuses goTo's route-push + poll (same as next()/back()) rather than a bare
+  // state-set: start() is now called from entry points that aren't guaranteed
+  // to already be on the first step's route (header "?" button, Settings
+  // "Replay tour" row), and a bare state-set left resync() racing the very
+  // next animation frame against a pathname that hadn't changed yet — it would
+  // find no step matching the current route and end the tour instantly. goTo
+  // already no-ops when the route matches (no redundant push), so this is a
+  // no-behavior-change for the existing home-page entry point.
   const start = React.useCallback(() => {
-    const index = findForward(0);
-    if (index === -1) return;
-    setState({ active: true, stepIndex: index });
-  }, []);
+    goTo(0, "forward");
+  }, [goTo]);
 
   const next = React.useCallback(() => {
     goTo(stateRef.current.stepIndex + 1, "forward");

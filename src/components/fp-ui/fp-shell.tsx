@@ -11,6 +11,7 @@ import {
   CalendarCheck,
   Check,
   ChevronDown,
+  CircleHelp,
   GalleryVerticalEnd,
   Home,
   Layers3,
@@ -21,6 +22,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/cn";
 import { useAppStore } from "@/store/useAppStore";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { useTour } from "@/features/tour/useTour";
 import { CAMPUS_LABELS, type Campus } from "@/engine/types";
 import { decodeSharedState } from "@/utils/share";
 import { FPButton } from "@/components/fp-ui/button";
@@ -71,6 +74,8 @@ export function FPShell({ children }: { children: React.ReactNode }) {
   const setCampus = useAppStore((state) => state.setCampus);
   const hasHydrated = useAppStore((state) => state.hasHydrated);
   const applySharedState = useAppStore((state) => state.applySharedState);
+  const tour = useTour();
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
   const bypassCampusGate =
     pathname === "/new" ||
@@ -226,6 +231,16 @@ export function FPShell({ children }: { children: React.ReactNode }) {
           <FPBadge tone="neutral" pill>
             Fall 2026
           </FPBadge>
+          {isMobile === false ? (
+            <FPButton
+              variant="secondary"
+              size="sm"
+              aria-label="Replay tour"
+              onClick={() => tour.start()}
+            >
+              <CircleHelp className="h-3.5 w-3.5" />
+            </FPButton>
+          ) : null}
           <FPButton
             variant="secondary"
             size="sm"

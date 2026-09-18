@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { useAppStore } from "@/store/useAppStore";
+import { useTour } from "@/features/tour/useTour";
 import { cn } from "@/utils/cn";
 import { PLANNER_TABS, PlannerTabId } from "@/features/planner/constants";
 import { FPCreditSummary } from "@/features/planner/fp/FPCreditSummary";
@@ -35,6 +36,7 @@ export function FPCoursesPane({ actions }: { actions?: ReactNode } = {}) {
   const courses = useAppStore((state) => state.courses);
   const slots = useAppStore((state) => state.slots);
   const campus = useAppStore((state) => state.campus);
+  const tour = useTour();
 
   const [railWidth, setRailWidth] = useState(DEFAULT_RAIL_WIDTH);
   const [isDragging, setIsDragging] = useState(false);
@@ -120,7 +122,9 @@ export function FPCoursesPane({ actions }: { actions?: ReactNode } = {}) {
           </div>
         </div>
 
-        <FPVtopRecommendation campus={campus} hasImportedData={courses.length > 0} />
+        {!tour.active ? (
+          <FPVtopRecommendation campus={campus} hasImportedData={courses.length > 0} />
+        ) : null}
 
         <div>
           {tab === "search" ? <FPSearchTab /> : null}

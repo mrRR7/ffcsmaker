@@ -9,6 +9,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { getRankingProfiles } from "@/engine/ranking";
 import { RankingMode } from "@/engine/types";
 import { usePlannerGeneration } from "@/features/planner/usePlannerGeneration";
+import { useTour } from "@/features/tour/useTour";
 import { prewarmCatalogCache } from "@/lib/catalogCache";
 import { FPStepNav } from "@/components/fp-ui/step-nav";
 import { FPButton } from "@/components/fp-ui/button";
@@ -23,6 +24,7 @@ type PlannerTab = "courses" | "preferences";
 export default function NewPlannerPage() {
   const [tab, setTab] = useState<PlannerTab>("courses");
   const [showNotice, setShowNotice] = useState(false);
+  const tour = useTour();
 
   useEffect(() => {
     const dismissed = localStorage.getItem("dismissed_preliminary_notice");
@@ -65,7 +67,7 @@ export default function NewPlannerPage() {
         ]}
       />
 
-      {showNotice ? (
+      {showNotice && !tour.active ? (
         <div className="flex items-center gap-4 border-b border-fp-border-default px-6 py-[11px]" style={{ backgroundColor: "var(--accent-wash)" }}>
           <FPLabel tone="accent">First time here</FPLabel>
           <span className="text-[length:var(--text-small)] text-fp-text-body">

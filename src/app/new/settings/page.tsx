@@ -9,6 +9,8 @@ import { RankingMode } from "@/engine/types";
 import { clearAllCache } from "@/lib/catalogCache";
 import { checkStorageCapacity, formatBytes } from "@/lib/storageUtils";
 import { useAppStore } from "@/store/useAppStore";
+import { useTour } from "@/features/tour/useTour";
+import { resetTourSeen } from "@/features/tour/tourStorage";
 import { cn } from "@/utils/cn";
 import { FPButton } from "@/components/fp-ui/button";
 import { FPCard } from "@/components/fp-ui/card";
@@ -33,6 +35,7 @@ export default function NewSettingsPage() {
   const resetCampus = useAppStore((state) => state.resetCampus);
   const setGeneratedSchedules = useAppStore((state) => state.setGeneratedSchedules);
   const resetAll = useAppStore((state) => state.resetAll);
+  const tour = useTour();
 
   useEffect(() => {
     setStorage(checkStorageCapacity());
@@ -59,6 +62,11 @@ export default function NewSettingsPage() {
     resetCampus();
     setConfirmCampusReset(false);
     toast.success("Choose your campus again.");
+  }
+
+  function replayTour() {
+    resetTourSeen();
+    tour.start();
   }
 
   function toggleBanner() {
@@ -118,6 +126,12 @@ export default function NewSettingsPage() {
               detail={bannerDismissed ? "Hidden on Planner page" : "Visible on Planner page"}
               action={bannerDismissed ? "Show" : "Hide"}
               onClick={toggleBanner}
+            />
+            <Row
+              label="Replay tour"
+              detail="Walk through the golden path again from the start"
+              action="Replay tour"
+              onClick={replayTour}
             />
             <div className="rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset p-4">
               <div className="flex items-center justify-between gap-4 text-[length:var(--text-small)]">

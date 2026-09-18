@@ -11,6 +11,7 @@ import { cn } from "@/utils/cn";
 import { FPLabel } from "@/components/fp-ui/label";
 import { useTour } from "@/features/tour/useTour";
 import { hasSeenTour } from "@/features/tour/tourStorage";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 const campusCards: Array<{ campus: Campus; active: boolean; detail: string }> = [
   { campus: "chennai", active: true, detail: "Mon–Fri slot catalog" },
@@ -41,8 +42,10 @@ export default function NewLandingPage() {
   const hasHydrated = useAppStore((state) => state.hasHydrated);
   const tour = useTour();
   const [tourPromptDismissed, setTourPromptDismissed] = useState(false);
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
-  const showTourPrompt = hasHydrated && !tour.active && !tourPromptDismissed && !hasSeenTour();
+  const showTourPrompt =
+    hasHydrated && isMobile === false && !tour.active && !tourPromptDismissed && !hasSeenTour();
 
   function pickCampus(next: Campus) {
     setCampus(next);
