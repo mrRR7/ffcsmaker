@@ -130,9 +130,20 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
   const resync = React.useCallback(() => {
     if (!stateRef.current.active) return;
+    // A goTo() poll is already resolving the current transition (route push +
+    // waiting up to 2s for the new target) — let it finish instead of racing
+    // it. Without this, resync() fires on the very next animation frame after
+    // next()/back() and sees the pre-navigation route/target, wrongly
+    // reverting stepIndex or ending the tour before the poll ever gets a
+    // chance.
+    if (pollCleanupRef.current) return;
+
     const current = TOUR_STEPS[stateRef.current.stepIndex];
     if (current && isTargetVisible(current.targetId)) return;
 
+    // Note: unlike findForward/findBackward, this search doesn't re-check
+    // `precondition` — it can in theory land on a step that should have been
+    // skipped. The brief's resync algorithm doesn't call for that check either.
     const found = TOUR_STEPS.find(
       (step) => step.route === pathnameRef.current && isTargetVisible(step.targetId)
     );

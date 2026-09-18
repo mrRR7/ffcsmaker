@@ -9,6 +9,18 @@ import { FPLabel } from "@/components/fp-ui/label";
 import { useTour } from "./useTour";
 import { TOUR_STEPS } from "./tourSteps";
 
+/** Every fp-* CSS variable/class is scoped under `.fp-root` (see fp-tokens.css) —
+ * portaling to `document.body` directly would escape that scope and render
+ * unstyled. `.fp-root` still sits high enough in the tree to clear any
+ * component-level `overflow: hidden`, which is the actual reason to portal. */
+function getTourPortalRoot(): Element {
+  const root = document.querySelector(".fp-root");
+  if (!root && process.env.NODE_ENV !== "production") {
+    console.warn("[tour] .fp-root not found — falling back to document.body (fp-* tokens won't resolve there)");
+  }
+  return root ?? document.body;
+}
+
 /**
  * Floating card anchored to the current step's target element. Positioning
  * uses `@floating-ui/react` directly against the live `[data-tour-id]` node
@@ -102,6 +114,6 @@ export function TourCard() {
         </div>
       </div>
     </div>,
-    document.body
+    getTourPortalRoot()
   );
 }

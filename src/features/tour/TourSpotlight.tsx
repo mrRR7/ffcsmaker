@@ -7,6 +7,18 @@ import { TOUR_STEPS } from "./tourSteps";
 
 const RING_PADDING = 4;
 
+/** Every fp-* CSS variable/class is scoped under `.fp-root` (see fp-tokens.css) —
+ * portaling to `document.body` directly would escape that scope and render
+ * unstyled. `.fp-root` still sits high enough in the tree to clear any
+ * component-level `overflow: hidden`, which is the actual reason to portal. */
+function getTourPortalRoot(): Element {
+  const root = document.querySelector(".fp-root");
+  if (!root && process.env.NODE_ENV !== "production") {
+    console.warn("[tour] .fp-root not found — falling back to document.body (fp-* tokens won't resolve there)");
+  }
+  return root ?? document.body;
+}
+
 /**
  * Portals a highlight ring over the current step's target element and, via the
  * same rAF loop that keeps its own position in sync on scroll/resize, drives
@@ -58,6 +70,6 @@ export function TourSpotlight() {
         }}
       />
     </>,
-    document.body
+    getTourPortalRoot()
   );
 }
