@@ -29,7 +29,8 @@ function getTourPortalRoot(): Element {
  * component.
  */
 export function TourCard() {
-  const { active, currentStep, stepIndex, totalSteps, back, next, skip } = useTour();
+  const { active, currentStep, stepIndex, visibleStepNumber, visibleStepCount, isLastStep, back, next, skip } =
+    useTour();
   const [targetEl, setTargetEl] = React.useState<Element | null>(null);
 
   const targetId = currentStep?.targetId;
@@ -62,8 +63,6 @@ export function TourCard() {
 
   if (!active || !currentStep || !targetEl || typeof document === "undefined") return null;
 
-  const isLast = stepIndex === totalSteps - 1;
-
   return createPortal(
     <div
       ref={refs.setFloating}
@@ -74,7 +73,7 @@ export function TourCard() {
       className="z-[110] w-[320px] rounded-[var(--radius-lg)] bg-fp-bg-surface p-4"
     >
       <FPLabel variant="eyebrow">
-        STEP {stepIndex + 1} OF {totalSteps}
+        STEP {visibleStepNumber} OF {visibleStepCount}
       </FPLabel>
 
       <h3 id="fp-tour-card-title" className="fp-text mt-2 text-[length:var(--text-body-size)] font-semibold text-fp-text-strong">
@@ -109,7 +108,7 @@ export function TourCard() {
             Back
           </FPButton>
           <FPButton variant="primary" size="sm" onClick={next}>
-            {isLast ? "Done" : "Next"}
+            {isLastStep ? "Done" : "Next"}
           </FPButton>
         </div>
       </div>

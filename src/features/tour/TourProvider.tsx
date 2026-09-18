@@ -16,6 +16,14 @@ interface TourState {
 interface TourContextValue extends TourState {
   currentStep: TourStep | undefined;
   totalSteps: number;
+  /** 1-based position of the current step among only steps whose
+   * precondition currently passes — for "STEP X OF Y" display. */
+  visibleStepNumber: number;
+  /** Count of currently-passing-precondition steps — the Y in "STEP X OF Y". */
+  visibleStepCount: number;
+  /** True when there's no further step with a passing precondition — i.e.
+   * this is the last one the user will actually see. */
+  isLastStep: boolean;
   start: () => void;
   next: () => void;
   back: () => void;
@@ -101,10 +109,23 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
       const intervalId = window.setInterval(() => {
         if (isTargetVisible(step.targetId)) {
           cancelPoll();
+          document
+            .querySelector(`[data-tour-id="${step.targetId}"]`)
+            ?.scrollIntoView({ block: "center", behavior: "smooth" });
           return;
         }
         if (Date.now() - startedAt >= POLL_CAP_MS) {
           cancelPoll();
+          // If the user has navigated away from the route this goTo pushed
+          // to, the timeout means "user left", not "target never mounted" —
+          // forcing them back with a push would violate the tour's
+          // never-push-the-user-back invariant. End quietly instead. Only
+          // treat this as a genuine mount failure (and advance) when they're
+          // still on the expected route.
+          if (pathnameRef.current !== step.route) {
+            endTour();
+            return;
+          }
           const nextIndex = direction === "forward" ? resolvedIndex + 1 : resolvedIndex - 1;
           goTo(nextIndex, direction);
         }
@@ -164,12 +185,35 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
   const currentStep = state.active ? TOUR_STEPS[state.stepIndex] : undefined;
 
+  // Progress against the *currently-passing-precondition* steps, not the raw
+  // index — recomputed fresh on every render (TOUR_STEPS has 9 entries, so
+  // looping is free) from live store state via isValid/findForward, the same
+  // helpers goTo uses. Deliberately NOT useMemo'd on state.stepIndex: a
+  // precondition can flip (e.g. generatedSchedules 0 -> N) between renders
+  // that don't change stepIndex's numeric value (e.g. start() resetting to
+  // stepIndex 0 when it was already 0), and a memo keyed only on stepIndex
+  // would then serve a stale count from before the flip.
+  let visibleStepCount = 0;
+  for (let i = 0; i < TOUR_STEPS.length; i++) {
+    if (isValid(TOUR_STEPS[i])) visibleStepCount++;
+  }
+
+  let visibleStepNumber = 0;
+  for (let i = 0; i <= state.stepIndex; i++) {
+    if (isValid(TOUR_STEPS[i])) visibleStepNumber++;
+  }
+
+  const isLastStep = findForward(state.stepIndex + 1) === -1;
+
   const value = React.useMemo<TourContextValue>(
     () => ({
       active: state.active,
       stepIndex: state.stepIndex,
       currentStep,
       totalSteps: TOUR_STEPS.length,
+      visibleStepNumber,
+      visibleStepCount,
+      isLastStep,
       start,
       next,
       back,
@@ -177,7 +221,19 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
       finish: endTour,
       resync,
     }),
-    [state.active, state.stepIndex, currentStep, start, next, back, endTour, resync]
+    [
+      state.active,
+      state.stepIndex,
+      currentStep,
+      visibleStepNumber,
+      visibleStepCount,
+      isLastStep,
+      start,
+      next,
+      back,
+      endTour,
+      resync,
+    ]
   );
 
   return <TourContext.Provider value={value}>{children}</TourContext.Provider>;

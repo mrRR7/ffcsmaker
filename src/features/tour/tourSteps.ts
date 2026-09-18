@@ -64,6 +64,11 @@ export const TOUR_STEPS: TourStep[] = [
     targetId: "results-grid",
     title: "Browse your results",
     body: "Every generated timetable, ranked — click a cell for details.",
+    // Skip the results steps entirely for a first-time user who hasn't
+    // generated anything yet — otherwise they land on an empty results page
+    // and each remaining step polls its full cap against a target that will
+    // never mount.
+    precondition: () => useAppStore.getState().generatedSchedules.length > 0,
   },
   {
     id: "results-export-share",
@@ -71,6 +76,7 @@ export const TOUR_STEPS: TourStep[] = [
     targetId: "results-export-share",
     title: "Export or share",
     body: "Save it as an image or PDF, or share a link.",
+    precondition: () => useAppStore.getState().generatedSchedules.length > 0,
   },
   {
     id: "results-save-register",
@@ -78,5 +84,6 @@ export const TOUR_STEPS: TourStep[] = [
     targetId: "results-save-register",
     title: "Save it",
     body: "Keep it in Saved, or head off to register it in VTOP.",
+    precondition: () => useAppStore.getState().generatedSchedules.length > 0,
   },
 ];
