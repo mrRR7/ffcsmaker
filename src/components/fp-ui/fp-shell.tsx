@@ -314,7 +314,7 @@ function FPCampusGate({ onPick }: { onPick: (campus: Campus) => void }) {
         <p className="mx-auto mt-3 max-w-xl text-[length:var(--text-body-size)] leading-[1.5] text-fp-text-dim">
           Choose once to load the right catalog, course data, and timetable slots.
         </p>
-        <div className="mt-8 grid grid-cols-2 gap-4">
+        <div data-tour-id="campus-picker" className="mt-8 grid grid-cols-2 gap-4">
           {campusOptions.map((option) => (
             <button
               key={option.campus}

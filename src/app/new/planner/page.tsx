@@ -59,7 +59,8 @@ export default function NewPlannerPage() {
             label: "Preferences",
             suffix: <span className="opacity-60">(optional)</span>,
             status: tab === "preferences" ? "active" : "upcoming",
-            onClick: () => setTab("preferences")
+            onClick: () => setTab("preferences"),
+            "data-tour-id": "planner-preferences"
           }
         ]}
       />
@@ -139,6 +140,7 @@ export default function NewPlannerPage() {
                     My list order
                   </label>
                   <FPButton
+                    data-tour-id="planner-generate"
                     variant={isGenerating ? "secondary" : "primary"}
                     size="sm"
                     onClick={isGenerating ? cancel : runGeneration}

@@ -18,6 +18,8 @@ export interface FPStep {
    * visually inert — dimmed, no hover feedback, `cursor-not-allowed` — instead of
    * looking identical to a clickable step that silently does nothing when pressed. */
   disabled?: boolean;
+  /** Forwarded as `data-tour-id` on this step's element, for the onboarding tour. */
+  "data-tour-id"?: string;
 }
 
 export interface FPStepNavProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -38,6 +40,7 @@ export function FPStepNav({ steps, className, ...props }: FPStepNavProps) {
             type={isClickable ? "button" : undefined}
             disabled={Wrapper === "button" ? step.disabled : undefined}
             onClick={isClickable ? step.onClick : undefined}
+            data-tour-id={step["data-tour-id"]}
             className={cn(
               "fp-text flex flex-1 items-center gap-2 px-5 py-3 text-[length:var(--text-small)] text-left transition-colors",
               index < steps.length - 1 && "border-r border-fp-border-default",

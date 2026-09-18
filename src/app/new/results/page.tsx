@@ -565,7 +565,7 @@ function ResultsContent() {
                   </div>
                 </div>
 
-                <div className="ml-auto flex flex-wrap items-center gap-2.5">
+                <div data-tour-id="results-export-share" className="ml-auto flex flex-wrap items-center gap-2.5">
                   <FPButton variant="secondary" size="sm" onClick={() => saveActive(activeSchedule)}>
                     {isSaved ? <Check className="h-3.5 w-3.5" /> : null}
                     {isSaved ? "Saved" : "Save"}
@@ -636,7 +636,7 @@ function ResultsContent() {
                   classic app's SlotMatrixTimetable. This structure is
                   non-negotiable: it's what every generated timetable in the
                   app uses, not the mockup's illustrative 5-day-column grid. */}
-              <div ref={exportRef} className="mt-6">
+              <div ref={exportRef} data-tour-id="results-grid" className="mt-6">
                 <FPSlotMatrixTimetable
                   schedule={activeSchedule}
                   slots={slots}
@@ -896,7 +896,7 @@ function ResultsContent() {
 
       {/* Bottom bar */}
       {activeSchedule ? (
-        <footer className="flex flex-wrap items-center gap-3 border-t border-fp-border-default bg-fp-bg-surface px-6 py-4">
+        <footer data-tour-id="results-save-register" className="flex flex-wrap items-center gap-3 border-t border-fp-border-default bg-fp-bg-surface px-6 py-4">
           <FPMetricRun items={[activeSchedule.rankingMode, "constraints held"]} />
           <div className="ml-auto flex flex-wrap gap-2.5">
             <FPButton variant="ghost" size="sm" onClick={() => router.push("/new/planner")}>

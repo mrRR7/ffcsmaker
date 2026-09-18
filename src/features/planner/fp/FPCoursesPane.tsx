@@ -99,7 +99,7 @@ export function FPCoursesPane({ actions }: { actions?: ReactNode } = {}) {
             <FPCreditSummary />
           </div>
 
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div data-tour-id="planner-add-courses" className="mt-5 flex flex-wrap gap-2">
             {PLANNER_TABS.map((item) => {
               const active = tab === item.id;
               return (

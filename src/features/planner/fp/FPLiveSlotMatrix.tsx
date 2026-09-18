@@ -144,7 +144,7 @@ export function FPLiveSlotMatrix({
   const trackLabelClass = "fp-code border border-fp-border-default bg-fp-bg-surface px-1 py-1 text-[9px] text-fp-text-dim";
 
   return (
-    <div>
+    <div data-tour-id="planner-live-preview">
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-baseline gap-3">
           <h2 className="font-fp-display text-[17px] font-bold text-fp-text-strong">Your week so far</h2>

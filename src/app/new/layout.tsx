@@ -4,6 +4,9 @@ import localFont from "next/font/local";
 import { cn } from "@/utils/cn";
 import { useAppStore } from "@/store/useAppStore";
 import { FPShell } from "@/components/fp-ui/fp-shell";
+import { TourProvider } from "@/features/tour/TourProvider";
+import { TourSpotlight } from "@/features/tour/TourSpotlight";
+import { TourCard } from "@/features/tour/TourCard";
 import "./fp-tokens.css";
 
 const spaceGrotesk = localFont({
@@ -48,7 +51,11 @@ export default function NewSkinLayout({ children }: { children: React.ReactNode 
         "min-h-screen"
       )}
     >
-      <FPShell>{children}</FPShell>
+      <TourProvider>
+        <FPShell>{children}</FPShell>
+        <TourSpotlight />
+        <TourCard />
+      </TourProvider>
     </div>
   );
 }

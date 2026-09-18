@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
@@ -8,6 +9,8 @@ import { useAppStore } from "@/store/useAppStore";
 import { CAMPUS_LABELS, type Campus } from "@/engine/types";
 import { cn } from "@/utils/cn";
 import { FPLabel } from "@/components/fp-ui/label";
+import { useTour } from "@/features/tour/useTour";
+import { hasSeenTour } from "@/features/tour/tourStorage";
 
 const campusCards: Array<{ campus: Campus; active: boolean; detail: string }> = [
   { campus: "chennai", active: true, detail: "Mon–Fri slot catalog" },
@@ -35,6 +38,11 @@ export default function NewLandingPage() {
   const router = useRouter();
   const campus = useAppStore((state) => state.campus);
   const setCampus = useAppStore((state) => state.setCampus);
+  const hasHydrated = useAppStore((state) => state.hasHydrated);
+  const tour = useTour();
+  const [tourPromptDismissed, setTourPromptDismissed] = useState(false);
+
+  const showTourPrompt = hasHydrated && !tour.active && !tourPromptDismissed && !hasSeenTour();
 
   function pickCampus(next: Campus) {
     setCampus(next);
@@ -53,6 +61,7 @@ export default function NewLandingPage() {
         </p>
 
         <motion.div
+          data-tour-id="home-cta"
           className="mt-9 grid w-full max-w-4xl grid-cols-2 gap-4 text-left sm:grid-cols-4"
           variants={staggerContainer}
           initial="initial"
@@ -103,6 +112,26 @@ export default function NewLandingPage() {
         <p className="mt-7 text-[length:var(--text-small)] text-fp-text-dim">
           Never done FFCS before? <span className="cursor-pointer text-fp-text-body underline underline-offset-[3px] hover:text-fp-accent">40-second explainer</span>
         </p>
+
+        {showTourPrompt ? (
+          <p className="mt-2 text-[length:var(--text-small)] text-fp-text-dim">
+            New here?{" "}
+            <button
+              type="button"
+              onClick={tour.start}
+              className="text-fp-text-body underline underline-offset-[3px] hover:text-fp-accent"
+            >
+              Take a 60-second tour →
+            </button>{" "}
+            <button
+              type="button"
+              onClick={() => setTourPromptDismissed(true)}
+              className="text-fp-text-dim underline underline-offset-[3px] hover:text-fp-text-body"
+            >
+              Not now
+            </button>
+          </p>
+        ) : null}
       </section>
 
       <section className="mx-auto max-w-4xl px-8 pb-14 pt-12">
