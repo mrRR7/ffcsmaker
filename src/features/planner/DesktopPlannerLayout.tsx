@@ -34,7 +34,7 @@ import { getRankingProfiles } from "@/engine/ranking";
 import { CAMPUS_LABELS, RankingMode } from "@/engine/types";
 import { usePlannerGeneration } from "./usePlannerGeneration";
 import { PLANNER_TABS, PlannerTabId } from "./constants";
-import { prewarmCatalogCache } from "@/lib/catalogCache";
+import { loadCatalog } from "@/lib/catalogCache";
 import { VtopScraperRecommendation } from "./VtopScraperRecommendation";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/utils/cn";
@@ -78,7 +78,11 @@ export function DesktopPlannerLayout() {
 
   useEffect(() => {
     if (campus) {
-      void prewarmCatalogCache(campus);
+      // Best-effort prewarm only — CatalogSearch's own load still runs (and
+      // surfaces a real error) once the semester is known, so a prewarm
+      // failure here should stay silent rather than becoming an unhandled
+      // rejection.
+      loadCatalog(campus).catch(() => {});
     }
   }, [campus]);
 

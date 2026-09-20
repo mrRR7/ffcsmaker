@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Planner layout options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ground: #0b0e11; --surface: #141a1f; --ink: #e6edea; --muted: #7e8b90;
+    --accent: #3fa96b; --rule: #2a343b; --accent-bright: #4fba7c; --accent-wash: rgba(63,169,107,.16);
+    --warn: #d8a23a; --warn-wash: rgba(216,162,58,.14); --danger: #d8663a; --danger-wash: rgba(216,102,58,.16);
+    --bg-page: var(--ground); --bg-surface: var(--surface); --bg-raised: #1b2228; --bg-inset: #0e1317;
+    --text-body: var(--ink); --text-strong: #f2f7f4; --text-dim: var(--muted);
+    --border-default: var(--rule); --border-strong: #3a464e; --border-accent: var(--accent);
+    --surface-selected: #232b31; --border-selected: #3f4c54;
+    --c1: #6fcb95; --ci1: #0b0e11; --c2: #4fba7c; --ci2: #0b0e11; --c3: #2e7d4f; --ci3: #f2f7f4; --c4: #1c5535; --ci4: #e6edea;
+    --font-display: "Space Grotesk", sans-serif; --font-body: "IBM Plex Sans", sans-serif; --font-mono: "IBM Plex Mono", monospace;
+    --radius-sm: 4px; --radius-md: 6px; --radius-lg: 10px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #05070a; color: var(--text-body); font-family: var(--font-body);
+    padding: 28px 20px 80px;
+  }
+  .intro { max-width: 920px; margin: 0 auto 28px; }
+  .intro h2 { font-family: var(--font-display); font-size: 22px; color: #fff; margin: 0 0 8px; }
+  .intro p { color: #aab4b8; line-height: 1.55; font-size: 14px; margin: 0 0 6px; }
+  .criteria { max-width: 920px; margin: 0 auto 32px; background: #10151a; border: 1px solid #232b31; border-radius: 10px; padding: 14px 18px; }
+  .criteria h4 { margin: 0 0 8px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #7e8b90; font-weight: 600; }
+  .criteria ul { margin: 0; padding-left: 18px; color: #c7d0d2; font-size: 13px; line-height: 1.7; }
+
+  .frames { display: flex; flex-direction: column; gap: 40px; max-width: 1040px; margin: 0 auto; }
+  .frame-wrap { border: 2px solid #232b31; border-radius: 14px; overflow: hidden; cursor: pointer; transition: border-color .15s; background: #0b0e11; }
+  .frame-wrap:hover { border-color: #3fa96b; }
+  .frame-wrap.selected { border-color: #3fa96b; box-shadow: 0 0 0 3px rgba(63,169,107,.25); }
+  .frame-label { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; background: #12181d; border-bottom: 1px solid #232b31; }
+  .frame-label .letter { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:6px; background: var(--accent-wash); color: var(--accent-bright); font-family: var(--font-mono); font-weight: 700; font-size: 13px; margin-right: 10px; }
+  .frame-label h3 { display:inline; font-family: var(--font-display); font-size: 16px; color: #fff; margin: 0; vertical-align: middle; }
+  .frame-label p { margin: 4px 0 0 36px; font-size: 12.5px; color: #8b969a; }
+  .frame-tags { display:flex; gap:6px; flex-wrap: wrap; justify-content:flex-end; }
+  .tag { font-size: 10.5px; padding: 3px 8px; border-radius: 999px; background: #1b2228; color: #8b969a; font-family: var(--font-mono); }
+
+  /* --- the actual /new-styled mock page inside each frame --- */
+  .fp-mock { font-family: var(--font-body); background: var(--bg-page); color: var(--text-body); padding: 16px 18px 22px; }
+  .fp-mock .topbar { display:flex; align-items:center; justify-content:space-between; padding-bottom: 12px; margin-bottom: 12px; border-bottom: 1px solid var(--border-default); }
+  .fp-mock .brand { font-family: var(--font-display); font-weight:700; font-size:15px; color: var(--text-strong); }
+  .fp-mock .nav { display:flex; gap:16px; font-size:12.5px; color: var(--text-dim); }
+  .fp-mock .nav span.active { color: var(--text-strong); font-weight:500; }
+  .fp-mock .step-nav { display:flex; background: var(--bg-inset); border-radius: var(--radius-sm); overflow:hidden; margin-bottom:14px; width:fit-content; }
+  .fp-mock .step-nav div { padding: 7px 16px; font-size:12px; color: var(--text-dim); }
+  .fp-mock .step-nav div.active { background: var(--surface-selected); color: var(--text-strong); font-weight:500; }
+
+  .badge { display:inline-flex; align-items:center; gap:5px; font-size:10.5px; padding: 3px 9px; border-radius: 999px; font-weight:500; }
+  .badge.warn { background: var(--warn-wash); color: var(--warn); }
+  .badge.danger { background: var(--danger-wash); color: var(--danger); }
+  .badge.neutral { background: var(--bg-raised); color: var(--text-dim); }
+  .badge.mono { font-family: var(--font-mono); }
+
+  /* mini FFCS grid — day rows split THEORY/LAB, period columns. NOT hourly blocks. */
+  .ffcs-grid { border: 1px solid var(--border-default); border-radius: var(--radius-md); overflow:hidden; background: var(--bg-page); }
+  .ffcs-grid table { width:100%; border-collapse:collapse; table-layout:fixed; }
+  .ffcs-grid th, .ffcs-grid td { border: 1px solid var(--border-default); padding: 0; text-align:center; }
+  .ffcs-grid th { background: var(--bg-surface); color: var(--text-dim); font-family: var(--font-mono); font-size: 9px; padding: 5px 2px; font-weight:400; }
+  .ffcs-grid .daylabel { background: var(--bg-inset); color: var(--text-strong); font-family: var(--font-mono); font-size: 10px; font-weight:600; width: 34px; }
+  .ffcs-grid .tracklabel { background: var(--bg-surface); color: var(--text-dim); font-family: var(--font-mono); font-size: 8px; width: 28px; }
+  .ffcs-grid .cell { height: 34px; font-family: var(--font-mono); font-size: 9px; color: var(--text-strong); font-weight:600; }
+  .ffcs-grid .cell.empty { background: var(--bg-inset); }
+  .ffcs-grid .cell.clash { position:relative; background: repeating-linear-gradient(135deg, var(--c2) 0 6px, var(--c4) 6px 12px); }
+  .ffcs-grid .cell.clash::after { content:"⚠"; position:absolute; top:1px; right:2px; font-size:8px; color:#fff; text-shadow:0 0 2px #000; }
+
+  .rail { border: 1px solid var(--border-default); border-radius: var(--radius-md); background: var(--bg-surface); }
+  .rail .rail-tabs { display:flex; gap:4px; padding: 8px 8px 0; }
+  .rail .rail-tabs div { font-size:10.5px; padding: 5px 9px; border-radius: var(--radius-sm); color: var(--text-dim); }
+  .rail .rail-tabs div.active { background: var(--surface-selected); color: var(--text-strong); }
+  .rail .rail-body { padding: 10px; }
+  .rail .search-input { background: var(--bg-inset); border:1px solid transparent; border-radius: var(--radius-sm); padding: 6px 8px; font-size: 10.5px; color: var(--text-dim); margin-bottom:8px; }
+  .rail .course-row { display:flex; align-items:center; gap:6px; padding: 5px 0; font-size: 10.5px; color: var(--text-body); border-top: 1px solid var(--border-default); }
+  .rail .swatch { width:8px; height:8px; border-radius:2px; flex-shrink:0; }
+
+  .fp-btn { display:inline-flex; align-items:center; gap:6px; padding: 6px 12px; border-radius: var(--radius-md); font-size:11.5px; font-weight:500; cursor:default; }
+  .fp-btn.primary { background: var(--accent); color: #0b0e11; }
+  .fp-btn.secondary { background: var(--bg-raised); color: var(--text-body); }
+
+  .placeholder-block { background: var(--bg-inset); border-radius: var(--radius-sm); }
+
+  footer.legend { max-width: 1040px; margin: 40px auto 0; background:#10151a; border:1px solid #232b31; border-radius:10px; padding:16px 20px; }
+  footer.legend h4 { margin:0 0 10px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:#7e8b90; }
+  footer.legend .legend-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:12.5px; color:#c7d0d2; }
+</style>
+</head>
+<body>
+
+  <div class="intro">
+    <h2>Which planner layout should we design toward?</h2>
+    <p>All three use the real <code>/new</code> dark theme, tokens and type scale — and all three deliberately use the actual FFCS day/THEORY/LAB slot-grid shape instead of a generic hourly calendar. The difference is where the grid sits, how big it gets to be, and where course-adding controls go.</p>
+    <p>Every mockup shows the <b>same underlying state on purpose</b>: 2 courses added, one of them clashing with an existing pick in the same slot. Watch how each layout handles that clash and signals "this isn't generated yet."</p>
+  </div>
+
+  <div class="criteria">
+    <h4>Evaluate each option on</h4>
+    <ul>
+      <li>How dominant is the timetable, really — first thing you see, or competing with chrome?</li>
+      <li>How much space do Search / Paste / Import / Manual controls take, and where do they live?</li>
+      <li>How obvious is "this is a draft, not a generated schedule" — without adding a decorative box?</li>
+      <li>How is a slot clash represented, and does it stay legible at this density?</li>
+      <li>How cleanly would this hand off to the real <code>FPSlotMatrixTimetable</code> once you hit "Find my weeks"?</li>
+    </ul>
+  </div>
+
+  <div class="frames">
+
+    <!-- OPTION A -->
+    <div class="frame-wrap" data-choice="a" onclick="toggleSelect(this)">
+      <div class="frame-label">
+        <div>
+          <span class="letter">A</span><h3>Full-width hero + collapsible drawer</h3>
+          <p>The grid IS the page. Course-adding lives behind a slim "Add courses" bar that expands into a drawer.</p>
+        </div>
+        <div class="frame-tags"><span class="tag">grid: ~100% width</span><span class="tag">controls: on-demand</span></div>
+      </div>
+      <div class="fp-mock">
+        <div class="topbar">
+          <div class="brand">FFCS Planner</div>
+          <div class="nav"><span class="active">Home</span><span>Plan</span><span>Results</span><span>Saved</span></div>
+        </div>
+        <div class="step-nav"><div class="active">Courses</div><div>Preferences</div></div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+          <span class="badge warn">◐ Draft preview · not generated</span>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span class="badge neutral mono">2 courses</span>
+            <span class="fp-btn secondary">+ Add courses</span>
+          </div>
+        </div>
+
+        <div class="ffcs-grid">
+          <table>
+            <tr><th rowspan="2" style="width:30px">TH</th><th>08:00</th><th>08:50</th><th>09:40</th><th>10:40</th><th>11:30</th><th>12:20</th></tr>
+            <tr><th>08:50</th><th>09:40</th><th>10:30</th><th>11:30</th><th>12:20</th><th>13:10</th></tr>
+            <tr><td class="daylabel" rowspan="2">MON</td><td class="tracklabel">TH</td>
+              <td class="cell" style="background:var(--c2); color:var(--ci2)">CSE101<br>A1</td>
+              <td class="cell empty">—</td><td class="cell empty">—</td>
+              <td class="cell clash">2 courses</td>
+              <td class="cell empty">—</td><td class="cell empty">—</td>
+            </tr>
+            <tr><td class="tracklabel">LAB</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td></tr>
+            <tr><td class="daylabel" rowspan="2">TUE</td><td class="tracklabel">TH</td>
+              <td class="cell empty">—</td>
+              <td class="cell" style="background:var(--c1); color:var(--ci1)">MAT201<br>B1</td>
+              <td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td>
+            </tr>
+            <tr><td class="tracklabel">LAB</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td></tr>
+          </table>
+        </div>
+        <p style="font-size:10.5px; color:#5b6569; margin-top:8px;">Drawer (closed by default) would slide up from here with Search/Paste/Import/Manual + the running course list.</p>
+      </div>
+    </div>
+
+    <!-- OPTION B -->
+    <div class="frame-wrap" data-choice="b" onclick="toggleSelect(this)">
+      <div class="frame-label">
+        <div>
+          <span class="letter">B</span><h3>Re-weighted split — grid-dominant pane</h3>
+          <p>Keeps today's two-pane shape, but flips the ratio: grid gets ~68%, course rail shrinks to a compact ~32% strip.</p>
+        </div>
+        <div class="frame-tags"><span class="tag">grid: ~68% width</span><span class="tag">controls: always visible</span></div>
+      </div>
+      <div class="fp-mock">
+        <div class="topbar">
+          <div class="brand">FFCS Planner</div>
+          <div class="nav"><span class="active">Home</span><span>Plan</span><span>Results</span><span>Saved</span></div>
+        </div>
+        <div class="step-nav"><div class="active">Courses</div><div>Preferences</div></div>
+
+        <div style="display:grid; grid-template-columns: 1fr 2.1fr; gap:14px;">
+          <div class="rail">
+            <div class="rail-tabs"><div class="active">Search</div><div>Paste</div><div>Import</div><div>Manual</div></div>
+            <div class="rail-body">
+              <div class="search-input">/ Search course code…</div>
+              <div class="course-row"><span class="swatch" style="background:var(--c2)"></span>CSE101 — Data Structures</div>
+              <div class="course-row"><span class="swatch" style="background:var(--c1)"></span>MAT201 — Linear Algebra</div>
+            </div>
+          </div>
+          <div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+              <span class="badge warn">◐ Draft preview · not generated</span>
+              <span class="badge neutral mono">2 courses</span>
+            </div>
+            <div class="ffcs-grid">
+              <table>
+                <tr><th rowspan="2" style="width:26px">TH</th><th>08:00</th><th>08:50</th><th>09:40</th><th>10:40</th></tr>
+                <tr><th>08:50</th><th>09:40</th><th>10:30</th><th>11:30</th></tr>
+                <tr><td class="daylabel" rowspan="2">MON</td><td class="tracklabel">TH</td>
+                  <td class="cell" style="background:var(--c2); color:var(--ci2)">CSE101</td>
+                  <td class="cell empty">—</td><td class="cell empty">—</td>
+                  <td class="cell clash">2</td>
+                </tr>
+                <tr><td class="tracklabel">LAB</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td></tr>
+                <tr><td class="daylabel" rowspan="2">TUE</td><td class="tracklabel">TH</td>
+                  <td class="cell empty">—</td>
+                  <td class="cell" style="background:var(--c1); color:var(--ci1)">MAT201</td>
+                  <td class="cell empty">—</td><td class="cell empty">—</td>
+                </tr>
+                <tr><td class="tracklabel">LAB</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OPTION C -->
+    <div class="frame-wrap" data-choice="c" onclick="toggleSelect(this)">
+      <div class="frame-label">
+        <div>
+          <span class="letter">C</span><h3>Two focused modes — "Your Week" / "Add Courses"</h3>
+          <p>A real mode switch, not a panel split. "Your Week" is full-width grid only; "Add Courses" is the search/list only.</p>
+        </div>
+        <div class="frame-tags"><span class="tag">grid: ~100% width</span><span class="tag">controls: separate mode</span></div>
+      </div>
+      <div class="fp-mock">
+        <div class="topbar">
+          <div class="brand">FFCS Planner</div>
+          <div class="nav"><span class="active">Home</span><span>Plan</span><span>Results</span><span>Saved</span></div>
+        </div>
+        <div class="step-nav"><div class="active">Courses</div><div>Preferences</div></div>
+
+        <div style="display:flex; gap:6px; margin-bottom:12px;">
+          <span class="fp-btn secondary" style="background:var(--surface-selected); color:var(--text-strong)">Your Week</span>
+          <span class="fp-btn secondary">Add courses <span class="badge neutral mono" style="margin-left:4px">2</span></span>
+        </div>
+
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+          <span class="badge warn">◐ Draft preview · not generated</span>
+        </div>
+
+        <div class="ffcs-grid">
+          <table>
+            <tr><th rowspan="2" style="width:30px">TH</th><th>08:00</th><th>08:50</th><th>09:40</th><th>10:40</th><th>11:30</th><th>12:20</th></tr>
+            <tr><th>08:50</th><th>09:40</th><th>10:30</th><th>11:30</th><th>12:20</th><th>13:10</th></tr>
+            <tr><td class="daylabel" rowspan="2">MON</td><td class="tracklabel">TH</td>
+              <td class="cell" style="background:var(--c2); color:var(--ci2)">CSE101<br>A1</td>
+              <td class="cell empty">—</td><td class="cell empty">—</td>
+              <td class="cell clash">2 courses</td>
+              <td class="cell empty">—</td><td class="cell empty">—</td>
+            </tr>
+            <tr><td class="tracklabel">LAB</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td></tr>
+            <tr><td class="daylabel" rowspan="2">TUE</td><td class="tracklabel">TH</td>
+              <td class="cell empty">—</td>
+              <td class="cell" style="background:var(--c1); color:var(--ci1)">MAT201<br>B1</td>
+              <td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td>
+            </tr>
+            <tr><td class="tracklabel">LAB</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td><td class="cell empty">—</td></tr>
+          </table>
+        </div>
+        <p style="font-size:10.5px; color:#5b6569; margin-top:8px;">Switching to "Add courses" replaces this whole area with Search/Paste/Import/Manual + the list — grid is not visible while adding.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="legend">
+    <h4>Conventions used consistently across all three</h4>
+    <div class="legend-row"><span class="badge warn">◐ Draft preview · not generated</span> — reuses the same amber "warn" tone the app already uses for Stale/Unverified states, so "provisional" reads as a status, not a new visual language.</div>
+    <div class="legend-row"><span class="cell clash" style="display:inline-block; width:70px; height:24px; font-size:9px; border-radius:4px;">2 courses</span> — a clashing cell: diagonal split of both course colors + a warning glyph, distinct from a normal single-course cell. This is the same slot the real generator would reject as infeasible.</div>
+  </footer>
+
+<script>
+function toggleSelect(el){
+  document.querySelectorAll('.frame-wrap').forEach(f=>f.classList.remove('selected'));
+  el.classList.add('selected');
+  if (window.recordEvent) {
+    window.recordEvent({type:'click', choice: el.dataset.choice, text: el.querySelector('h3').textContent});
+  }
+}
+</script>
+</body>
+</html>

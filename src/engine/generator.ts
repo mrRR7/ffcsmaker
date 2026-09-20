@@ -78,13 +78,37 @@ function priorityScore(
 export function generateTimetables(
   payload: GeneratePayload,
   onProgress?: ProgressCallback
-): { schedules: ScoredTimetable[]; checked: number } {
+): { schedules: ScoredTimetable[]; checked: number; capped: boolean } {
   const { courses, slots, constraints, rankingMode } = payload;
   const maxResults = payload.maxResults ?? 500;
   const slotMap = indexSlots(slots);
   const schedules: ScoredTimetable[] = [];
   let checked = 0;
   let lastProgressEmit = 0;
+
+  // Hard wall-clock ceiling on the search. Without this, a large course
+  // list with loose constraints can walk a huge fraction of the
+  // combinatorial tree before concluding "few/no results" — the worker
+  // stays responsive (progress keeps updating), but the user is left
+  // watching a slow-moving bar with no end in sight. Past this budget we
+  // stop and return whatever was found so far, flagged as capped.
+  const TIME_BUDGET_MS = 8000;
+  const startedAt = Date.now();
+  let dfsCalls = 0;
+  let timeExceeded = false;
+
+  function timeBudgetExceeded() {
+    if (timeExceeded) {
+      return true;
+    }
+    dfsCalls += 1;
+    // Date.now() is cheap, but skip most calls anyway on very deep/wide
+    // searches so the check itself never becomes the bottleneck.
+    if (dfsCalls % 500 === 0 && Date.now() - startedAt > TIME_BUDGET_MS) {
+      timeExceeded = true;
+    }
+    return timeExceeded;
+  }
 
   const orderedCourses = [...courses]
     .filter((course) => course.options.length > 0)
@@ -119,7 +143,7 @@ export function generateTimetables(
     selections: TimetableSelection[],
     selectedSlotIds: string[]
   ) {
-    if (schedules.length >= maxResults) {
+    if (schedules.length >= maxResults || timeBudgetExceeded()) {
       return;
     }
 
@@ -197,6 +221,7 @@ export function generateTimetables(
 
   return {
     schedules,
-    checked
+    checked,
+    capped: timeExceeded
   };
 }

@@ -69,10 +69,19 @@ export function useGenerator() {
           worker.terminate();
           workerRef.current = null;
           if (event.data.schedules.length === 0) {
-            toast.error("No clash-free schedules matched the hard constraints.");
+            toast.error(
+              event.data.capped
+                ? "Search timed out before finding a clash-free schedule. Try narrowing your constraints."
+                : "No clash-free schedules matched the hard constraints."
+            );
           } else {
             const groups = useAppStore.getState().generatedShapeGroups;
-            toast.success(`Generated ${event.data.schedules.length} schedules across ${groups.length} unique shapes.`);
+            const summary = `Generated ${event.data.schedules.length} schedules across ${groups.length} unique shapes.`;
+            if (event.data.capped) {
+              toast.success(`${summary} Search was capped after 8s — try narrowing constraints for a full search.`);
+            } else {
+              toast.success(summary);
+            }
           }
           return;
         }

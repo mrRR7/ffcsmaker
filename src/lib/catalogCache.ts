@@ -1,83 +1,109 @@
 import { Campus, SlotVariant } from "@/engine/types";
 import { DBCourse } from "@/types/db";
 
-interface CacheEntry {
-  data: DBCourse[];
-  timestamp: number;
+interface CatalogCacheEntry {
+  courses: DBCourse[];
   semesterId: string | null;
   slotVariant: SlotVariant | null;
+  timestamp: number;
 }
 
-const queryCache = new Map<string, CacheEntry>();
+// Catalogs are small (a single campus/semester today) and change rarely, so
+// the whole thing is fetched once and cached here, then every search filters
+// this in-memory list instead of hitting the network per keystroke.
+const catalogCache = new Map<string, CatalogCacheEntry>();
+const inFlight = new Map<string, Promise<CatalogCacheEntry>>();
 const CACHE_TTL_MS = 10 * 60 * 1000;
 
-function cacheKey(query: string, campus: Campus, semesterId?: string) {
-  return `${campus}::${semesterId ?? "active"}::${query.toLowerCase().trim()}`;
+function catalogCacheKey(campus: Campus, semesterId: string) {
+  return `${campus}::${semesterId}`;
 }
 
-export function getCached(
-  query: string,
-  campus: Campus,
-  semesterId?: string
-): CacheEntry | null {
-  const key = cacheKey(query, campus, semesterId);
-  const entry = queryCache.get(key);
+function getFresh(key: string): CatalogCacheEntry | null {
+  const entry = catalogCache.get(key);
   if (!entry) {
     return null;
   }
   if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
-    queryCache.delete(key);
+    catalogCache.delete(key);
     return null;
   }
   return entry;
 }
 
-export function setCache(
-  query: string,
+/** Returns the cached full catalog for a campus+semester, if present and fresh. */
+export function getCachedCatalog(
   campus: Campus,
-  data: DBCourse[],
-  semesterId: string | null,
-  slotVariant: SlotVariant | null,
-  requestedSemesterId?: string
-) {
-  queryCache.set(cacheKey(query, campus, requestedSemesterId), {
-    data,
-    timestamp: Date.now(),
-    semesterId,
-    slotVariant
-  });
+  semesterId: string
+): CatalogCacheEntry | null {
+  return getFresh(catalogCacheKey(campus, semesterId));
 }
 
-export function clearCampusCache(campus: Campus) {
-  for (const key of queryCache.keys()) {
-    if (key.startsWith(`${campus}::`)) {
-      queryCache.delete(key);
+/**
+ * Loads the full catalog for a campus (optionally a specific semester),
+ * using the cache when possible and de-duplicating concurrent requests for
+ * the same campus+semester. Callers filter the returned course list
+ * themselves rather than asking the server to filter per query.
+ */
+export async function loadCatalog(
+  campus: Campus,
+  semesterId?: string
+): Promise<CatalogCacheEntry> {
+  if (semesterId) {
+    const cached = getCachedCatalog(campus, semesterId);
+    if (cached) {
+      return cached;
     }
   }
-}
 
-export function clearAllCache() {
-  queryCache.clear();
-}
-
-export async function prewarmCatalogCache(campus: Campus) {
-  if (getCached("", campus)) {
-    return;
+  const requestKey = `${campus}::${semesterId ?? "auto"}`;
+  const pending = inFlight.get(requestKey);
+  if (pending) {
+    return pending;
   }
 
-  try {
-    const params = new URLSearchParams({ q: "", campus });
+  const promise = (async () => {
+    const params = new URLSearchParams({ campus });
+    if (semesterId) {
+      params.set("semester", semesterId);
+    }
     const response = await fetch(`/api/catalog/search?${params.toString()}`);
     if (!response.ok) {
-      return;
+      throw new Error("Catalog unavailable.");
     }
     const json = (await response.json()) as {
       courses?: DBCourse[];
       semesterId?: string | null;
       slotVariant?: SlotVariant | null;
     };
-    setCache("", campus, json.courses ?? [], json.semesterId ?? null, json.slotVariant ?? null);
-  } catch {
-    // Best effort only. Normal search still works without a warm cache.
+    const entry: CatalogCacheEntry = {
+      courses: json.courses ?? [],
+      semesterId: json.semesterId ?? null,
+      slotVariant: json.slotVariant ?? null,
+      timestamp: Date.now()
+    };
+    if (entry.semesterId) {
+      catalogCache.set(catalogCacheKey(campus, entry.semesterId), entry);
+    }
+    return entry;
+  })();
+
+  inFlight.set(requestKey, promise);
+  try {
+    return await promise;
+  } finally {
+    inFlight.delete(requestKey);
   }
+}
+
+export function clearCampusCache(campus: Campus) {
+  for (const key of catalogCache.keys()) {
+    if (key.startsWith(`${campus}::`)) {
+      catalogCache.delete(key);
+    }
+  }
+}
+
+export function clearAllCache() {
+  catalogCache.clear();
 }
