@@ -11,7 +11,7 @@ import { FPSearchTab } from "@/features/planner/fp/FPSearchTab";
 import { FPPasteTab } from "@/features/planner/fp/FPPasteTab";
 import { FPImportTab } from "@/features/planner/fp/FPImportTab";
 import { FPCourseList } from "@/features/planner/fp/FPCourseList";
-import { FPLiveSlotMatrix } from "@/features/planner/fp/FPLiveSlotMatrix";
+import { FPLiveSlotMatrix, type LiveSlotMatrixGeneration } from "@/features/planner/fp/FPLiveSlotMatrix";
 
 const DEFAULT_RAIL_WIDTH = 400;
 const MIN_RAIL_WIDTH = 340;
@@ -31,7 +31,10 @@ function clampRailWidth(width: number) {
  * and full-height — the whole pane scrolls normally with the page, nothing
  * pinned.
  */
-export function FPCoursesPane({ actions }: { actions?: ReactNode } = {}) {
+export function FPCoursesPane({
+  actions,
+  generation
+}: { actions?: ReactNode; generation?: LiveSlotMatrixGeneration } = {}) {
   const [tab, setTab] = useState<PlannerTabId>("search");
   const courses = useAppStore((state) => state.courses);
   const slots = useAppStore((state) => state.slots);
@@ -154,7 +157,7 @@ export function FPCoursesPane({ actions }: { actions?: ReactNode } = {}) {
       </div>
 
       <aside className="min-w-0 border-t border-fp-border-default bg-fp-bg-surface px-6 py-6 lg:border-t-0">
-        <FPLiveSlotMatrix courses={courses} slots={slots} actions={actions} />
+        <FPLiveSlotMatrix courses={courses} slots={slots} actions={actions} generation={generation} />
       </aside>
     </div>
   );

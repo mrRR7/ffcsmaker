@@ -2,21 +2,7 @@ import { ParsedImportRow } from './importTypes';
 import { Course, CourseOption, TimeSlot } from '@/engine/types';
 import { resolveLabSlotIds, resolveTheorySlotIds } from './normalizeImport';
 import { nanoid } from 'nanoid';
-
-const courseColors = [
-  "#14b8a6",
-  "#6366f1",
-  "#22c55e",
-  "#f59e0b",
-  "#ec4899",
-  "#38bdf8",
-  "#a78bfa",
-  "#f97316"
-];
-
-function colorForIndex(index: number) {
-  return courseColors[index % courseColors.length];
-}
+import { colorForIndex } from '@/lib/coursePalette';
 
 export function transformToCourses(
   validRows: ParsedImportRow[],

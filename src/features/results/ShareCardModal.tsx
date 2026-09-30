@@ -23,6 +23,7 @@ type Props = {
 
 export function ShareCardModal({ open, onClose, schedule, slots }: Props) {
   const campus = (useAppStore((state) => state.campus) ?? "chennai") as Campus;
+  const courses = useAppStore((state) => state.courses);
   const [isCapturing, setIsCapturing] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -85,6 +86,7 @@ export function ShareCardModal({ open, onClose, schedule, slots }: Props) {
         id={CARD_ID}
         schedule={schedule}
         slots={slots}
+        courses={courses}
         campus={campus}
         semesterLabel={semesterLabel}
       />
@@ -117,7 +119,7 @@ export function ShareCardModal({ open, onClose, schedule, slots }: Props) {
           <div className="mt-4 px-5">
             <div
               ref={containerRef}
-              className="relative w-full overflow-hidden rounded-md border border-border/50 bg-[#080b14]"
+              className="relative w-full overflow-hidden rounded-md border border-border/50 bg-[#0b0e11]"
               style={{ paddingBottom: `${(SHARE_CARD_HEIGHT / SHARE_CARD_WIDTH) * 100}%` }}
             >
               <div
@@ -129,6 +131,7 @@ export function ShareCardModal({ open, onClose, schedule, slots }: Props) {
                   id="share-card-preview"
                   schedule={schedule}
                   slots={slots}
+                  courses={courses}
                   campus={campus}
                   semesterLabel={semesterLabel}
                 />

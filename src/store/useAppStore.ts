@@ -27,17 +27,7 @@ import { checkStorageCapacity } from "@/lib/storageUtils";
 import { getSlotCatalog, getSlotDays } from "@/engine/slotCatalog";
 import { groupSchedulesByShape } from "@/engine/consolidation";
 import { mapLegacyRankingMode } from "@/engine/ranking";
-
-const courseColors = [
-  "#14b8a6",
-  "#6366f1",
-  "#22c55e",
-  "#f59e0b",
-  "#ec4899",
-  "#38bdf8",
-  "#a78bfa",
-  "#f97316"
-];
+import { colorForIndex } from "@/lib/coursePalette";
 
 const GENERATION_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -80,10 +70,6 @@ const defaultUiPreferences: UiPreferences = {
     includeScoreBreakdown: true
   }
 };
-
-function colorForIndex(index: number) {
-  return courseColors[index % courseColors.length];
-}
 
 function normalizeImportedConstraints(constraints?: Partial<Constraints>): Constraints {
   return {

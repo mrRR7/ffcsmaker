@@ -5,12 +5,18 @@ const ctx: Worker = self as unknown as Worker;
 
 ctx.onmessage = (event: MessageEvent<GeneratePayload>) => {
   try {
-    const result = generateTimetables(event.data, (progress) => {
-      ctx.postMessage({
-        type: "progress",
-        ...progress
-      } satisfies WorkerMessage);
-    });
+    const result = generateTimetables(
+      event.data,
+      (progress) => {
+        ctx.postMessage({
+          type: "progress",
+          ...progress
+        } satisfies WorkerMessage);
+      },
+      (selections) => {
+        ctx.postMessage({ type: "sample", selections } satisfies WorkerMessage);
+      }
+    );
 
     ctx.postMessage({
       type: "done",

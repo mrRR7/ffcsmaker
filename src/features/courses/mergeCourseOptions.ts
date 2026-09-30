@@ -4,17 +4,7 @@ import {
   resolveLabSlotIds,
   resolveTheorySlotIds
 } from "@/features/import/normalizeImport";
-
-const courseColors = [
-  "#14b8a6",
-  "#6366f1",
-  "#22c55e",
-  "#f59e0b",
-  "#ec4899",
-  "#38bdf8",
-  "#a78bfa",
-  "#f97316"
-];
+import { colorForIndex } from "@/lib/coursePalette";
 
 export type CourseOptionInput = {
   courseCode: string;
@@ -26,10 +16,6 @@ export type CourseOptionInput = {
   labSlotsRaw?: string;
   notes?: string;
 };
-
-function colorForIndex(index: number) {
-  return courseColors[index % courseColors.length];
-}
 
 function optionKey(option: Pick<CourseOption, "professorName" | "program" | "theorySlotIds" | "labSlotIds">) {
   return [

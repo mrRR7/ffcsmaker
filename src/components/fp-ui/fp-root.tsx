@@ -3,6 +3,7 @@
 import localFont from "next/font/local";
 import { cn } from "@/utils/cn";
 import { useEffect } from "react";
+import { MotionConfig } from "framer-motion";
 import { useAppStore } from "@/store/useAppStore";
 import { FPShell } from "@/components/fp-ui/fp-shell";
 import { VtopImportHandler } from "@/features/vtop-scraper/components/VtopImportHandler";
@@ -59,12 +60,14 @@ export function FPRoot({ children }: { children: React.ReactNode }) {
         "min-h-screen"
       )}
     >
-      <TourProvider>
-        <FPShell>{children}</FPShell>
-        <TourSpotlight />
-        <TourCard />
-        <VtopImportHandler />
-      </TourProvider>
+      <MotionConfig reducedMotion="user">
+        <TourProvider>
+          <FPShell>{children}</FPShell>
+          <TourSpotlight />
+          <TourCard />
+          <VtopImportHandler />
+        </TourProvider>
+      </MotionConfig>
     </div>
   );
 }

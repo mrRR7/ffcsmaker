@@ -1,7 +1,9 @@
 "use client";
 
 import { Fragment, useMemo, type ReactNode } from "react";
+import { motion } from "framer-motion";
 import { Course, CourseOption, DayOfWeek, TimeSlot } from "@/engine/types";
+import type { GenerationCandidate } from "@/hooks/useGenerator";
 import { parseTime } from "@/engine/conflict";
 import { getSlotDaysForSlots } from "@/engine/slotCatalog";
 import { buildMatrixColumns, MatrixColumn } from "@/features/results/timetableMatrix";
@@ -12,6 +14,12 @@ import { FPBadge } from "@/components/fp-ui/badge";
 import { FPNote } from "@/components/fp-ui/note";
 
 type Pick = { course: Course; option: CourseOption };
+
+export type LiveSlotMatrixGeneration = {
+  active: boolean;
+  found: number;
+  candidate: GenerationCandidate | null;
+};
 
 /**
  * FPLiveSlotMatrix — the Planner's live "what if I add these courses" preview.
@@ -25,27 +33,40 @@ type Pick = { course: Course; option: CourseOption };
  * path: it does NOT import or extend `buildMatrixCells`/`FPSlotMatrixTimetable`,
  * since those assume a real generated schedule can never have two selections
  * share a slot, and are shared with the classic app's own timetable.
+ *
+ * While a search runs (`generation.active`) it instead draws the real,
+ * conflict-free layouts the worker streams back, dropping blocks in.
  */
 export function FPLiveSlotMatrix({
   courses,
   slots,
-  actions
+  actions,
+  generation
 }: {
   courses: Course[];
   slots: TimeSlot[];
   actions?: ReactNode;
+  /** While a search runs, show its real accepted layouts instead of the draft. */
+  generation?: LiveSlotMatrixGeneration;
 }) {
+  const candidate = generation?.candidate ?? null;
   const days = useMemo(() => getSlotDaysForSlots(slots) as DayOfWeek[], [slots]);
   const columns = useMemo(() => buildMatrixColumns(slots), [slots]);
   const isBhopal = useMemo(() => slots.some((slot) => /^[A-F]\d{2}$/.test(slot.label)), [slots]);
 
-  const picks = useMemo<Pick[]>(
-    () =>
-      courses
-        .map((course) => ({ course, option: course.options[0] }))
-        .filter((pick): pick is Pick => Boolean(pick.option)),
-    [courses]
-  );
+  const picks = useMemo<Pick[]>(() => {
+    if (candidate) {
+      const courseById = new Map(courses.map((course) => [course.id, course]));
+      return candidate.selections.flatMap((selection) => {
+        const course = courseById.get(selection.courseId);
+        const option = course?.options.find((item) => item.id === selection.optionId);
+        return course && option ? [{ course, option }] : [];
+      });
+    }
+    return courses
+      .map((course) => ({ course, option: course.options[0] }))
+      .filter((pick): pick is Pick => Boolean(pick.option));
+  }, [courses, candidate]);
 
   const picksBySlotId = useMemo(() => {
     const map = new Map<string, Pick[]>();
@@ -78,7 +99,13 @@ export function FPLiveSlotMatrix({
     return daySlots.find((slot) => slot.startTime === column.startTime && slot.endTime === column.endTime) ?? null;
   }
 
-  function renderCell(daySlots: TimeSlot[], track: "THEORY" | "LAB", column: MatrixColumn, key: string) {
+  function renderCell(
+    daySlots: TimeSlot[],
+    track: "THEORY" | "LAB",
+    column: MatrixColumn,
+    key: string,
+    columnIndex: number
+  ) {
     if (column.kind === "lunch") {
       return <td key={key} className="border border-fp-border-default bg-fp-bg-inset" />;
     }
@@ -99,15 +126,19 @@ export function FPLiveSlotMatrix({
       const color = course.color ?? "var(--accent)";
       return (
         <td key={key} className="border border-fp-border-default p-0 align-top">
-          <div
+          <motion.div
+            key={candidate ? `${candidate.key}-${slot?.id}` : "draft"}
             className="flex h-[52px] flex-col items-center justify-center gap-[2px]"
             style={{ background: color, color: readableTextColor(color) }}
+            initial={candidate ? { opacity: 0, y: -6 } : false}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.14, delay: candidate ? columnIndex * 0.012 : 0 }}
           >
             <span className="fp-code text-[length:var(--text-micro)] font-bold leading-tight">{course.courseCode}</span>
             <span className="fp-text line-clamp-1 text-[9px] font-medium leading-tight opacity-85">
               {option.professorName}
             </span>
-          </div>
+          </motion.div>
         </td>
       );
     }
@@ -148,7 +179,13 @@ export function FPLiveSlotMatrix({
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-baseline gap-3">
           <h2 className="font-fp-display text-[17px] font-bold text-fp-text-strong">Your week so far</h2>
-          <FPBadge tone="warn">Draft preview · not generated</FPBadge>
+          {generation?.active ? (
+            <FPBadge tone="neutral">
+              Searching · <span className="fp-code">{generation.found}</span> weeks so far
+            </FPBadge>
+          ) : (
+            <FPBadge tone="warn">Draft preview · not generated</FPBadge>
+          )}
         </div>
         {actions ? <div className="ml-auto flex flex-wrap items-center gap-2.5">{actions}</div> : null}
       </div>
@@ -243,7 +280,7 @@ export function FPLiveSlotMatrix({
                       <tr key={day}>
                         <td className={dayLabelClass}>{day.slice(0, 3)}</td>
                         <td className={trackLabelClass}>TH</td>
-                        {columns.theory.map((col, i) => renderCell(theoryDaySlots, "THEORY", col, `t-${i}`))}
+                        {columns.theory.map((col, i) => renderCell(theoryDaySlots, "THEORY", col, `t-${i}`, i))}
                       </tr>
                     );
                   }
@@ -255,11 +292,11 @@ export function FPLiveSlotMatrix({
                           {day.slice(0, 3)}
                         </td>
                         <td className={trackLabelClass}>TH</td>
-                        {columns.theory.map((col, i) => renderCell(theoryDaySlots, "THEORY", col, `t-${i}`))}
+                        {columns.theory.map((col, i) => renderCell(theoryDaySlots, "THEORY", col, `t-${i}`, i))}
                       </tr>
                       <tr>
                         <td className={trackLabelClass}>LAB</td>
-                        {columns.lab.map((col, i) => renderCell(labDaySlots, "LAB", col, `l-${i}`))}
+                        {columns.lab.map((col, i) => renderCell(labDaySlots, "LAB", col, `l-${i}`, i))}
                       </tr>
                     </Fragment>
                   );
