@@ -269,8 +269,16 @@ export function FPShell({ children }: { children: React.ReactNode }) {
         </AnimatePresence>
       </main>
 
-      <footer className="flex items-center gap-4 border-t border-fp-border-default bg-fp-bg-surface px-6 py-5">
+      <footer className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-fp-border-default bg-fp-bg-surface px-6 py-5">
         <FPLabel>Not affiliated with VIT University</FPLabel>
+        <a
+          href="https://github.com/mrRR7"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="fp-text text-[length:var(--text-small)] text-fp-text-dim hover:text-fp-text-body"
+        >
+          Built by mrRR7
+        </a>
         <div className="ml-auto flex gap-5 text-[length:var(--text-small)] text-fp-text-dim">
           <Link href="/privacy" className="hover:text-fp-text-body">
             Privacy

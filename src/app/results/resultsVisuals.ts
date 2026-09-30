@@ -46,7 +46,8 @@ const THUMBNAIL_MAX_DAYS = 5;
 export function buildShapeThumbnail(
   schedule: ScoredTimetable,
   slots: TimeSlot[],
-  courses: Course[]
+  courses: Course[],
+  bands = THUMBNAIL_BANDS
 ): ThumbnailCell[][] {
   const days = getSlotDaysForSlots(slots).slice(0, THUMBNAIL_MAX_DAYS) as DayOfWeek[];
   if (days.length === 0 || slots.length === 0) {
@@ -58,7 +59,7 @@ export function buildShapeThumbnail(
   const dayStart = Math.min(...times);
   const dayEnd = Math.max(...endTimes);
   const span = Math.max(1, dayEnd - dayStart);
-  const bandSize = span / THUMBNAIL_BANDS;
+  const bandSize = span / bands;
 
   const matrix = buildMatrixCells(schedule, slots, courses);
   const allCells = [...matrix.theory.flat(), ...matrix.lab.flat()].filter(
@@ -67,7 +68,7 @@ export function buildShapeThumbnail(
 
   return days.map((day) => {
     const dayCells = allCells.filter((cell) => cell.day === day);
-    return Array.from({ length: THUMBNAIL_BANDS }, (_, bandIndex) => {
+    return Array.from({ length: bands }, (_, bandIndex) => {
       const bandStart = dayStart + bandIndex * bandSize;
       const bandEnd = bandStart + bandSize;
       const match = dayCells.find((cell) => {
