@@ -2,11 +2,11 @@ import { notFound } from "next/navigation";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { SharedTimetableView } from "./SharedTimetableView";
 
-export const revalidate = 3600; // Cache shared timetables for an hour (or use dynamic)
+export const revalidate = 3600;
 
-export default async function SharedTimetablePage({ params }: { params: { id: string } }) {
+export default async function NewSharedTimetablePage({ params }: { params: { id: string } }) {
   const supabase = createSupabaseAdminClient();
-  
+
   const { data, error } = await supabase
     .from("share_timetables")
     .select("snapshot_json")
@@ -20,7 +20,13 @@ export default async function SharedTimetablePage({ params }: { params: { id: st
   const snapshot = data.snapshot_json as any;
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="-mx-4 -my-8 min-h-screen bg-fp-bg-page text-fp-text-body sm:-mx-6 lg:-mx-8">
+      {/*
+        Reuses the classic SharedTimetableView as-is for now (guarantees the
+        share flow keeps working end-to-end). Restyling this to the fp-ui
+        primitives is a good follow-up once the /results grid components
+        (built separately) are available to share with this route.
+      */}
       <SharedTimetableView snapshot={snapshot} />
     </div>
   );

@@ -23,7 +23,7 @@ function clampRailWidth(width: number) {
 }
 
 /**
- * FPCoursesPane — "01 Courses" tab of /new/planner.
+ * FPCoursesPane — "01 Courses" tab of /planner.
  *
  * Two columns: a resizable rail on the left holding course-adding controls
  * (search/paste/import/manual tabs) and the added-courses list stacked

@@ -1,6 +1,6 @@
 # FP-UI Primitives Reference — "FFCS Planner" skin
 
-Design-system components for the `/new/*` routes, in `src/components/fp-ui/`. These read only `fp-*` tokens (`src/app/new/fp-tokens.css`) and never leak outside the `.fp-root` scope. Mirrors `docs/ui-primitives.md`'s convention for the classic `src/components/ui/` library — see that file for the pattern.
+Design-system components for the app routes, in `src/components/fp-ui/`. These read only `fp-*` tokens (`src/app/fp-tokens.css`) and never leak outside the `.fp-root` scope. Mirrors `docs/ui-primitives.md`'s convention for the classic `src/components/ui/` library — see that file for the pattern.
 
 | Component | File | One-line spec |
 |---|---|---|

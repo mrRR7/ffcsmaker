@@ -2,208 +2,189 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
-import { BookmarkPlus, GitCompare, Plus, X } from "lucide-react";
 import toast from "react-hot-toast";
-import { SectionHeader } from "@/components/SectionHeader";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select } from "@/components/ui/form";
-import { CourseSummaryPanel } from "@/features/results/CourseSummaryPanel";
-import { SlotMatrixTimetable } from "@/features/results/SlotMatrixTimetable";
+import { ScoredTimetable } from "@/engine/types";
 import { getAllSchedules, useAppStore } from "@/store/useAppStore";
+import { exportScheduleJson } from "@/utils/export";
+import { FPButton } from "@/components/fp-ui/button";
+import { FPLabel } from "@/components/fp-ui/label";
+import { FPCard } from "@/components/fp-ui/card";
+import { CompareWeekCard } from "./CompareWeekCard";
+import { computeDiffs } from "./diffs";
 
-const metricRows = [
-  ["Score", (value: number | string) => value],
-  ["Credits", (value: number | string) => value],
-  ["Half days", (value: number | string) => value],
-  ["Gap slots", (value: number | string) => value],
-  ["Latest end", (value: number | string) => value],
-  ["Compactness", (value: number | string) => value]
-] as const;
+const RANK_EYEBROWS = ["Best overall", "Runner-up", "Third pick"];
 
-export default function ComparePage() {
+export default function NewComparePage() {
   const slots = useAppStore((state) => state.slots);
   const courses = useAppStore((state) => state.courses);
   const compareScheduleIdsRaw = useAppStore((state) => state.compareScheduleIds);
   const addCompareSchedule = useAppStore((state) => state.addCompareSchedule);
   const removeCompareSchedule = useAppStore((state) => state.removeCompareSchedule);
   const clearCompare = useAppStore((state) => state.clearCompare);
-  const saveSchedule = useAppStore((state) => state.saveSchedule);
   const savedSchedulesRaw = useAppStore((state) => state.savedSchedules);
   const generatedSchedulesRaw = useAppStore((state) => state.generatedSchedules);
+
   const compareScheduleIds = Array.isArray(compareScheduleIdsRaw) ? compareScheduleIdsRaw : [];
   const savedSchedules = Array.isArray(savedSchedulesRaw) ? savedSchedulesRaw : [];
   const generatedSchedules = Array.isArray(generatedSchedulesRaw) ? generatedSchedulesRaw : [];
+
   const allSchedules = useMemo(
     () => getAllSchedules({ generatedSchedules, savedSchedules }),
     [generatedSchedules, savedSchedules]
   );
-  const selected = compareScheduleIds
-    .map((id) => allSchedules.find((schedule) => schedule.id === id))
-    .filter(Boolean)
-    .slice(0, 3);
+
+  const selected = useMemo(() => {
+    const found = compareScheduleIds
+      .map((id) => allSchedules.find((schedule) => schedule.id === id))
+      .filter((schedule): schedule is ScoredTimetable => Boolean(schedule))
+      .slice(0, 3);
+    return [...found].sort((a, b) => b.score - a.score);
+  }, [compareScheduleIds, allSchedules]);
+
+  const diffs = useMemo(() => computeDiffs(selected, slots, courses), [selected, slots, courses]);
+
+  const headline =
+    selected.length === 3
+      ? "Three weeks, side by side"
+      : selected.length === 2
+        ? "Two weeks, side by side"
+        : selected.length === 1
+          ? "One week, on its own"
+          : "Pick weeks to compare";
+
+  function addAnotherWeek() {
+    const next = allSchedules.find((schedule) => !compareScheduleIds.includes(schedule.id));
+    if (!next) {
+      toast.error("No other weeks left to add.");
+      return;
+    }
+    addCompareSchedule(next.id);
+  }
+
+  function swapAWeek() {
+    const next = allSchedules.find((schedule) => !compareScheduleIds.includes(schedule.id));
+    if (!next) {
+      toast.error("No other weeks left to swap in.");
+      return;
+    }
+    addCompareSchedule(next.id);
+  }
+
+  function exportAll() {
+    if (selected.length === 0) {
+      toast.error("Nothing selected to export.");
+      return;
+    }
+    selected.forEach((schedule) => exportScheduleJson(schedule));
+    toast.success(`Exported ${selected.length} week${selected.length === 1 ? "" : "s"}.`);
+  }
 
   return (
-    <div className="pb-20 lg:pb-0">
-      <SectionHeader
-        title="Compare"
-        action={
-          <div className="flex flex-wrap gap-2">
-            <Select
-              className="w-72"
+    <div className="-mx-4 -my-8 sm:-mx-6 lg:-mx-8">
+      <div className="flex items-center justify-end border-b border-fp-border-default px-7 py-3">
+        <span className="font-fp-mono text-[length:var(--text-micro)] text-fp-text-dim">
+          {selected.length} of {allSchedules.length} week{allSchedules.length === 1 ? "" : "s"} selected &middot; max 3
+        </span>
+      </div>
+
+      <section className="px-7 pb-4 pt-7">
+        <div className="flex flex-wrap items-end gap-4">
+          <div>
+            <h1 className="font-fp-display text-[length:var(--text-display)] font-bold tracking-[-0.01em] text-fp-text-strong">{headline}</h1>
+            <p className="mt-1.5 max-w-xl text-[length:var(--text-body-size)] text-fp-text-body">
+              {allSchedules.length === 0
+                ? "Generate a few weeks in the planner, then bring them here to compare."
+                : "Pick from your generated and saved weeks below to see exactly where they differ."}
+            </p>
+          </div>
+          <div className="ml-auto flex flex-wrap items-center gap-2">
+            <select
               value=""
               onChange={(event) => {
-                if (event.target.value) {
-                  addCompareSchedule(event.target.value);
-                }
+                if (event.target.value) addCompareSchedule(event.target.value);
               }}
+              className="fp-text h-full rounded-[var(--radius-md)] border border-fp-border-strong bg-transparent px-3 py-[7px] text-[length:var(--text-micro)] text-fp-text-body hover:border-fp-accent"
             >
-              <option value="">Add schedule</option>
+              <option value="">Add a week</option>
               {allSchedules.map((schedule, index) => (
                 <option key={schedule.id} value={schedule.id}>
-                  #{index + 1} - score {schedule.score}
+                  #{index + 1} &middot; score {schedule.score}
                 </option>
               ))}
-            </Select>
-            <Button type="button" variant="outline" onClick={clearCompare}>
+            </select>
+            <FPButton variant="secondary" size="sm" onClick={swapAWeek}>
+              Swap a week
+            </FPButton>
+            <FPButton variant="secondary" size="sm" onClick={exportAll}>
+              Export all
+            </FPButton>
+            <FPButton variant="ghost" size="sm" onClick={clearCompare}>
               Clear
-            </Button>
+            </FPButton>
           </div>
-        }
-      />
+        </div>
 
-      {allSchedules.length === 0 ? (
-        <Card className="flex min-h-96 items-center justify-center text-center border-primary/20 bg-primary/5">
-          <CardContent className="max-w-md">
-            <GitCompare className="mx-auto mb-4 h-10 w-10 text-primary/70" />
-            <p className="text-lg font-semibold">No schedules to compare</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Generate schedules to begin comparing.
-            </p>
-            <Link
-              href="/planner"
-              className="mt-6 inline-flex h-10 items-center justify-center rounded-md bg-primary px-5 text-sm font-semibold text-on-primary shadow-sm hover:bg-primary-hover transition"
-            >
-              Open Planner
-            </Link>
-          </CardContent>
-        </Card>
-      ) : null}
-
-      {selected.length === 0 && allSchedules.length > 0 ? (
-        <Card className="mb-5 border-primary/20 bg-primary/5">
-          <CardContent className="flex flex-col items-center justify-center gap-3 p-8 text-center">
-            <Plus className="h-8 w-8 text-primary/70" />
-            <p className="font-semibold">Choose schedules from the selector to begin comparing.</p>
-          </CardContent>
-        </Card>
-      ) : null}
-
-      {selected.length > 0 ? (
-        <>
-          <Card className="mb-5">
-            <CardHeader>
-              <CardTitle>Metrics</CardTitle>
-            </CardHeader>
-            <CardContent className="overflow-x-auto">
-              <table className="w-full min-w-[720px] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-border text-muted-foreground">
-                    <th className="py-3 pr-4">Metric</th>
-                    {selected.map((schedule, index) => (
-                      <th key={schedule!.id} className="py-3 pr-4">
-                        Schedule {index + 1}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {metricRows.map(([label]) => (
-                    <tr key={label} className="border-b border-border/70">
-                      <td className="py-3 pr-4 font-medium">{label}</td>
-                      {selected.map((schedule) => {
-                        const value =
-                          label === "Score"
-                            ? schedule!.score
-                            : label === "Credits"
-                              ? schedule!.selections.reduce(
-                                  (sum, selection) => sum + selection.credits,
-                                  0
-                                )
-                              : label === "Half days"
-                                ? schedule!.metrics.halfDays
-                                : label === "Gap slots"
-                                  ? schedule!.metrics.totalGapSlots
-                                  : label === "Latest end"
-                                    ? schedule!.metrics.latestEndTime
-                                    : schedule!.metrics.compactness;
-                        return (
-                          <td key={schedule!.id} className="py-3 pr-4">
-                            {value}
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </CardContent>
-          </Card>
-
-          <div className="space-y-5">
-            {selected.map((schedule, index) => (
-              <div key={schedule!.id} className="space-y-3">
-                <Card>
-                  <CardContent className="flex items-center justify-between gap-3 p-4">
-                    <div>
-                      <Badge>Schedule {index + 1}</Badge>
-                      <p className="mt-2 font-semibold">Score {schedule!.score}</p>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          saveSchedule(schedule!);
-                          toast.success("Timetable saved locally.");
-                        }}
-                      >
-                        <BookmarkPlus className="h-4 w-4" />
-                        Save
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        title="Remove"
-                        onClick={() => removeCompareSchedule(schedule!.id)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-                <SlotMatrixTimetable
-                  schedule={schedule!}
-                  slots={slots}
-                  courses={courses}
-                />
-                <CourseSummaryPanel
-                  schedule={schedule!}
-                  slots={slots}
-                  courses={courses}
-                  highlightCourseCode={null}
-                  previewCourseCode={null}
-                  onHighlightCourseCodeChange={() => undefined}
-                  onPreviewCourseCodeChange={() => undefined}
-                />
-              </div>
+        {diffs.length > 0 ? (
+          <div className="mt-5 flex flex-wrap items-center gap-5 rounded-[6px] border border-fp-border-default bg-fp-bg-surface px-4 py-3">
+            <FPLabel>What differs</FPLabel>
+            {diffs.map((diff) => (
+              <span key={diff.label} className="text-[length:var(--text-small)] text-fp-text-body">
+                {diff.label} &middot;{" "}
+                <span className="font-fp-mono text-[12px] text-fp-text-dim">{diff.values.join(" / ")}</span>
+              </span>
             ))}
           </div>
-        </>
-      ) : null}
+        ) : null}
+      </section>
+
+      {allSchedules.length === 0 ? (
+        <div className="px-7 pb-10">
+          <FPCard className="flex min-h-72 flex-col items-center justify-center gap-3 text-center">
+            <p className="font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong">No weeks to compare yet</p>
+            <p className="max-w-sm text-[length:var(--text-small)] text-fp-text-dim">
+              Generate schedules in the planner, then add them here.
+            </p>
+            <Link href="/planner" className="mt-2 inline-block">
+              <FPButton variant="primary" size="sm">
+                Open planner
+              </FPButton>
+            </Link>
+          </FPCard>
+        </div>
+      ) : selected.length === 0 ? (
+        <div className="px-7 pb-10">
+          <FPCard className="flex min-h-56 flex-col items-center justify-center gap-2 text-center">
+            <p className="font-fp-display text-[17px] font-bold text-fp-text-strong">Nothing selected</p>
+            <p className="max-w-sm text-[length:var(--text-small)] text-fp-text-dim">Choose up to three weeks from the selector above.</p>
+          </FPCard>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-6 px-7 pb-10">
+          {selected.map((schedule, index) => (
+            <CompareWeekCard
+              key={schedule.id}
+              schedule={schedule}
+              slots={slots}
+              courses={courses}
+              eyebrow={RANK_EYEBROWS[index] ?? "Alternative"}
+              recommended={index === 0}
+              onRemove={() => removeCompareSchedule(schedule.id)}
+            />
+          ))}
+          {selected.length < 3 && selected.length < allSchedules.length
+            ? Array.from({ length: 3 - selected.length }).map((_, i) => (
+                <button
+                  key={`ghost-${i}`}
+                  type="button"
+                  onClick={addAnotherWeek}
+                  className="flex min-h-24 items-center justify-center rounded-[var(--radius-lg)] border border-dashed border-fp-border-strong text-[length:var(--text-small)] text-fp-text-dim transition-colors hover:border-fp-accent hover:text-fp-text-body"
+                >
+                  + Add a week to compare
+                </button>
+              ))
+            : null}
+        </div>
+      )}
     </div>
   );
 }

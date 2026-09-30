@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { AppShell } from "@/components/layout/AppShell";
+import "./fp-tokens.css";
+import { FPRoot } from "@/components/fp-ui/fp-root";
 import { cn } from "@/utils/cn";
 import { Analytics } from "@vercel/analytics/react";
 
@@ -38,7 +39,7 @@ export const metadata: Metadata = {
     siteName: 'Ultimate FFCS',
     images: [
       {
-        url: 'favicon.png',   // 1200x630px — make this
+        url: '/og-image.png',
         width: 1200,
         height: 630,
         alt: 'Ultimate FFCS Timetable Generator for VIT Students',
@@ -50,8 +51,9 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'Ultimate FFCS | VIT Timetable Generator',
     description: 'Generate every valid FFCS timetable automatically. Free for VIT students.',
-    images: ['favicon.png'],
+    images: ['/og-image.png'],
   },
+  manifest: '/site.webmanifest',
   robots: {
     index: true,
     follow: true,
@@ -65,11 +67,11 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // We leave the HTML without 'dark' class by default, the AppShell will handle adding/removing it based on user preference
+  // FPRoot toggles the dark/light class on <html> from the user's theme preference.
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn(inter.variable, calSansFallback.variable, "font-sans antialiased")}>
-        <AppShell>{children}</AppShell>
+        <FPRoot>{children}</FPRoot>
         <Analytics />
       </body>
     </html>

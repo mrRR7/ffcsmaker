@@ -1,0 +1,36 @@
+{
+  "brand": "Ultimate FFCS",
+  "tagline": "Clash-free timetables for VIT students",
+  "brief": "A free, student-built timetable generator for VIT's FFCS registration. Friendly and made by a student, but precise enough to trust with a semester of slots.",
+  "adjectives": ["friendly", "student-made", "precise", "warm"],
+  "criteria": "Recognisable at 16 px, works in one colour, distinct from blue/green ed-tech, ties to the timetable grid.",
+  "industry": "education",
+  "nav": ["Planner", "Saved", "Compare"],
+  "brand_color": "#FF6B4A",
+  "tile_color": "#1A1512",
+  "greyscale": false,
+  "final": true,
+  "designer": "Ultimate FFCS",
+  "concepts": [
+    {
+      "name": "Slot F",
+      "symbol": "svg/symbol.svg",
+      "lockup": "svg/horizontal.svg",
+      "stacked": "svg/stacked.svg",
+      "avatar": "svg/symbol.svg",
+      "symbol_on_tile": "svg/symbol-reversed.svg",
+      "lockup_on_tile": "svg/horizontal-reversed.svg",
+      "stacked_on_tile": "svg/stacked-reversed.svg",
+      "symbol_on_dark": "svg/symbol-reversed.svg",
+      "lockup_on_dark": "svg/horizontal-reversed.svg",
+      "stacked_on_dark": "svg/stacked-reversed.svg",
+      "idea": "An F built from timetable blocks, with one free slot in coral.",
+      "rationale": [
+        "The blocks echo the cells of a timetable grid",
+        "Coral is the one accent, so the free slot is what you notice",
+        "Chunky blocks keep the F readable down to 16 px"
+      ]
+    }
+  ],
+  "recommendation": "Slot F in coral on warm ink, reversed on warm dark."
+}

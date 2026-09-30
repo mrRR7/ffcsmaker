@@ -8,7 +8,7 @@ import { FPFieldGroup, fpInputClass } from "./FPPrefControls";
 import { FPBlockedWindowsPanel } from "./FPBlockedWindowsPanel";
 
 /**
- * FPPreferencesPane — "02 Preferences" tab of /new/planner.
+ * FPPreferencesPane — "02 Preferences" tab of /planner.
  *
  * Deliberately just two things: the two hard time bounds that actually
  * matter (start-after / end-before, both global), and Blocked Windows.
@@ -16,7 +16,7 @@ import { FPBlockedWindowsPanel } from "./FPBlockedWindowsPanel";
  * toggles, per-day overrides, the Early Finish flow) either did nothing
  * (dead code, confirmed unread by src/engine/*) or was redundant once a
  * global start/end exists. Ranking profile moved to the Courses page, next
- * to "Find my weeks" — see src/app/new/planner/page.tsx.
+ * to "Find my weeks" — see src/app/planner/page.tsx.
  */
 export function FPPreferencesPane() {
   const constraints = useAppStore((state) => state.constraints);

@@ -1,46 +1,53 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import toast from "react-hot-toast";
-import { Database, Download, MapPin, Moon, RotateCcw, Settings2, Sun } from "lucide-react";
-import { SectionHeader } from "@/components/SectionHeader";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card";
-import { Select } from "@/components/ui/form";
+import { Moon, RotateCcw, Sun } from "lucide-react";
 import { CAMPUS_LABELS } from "@/engine/types";
 import { getRankingProfiles } from "@/engine/ranking";
 import { RankingMode } from "@/engine/types";
 import { clearAllCache } from "@/lib/catalogCache";
 import { checkStorageCapacity, formatBytes } from "@/lib/storageUtils";
 import { useAppStore } from "@/store/useAppStore";
+import { useTour } from "@/features/tour/useTour";
+import { resetTourSeen } from "@/features/tour/tourStorage";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/utils/cn";
+import { FPButton } from "@/components/fp-ui/button";
+import { FPCard } from "@/components/fp-ui/card";
+import { FPPanel } from "@/components/fp-ui/panel";
+import { FPLabel } from "@/components/fp-ui/label";
+import { FPCheckbox } from "@/components/fp-ui/checkbox";
+import { FPNote } from "@/components/fp-ui/note";
 
-export default function SettingsPage() {
+export default function NewSettingsPage() {
   const [confirmCampusReset, setConfirmCampusReset] = useState(false);
   const [storage, setStorage] = useState(checkStorageCapacity());
+
   const uiPreferences = useAppStore((state) => state.uiPreferences);
   const rankingMode = useAppStore((state) => state.rankingMode);
   const campus = useAppStore((state) => state.campus);
   const generatedAt = useAppStore((state) => state.generatedAt);
   const setTheme = useAppStore((state) => state.setTheme);
   const setCompactMode = useAppStore((state) => state.setCompactMode);
-  const setUsePriorityRanking = useAppStore(
-    (state) => state.setUsePriorityRanking
-  );
+  const setUsePriorityRanking = useAppStore((state) => state.setUsePriorityRanking);
   const setRankingMode = useAppStore((state) => state.setRankingMode);
   const setExportPreference = useAppStore((state) => state.setExportPreference);
   const resetCampus = useAppStore((state) => state.resetCampus);
   const setGeneratedSchedules = useAppStore((state) => state.setGeneratedSchedules);
   const resetAll = useAppStore((state) => state.resetAll);
+  const tour = useTour();
+  const isMobile = useMediaQuery("(max-width: 767px)");
 
   useEffect(() => {
     setStorage(checkStorageCapacity());
   }, [generatedAt]);
+
+  const [bannerDismissed, setBannerDismissed] = useState(false);
+
+  useEffect(() => {
+    setBannerDismissed(localStorage.getItem("dismissed_preliminary_notice") === "true");
+  }, []);
 
   function clearCatalogCache() {
     clearAllCache();
@@ -59,13 +66,12 @@ export default function SettingsPage() {
     toast.success("Choose your campus again.");
   }
 
-  const [bannerDismissed, setBannerDismissed] = useState(false);
+  function replayTour() {
+    resetTourSeen();
+    tour.start();
+  }
 
-  useEffect(() => {
-    setBannerDismissed(localStorage.getItem("dismissed_preliminary_notice") === "true");
-  }, []);
-
-  const toggleBanner = () => {
+  function toggleBanner() {
     if (bannerDismissed) {
       localStorage.removeItem("dismissed_preliminary_notice");
       setBannerDismissed(false);
@@ -75,57 +81,39 @@ export default function SettingsPage() {
       setBannerDismissed(true);
       toast.success("Notice banner has been hidden.");
     }
-  };
+  }
 
   return (
-    <div className="pb-20 lg:pb-0">
-      <SectionHeader title="Settings" />
+    <div className="space-y-6 pb-16">
+      <div>
+        <FPLabel tone="accent" variant="eyebrow">Preferences</FPLabel>
+        <h1 className="mt-2 font-fp-display text-[28px] font-bold text-fp-text-strong">Settings</h1>
+      </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <Card className="bg-canvas shadow-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="h-5 w-5 text-primary" />
-              Campus
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between gap-4 rounded-md border border-hairline bg-background/30 p-4">
-              <div>
-                <p className="text-sm font-semibold">Current campus</p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {campus ? CAMPUS_LABELS[campus] : "Not selected"}
-                </p>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setConfirmCampusReset(true)}
-              >
-                Change
-              </Button>
-            </div>
-            <p className="text-xs text-muted-foreground">
+        <FPPanel title="Campus" className="lg:col-span-2">
+          <div className="space-y-4 p-4">
+            <Row
+              label="Current campus"
+              detail={campus ? CAMPUS_LABELS[campus] : "Not selected"}
+              action="Change"
+              onClick={() => setConfirmCampusReset(true)}
+            />
+            <FPNote>
               Changing campus clears your current course list and generated timetables.
-            </p>
-          </CardContent>
-        </Card>
+            </FPNote>
+          </div>
+        </FPPanel>
 
-        <Card className="bg-canvas shadow-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5 text-primary" />
-              Data & Cache
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <CacheRow
+        <FPPanel title="Data & cache">
+          <div className="space-y-4 p-4">
+            <Row
               label="Course catalog cache"
               detail="Active, refreshes every 10min"
               action="Clear"
               onClick={clearCatalogCache}
             />
-            <CacheRow
+            <Row
               label="Saved results"
               detail={
                 generatedAt
@@ -135,194 +123,159 @@ export default function SettingsPage() {
               action="Clear"
               onClick={clearSavedResults}
             />
-            <CacheRow
+            <Row
               label="Preliminary announcement banner"
               detail={bannerDismissed ? "Hidden on Planner page" : "Visible on Planner page"}
               action={bannerDismissed ? "Show" : "Hide"}
               onClick={toggleBanner}
             />
-            <div className="rounded-md border border-hairline bg-background/30 p-4">
-              <div className="flex items-center justify-between gap-4 text-sm">
-                <span className="font-semibold">Local storage used</span>
-                <span className="text-muted-foreground">
+            {isMobile === false ? (
+              <Row
+                label="Replay tour"
+                detail="Walk through the golden path again from the start"
+                action="Replay tour"
+                onClick={replayTour}
+              />
+            ) : null}
+            <div className="rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset p-4">
+              <div className="flex items-center justify-between gap-4 text-[length:var(--text-small)]">
+                <span className="text-fp-text-body">Local storage used</span>
+                <span className="font-fp-mono text-fp-text-dim">
                   {formatBytes(storage.usedBytes)} / ~5 MB
                 </span>
               </div>
-              <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface-soft">
+              <div className="mt-3 h-1.5 overflow-hidden rounded-[var(--radius-pill)] bg-fp-bg-page">
                 <div
-                  className="h-full rounded-full bg-primary"
+                  className="h-full rounded-[var(--radius-pill)] bg-fp-accent transition-[width] duration-[var(--dur-base)]"
                   style={{ width: `${storage.percentUsed}%` }}
                 />
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </FPPanel>
 
-        <Card className="bg-canvas shadow-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings2 className="h-5 w-5 text-primary" />
-              Interface
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-5">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
+        <FPPanel title="Appearance">
+          <div className="space-y-5 p-4">
+            <div className="grid grid-cols-2 gap-3">
+              <ThemeOption
+                active={uiPreferences.theme === "dark"}
                 onClick={() => setTheme("dark")}
-                className={cn(
-                  "rounded-md border px-4 py-3 text-left transition",
-                  uiPreferences.theme === "dark"
-                    ? "border-primary/40 bg-primary/10 text-primary"
-                    : "border-hairline bg-transparent text-muted-soft hover:bg-surface-soft hover:text-ink"
-                )}
-              >
-                <Moon className="mb-2 h-4 w-4" />
-                <span className="font-semibold text-sm">Dark</span>
-              </button>
-              <button
-                type="button"
+                icon={<Moon className="h-4 w-4" />}
+                label="Dark"
+              />
+              <ThemeOption
+                active={uiPreferences.theme === "light"}
                 onClick={() => setTheme("light")}
-                className={cn(
-                  "rounded-md border px-4 py-3 text-left transition",
-                  uiPreferences.theme === "light"
-                    ? "border-primary/40 bg-primary/10 text-primary"
-                    : "border-hairline bg-transparent text-muted-soft hover:bg-surface-soft hover:text-ink"
-                )}
-              >
-                <Sun className="mb-2 h-4 w-4" />
-                <span className="font-semibold text-sm">Light</span>
-              </button>
+                icon={<Sun className="h-4 w-4" />}
+                label="Light"
+              />
             </div>
-            <button
-              type="button"
-              onClick={() => setCompactMode(!uiPreferences.compactMode)}
-              className={cn(
-                "w-full flex items-center justify-between rounded-md border px-4 py-3 text-left transition",
-                uiPreferences.compactMode
-                  ? "border-primary/40 bg-primary/10 text-primary"
-                  : "border-hairline bg-transparent text-muted-soft hover:bg-surface-soft hover:text-ink"
-              )}
-            >
-              <span className="font-semibold text-sm">Compact timetable mode</span>
-              <span className={cn("h-2 w-2 rounded-full", uiPreferences.compactMode ? "bg-primary" : "bg-muted-foreground/40")} />
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                setUsePriorityRanking(!uiPreferences.usePriorityRanking)
-              }
-              className={cn(
-                "w-full flex items-center justify-between rounded-md border px-4 py-3 text-left transition",
-                uiPreferences.usePriorityRanking
-                  ? "border-primary/40 bg-primary/10 text-primary"
-                  : "border-hairline bg-transparent text-muted-soft hover:bg-surface-soft hover:text-ink"
-              )}
-            >
-              <span className="font-semibold text-sm">Use priority in ranking</span>
-              <span className={cn("h-2 w-2 rounded-full", uiPreferences.usePriorityRanking ? "bg-primary" : "bg-muted-foreground/40")} />
-            </button>
-            <div className="space-y-2">
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                Default ranking
-              </p>
-              <Select
-                value={rankingMode}
-                onChange={(event) => setRankingMode(event.target.value as RankingMode)}
-              >
-                {getRankingProfiles().map((profile) => (
-                  <option key={profile} value={profile}>
-                    {profile}
-                  </option>
-                ))}
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
 
-        <Card className="bg-canvas shadow-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Download className="h-5 w-5 text-primary" />
-              Export Preferences
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <PreferenceToggle
-              label="Include metrics"
-              active={uiPreferences.exportPreferences.includeMetrics}
-              onClick={() =>
+            <CheckRow
+              checked={uiPreferences.compactMode}
+              onToggle={() => setCompactMode(!uiPreferences.compactMode)}
+              label="Compact timetable mode"
+            />
+            <CheckRow
+              checked={uiPreferences.usePriorityRanking}
+              onToggle={() => setUsePriorityRanking(!uiPreferences.usePriorityRanking)}
+              label="Use priority in ranking"
+            />
+
+            <div className="space-y-2.5">
+              <FPLabel>Default ranking</FPLabel>
+              <div className="flex flex-wrap gap-2">
+                {getRankingProfiles().map((profile) => (
+                  <RankingOption
+                    key={profile}
+                    active={rankingMode === profile}
+                    onClick={() => setRankingMode(profile as RankingMode)}
+                    label={profile}
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </FPPanel>
+
+        <FPPanel title="Export">
+          <div className="space-y-3 p-4">
+            <CheckRow
+              checked={uiPreferences.exportPreferences.includeMetrics}
+              onToggle={() =>
                 setExportPreference(
                   "includeMetrics",
                   !uiPreferences.exportPreferences.includeMetrics
                 )
               }
+              label="Include metrics"
             />
-            <PreferenceToggle
-              label="Include course list"
-              active={uiPreferences.exportPreferences.includeCourseList}
-              onClick={() =>
+            <CheckRow
+              checked={uiPreferences.exportPreferences.includeCourseList}
+              onToggle={() =>
                 setExportPreference(
                   "includeCourseList",
                   !uiPreferences.exportPreferences.includeCourseList
                 )
               }
+              label="Include course list"
             />
-            <PreferenceToggle
-              label="Include score breakdown"
-              active={uiPreferences.exportPreferences.includeScoreBreakdown}
-              onClick={() =>
+            <CheckRow
+              checked={uiPreferences.exportPreferences.includeScoreBreakdown}
+              onToggle={() =>
                 setExportPreference(
                   "includeScoreBreakdown",
                   !uiPreferences.exportPreferences.includeScoreBreakdown
                 )
               }
+              label="Include score breakdown"
             />
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-2 bg-canvas shadow-none">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <RotateCcw className="h-5 w-5 text-destructive" />
-              Local Data
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Button type="button" variant="destructive" onClick={resetAll}>
-              Reset Ultimate FFCS
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-      {confirmCampusReset ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-          <div className="w-full max-w-md rounded-lg border border-hairline bg-surface-card p-5 shadow-card">
-            <h2 className="text-lg font-semibold text-foreground">Change campus?</h2>
-            <p className="mt-3 text-sm text-muted-foreground">
-              This will clear your current course list and generated timetables. Your
-              saved timetables will stay.
-            </p>
-            <div className="mt-5 flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setConfirmCampusReset(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="button" onClick={changeCampus}>
-                Change campus
-              </Button>
-            </div>
           </div>
+        </FPPanel>
+
+        <FPPanel title="Local data" className="lg:col-span-2">
+          <div className="p-4">
+            <FPButton
+              variant="secondary"
+              onClick={resetAll}
+              className="border-fp-danger text-fp-danger hover:border-fp-danger hover:bg-transparent hover:text-fp-danger"
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              Reset Ultimate FFCS
+            </FPButton>
+          </div>
+        </FPPanel>
+      </div>
+
+      {confirmCampusReset ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          style={{ backgroundColor: "var(--overlay-scrim)" }}
+        >
+          <FPCard className="w-full max-w-md" padding="lg">
+            <h2 className="font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong">
+              Change campus?
+            </h2>
+            <p className="mt-3 text-[length:var(--text-small)] leading-[1.5] text-fp-text-dim">
+              This will clear your current course list and generated timetables. Your saved
+              timetables will stay.
+            </p>
+            <div className="mt-5 flex justify-end gap-2.5">
+              <FPButton variant="secondary" size="sm" onClick={() => setConfirmCampusReset(false)}>
+                Cancel
+              </FPButton>
+              <FPButton variant="primary" size="sm" onClick={changeCampus}>
+                Change campus
+              </FPButton>
+            </div>
+          </FPCard>
         </div>
       ) : null}
     </div>
   );
 }
 
-function CacheRow({
+function Row({
   label,
   detail,
   action,
@@ -334,42 +287,92 @@ function CacheRow({
   onClick: () => void;
 }) {
   return (
-    <div className="flex items-center justify-between gap-4 rounded-md border border-hairline bg-background/30 p-4">
+    <div className="flex items-center justify-between gap-4 rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset p-4">
       <div>
-        <p className="text-sm font-semibold">{label}</p>
-        <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
+        <p className="text-[length:var(--text-small)] font-medium text-fp-text-body">{label}</p>
+        <p className="mt-1 text-[12px] text-fp-text-dim">{detail}</p>
       </div>
-      <Button type="button" variant="outline" size="sm" onClick={onClick}>
+      <FPButton type="button" variant="secondary" size="sm" onClick={onClick}>
         {action}
-      </Button>
+      </FPButton>
     </div>
   );
 }
 
-function PreferenceToggle({
-  label,
-  active,
-  onClick
+function CheckRow({
+  checked,
+  onToggle,
+  label
 }: {
+  checked: boolean;
+  onToggle: () => void;
   label: string;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <FPCheckbox checked={checked} onCheckedChange={onToggle} />
+      <button
+        type="button"
+        onClick={onToggle}
+        className="text-left text-[length:var(--text-small)] text-fp-text-body"
+      >
+        {label}
+      </button>
+    </div>
+  );
+}
+
+function ThemeOption({
+  active,
+  onClick,
+  icon,
+  label
+}: {
   active: boolean;
   onClick: () => void;
+  icon: ReactNode;
+  label: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       className={cn(
-        "flex w-full items-center justify-between rounded-md border px-4 py-3 text-left text-sm font-semibold transition",
+        "rounded-[var(--radius-md)] border px-4 py-3 text-left transition-colors",
         active
-          ? "border-primary/40 bg-primary/10 text-primary"
-          : "border-hairline bg-transparent text-muted-soft hover:bg-surface-soft hover:text-ink"
+          ? "border-[var(--border-selected)] text-fp-text-strong"
+          : "border-fp-border-default text-fp-text-dim hover:border-fp-border-strong hover:text-fp-text-body"
       )}
+      style={active ? { backgroundColor: "var(--surface-selected)" } : undefined}
+    >
+      <span className="mb-2 block">{icon}</span>
+      <span className="fp-text text-[length:var(--text-micro)]">{label}</span>
+    </button>
+  );
+}
+
+function RankingOption({
+  active,
+  onClick,
+  label
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "fp-text rounded-[var(--radius-sm)] border px-3 py-[7px] text-[length:var(--text-micro)] transition-colors",
+        active
+          ? "border-[var(--border-selected)] text-fp-text-strong"
+          : "border-fp-border-default text-fp-text-dim hover:border-fp-border-strong hover:text-fp-text-body"
+      )}
+      style={active ? { backgroundColor: "var(--surface-selected)" } : undefined}
     >
       {label}
-      <span
-        className={cn("h-2.5 w-2.5 rounded-full", active ? "bg-primary" : "bg-muted-foreground/40")}
-      />
     </button>
   );
 }
