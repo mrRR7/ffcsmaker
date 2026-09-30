@@ -3,11 +3,14 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { LockKeyhole } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input, Label } from "@/components/ui/form";
+import { FPCard } from "@/components/fp-ui/card";
+import { FPLabel } from "@/components/fp-ui/label";
+import { FPButton } from "@/components/fp-ui/button";
 
-export default function AdminLoginPage() {
+const fieldClass =
+  "w-full rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-2 text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-[var(--border-selected)] focus:outline-none disabled:opacity-60";
+
+export default function NewAdminLoginPage() {
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -36,32 +39,36 @@ export default function AdminLoginPage() {
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-md bg-primary/15 text-primary">
-            <LockKeyhole className="h-5 w-5" />
+      <FPCard className="w-full max-w-md" padding="lg">
+        <div
+          className="mb-4 flex h-10 w-10 items-center justify-center rounded-[var(--radius-md)] text-fp-accent"
+          style={{ backgroundColor: "var(--accent-wash)" }}
+        >
+          <LockKeyhole className="h-5 w-5" />
+        </div>
+        <FPLabel tone="accent" variant="eyebrow">FFCS admin</FPLabel>
+        <h1 className="mt-2 font-fp-display text-[length:var(--text-title)] font-bold text-fp-text-strong">Admin login</h1>
+
+        <form onSubmit={onSubmit} className="mt-5 space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="admin-password">
+              <FPLabel>Password</FPLabel>
+            </label>
+            <input
+              id="admin-password"
+              type="password"
+              autoComplete="current-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              className={fieldClass}
+            />
           </div>
-          <CardTitle>Admin Login</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="admin-password">Password</Label>
-              <Input
-                id="admin-password"
-                type="password"
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-              />
-            </div>
-            {error ? <p className="text-sm text-destructive">{error}</p> : null}
-            <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? "Checking..." : "Enter"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+          {error ? <p className="text-[length:var(--text-small)] text-fp-danger">{error}</p> : null}
+          <FPButton type="submit" className="w-full justify-center" disabled={isSubmitting}>
+            {isSubmitting ? "Checking" : "Enter"}
+          </FPButton>
+        </form>
+      </FPCard>
     </div>
   );
 }

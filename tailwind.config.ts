@@ -16,13 +16,13 @@ const config: Config = {
         sans: ["Inter", "sans-serif"],
         mono: ["JetBrains Mono", "ui-monospace", "monospace"],
 
-        // "FFCS Planner" skin (/new/*) — additive only, never referenced outside src/app/new and src/components/fp-ui
+        // "FFCS Planner" skin — additive only, prefixed fp-*
         "fp-display": ["var(--fp-font-display)", "Space Grotesk", "sans-serif"],
         "fp-body": ["var(--fp-font-body)", "IBM Plex Sans", "sans-serif"],
         "fp-mono": ["var(--fp-font-mono)", "IBM Plex Mono", "ui-monospace", "monospace"]
       },
       colors: {
-        // "FFCS Planner" skin (/new/*) tokens — additive only, prefixed so no existing class can collide
+        // "FFCS Planner" skin tokens — additive only, prefixed so no existing class can collide
         "fp-ground": "var(--ground)",
         "fp-surface": "var(--surface)",
         "fp-ink": "var(--ink)",

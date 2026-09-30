@@ -4,11 +4,10 @@ import { useCallback, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { GeneratePayload, WorkerMessage } from "@/engine/types";
 import { useAppStore } from "@/store/useAppStore";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export function useGenerator() {
   const router = useRouter();
-  const pathname = usePathname();
   const workerRef = useRef<Worker | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -61,11 +60,7 @@ export function useGenerator() {
           setChecked(event.data.checked);
           setAccepted(event.data.schedules.length);
           setIsGenerating(false);
-          // Stay within the skin the user is already in — this hook is shared
-          // between the classic app and the /new skin (see ZeroResultsFP vs
-          // ZeroResultsPanel), and a bare "/results" push would otherwise kick
-          // a /new user out into the classic route.
-          router.push(pathname?.startsWith("/new") ? "/new/results" : "/results");
+          router.push("/results");
           worker.terminate();
           workerRef.current = null;
           if (event.data.schedules.length === 0) {
@@ -104,7 +99,7 @@ export function useGenerator() {
 
       worker.postMessage(payload);
     },
-    [cancel, setGeneratedSchedules, router, pathname]
+    [cancel, setGeneratedSchedules, router]
   );
 
   return {

@@ -21,7 +21,7 @@ type Pick = { course: Course; option: CourseOption };
  * populated from each added course's FIRST professor option with no
  * conflict resolution at all — it is deliberately not the real generator.
  * Two courses landing on the same slot render as a clash cell rather than
- * silently overlapping. This is a from-scratch, /new-only cell-population
+ * silently overlapping. This is a from-scratch, planner-only cell-population
  * path: it does NOT import or extend `buildMatrixCells`/`FPSlotMatrixTimetable`,
  * since those assume a real generated schedule can never have two selections
  * share a slot, and are shared with the classic app's own timetable.

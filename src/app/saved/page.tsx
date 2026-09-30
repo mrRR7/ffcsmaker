@@ -1,21 +1,21 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { formatDistanceToNow } from "date-fns";
-import { ExternalLink, Heart, Trash2, GalleryVerticalEnd } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
-import { SectionHeader } from "@/components/SectionHeader";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/form";
+import { staggerContainer, fadeUp } from "@/utils/motion";
 import { useAppStore } from "@/store/useAppStore";
-import { CourseSummaryPanel } from "@/features/results/CourseSummaryPanel";
-import { SlotMatrixTimetable } from "@/features/results/SlotMatrixTimetable";
-import { cn } from "@/utils/cn";
+import { exportScheduleJson } from "@/utils/export";
+import { createSharedTimetableUrl } from "@/utils/share";
+import { FPButton } from "@/components/fp-ui/button";
+import { FPLabel } from "@/components/fp-ui/label";
+import { FPCard } from "@/components/fp-ui/card";
+import { SavedWeekCard } from "./SavedWeekCard";
 
-export default function SavedPage() {
+export default function NewSavedPage() {
   const router = useRouter();
   const slots = useAppStore((state) => state.slots);
   const courses = useAppStore((state) => state.courses);
@@ -23,128 +23,171 @@ export default function SavedPage() {
   const deleteSavedSchedule = useAppStore((state) => state.deleteSavedSchedule);
   const renameSavedSchedule = useAppStore((state) => state.renameSavedSchedule);
   const toggleFavoriteSchedule = useAppStore((state) => state.toggleFavoriteSchedule);
-
   const setGeneratedSchedules = useAppStore((state) => state.setGeneratedSchedules);
-  const sorted = [...savedSchedules].sort(
-    (a, b) => Number(b.favorite) - Number(a.favorite) || b.updatedAt.localeCompare(a.updatedAt)
+  const addCompareSchedule = useAppStore((state) => state.addCompareSchedule);
+
+  const sorted = useMemo(
+    () =>
+      [...savedSchedules].sort(
+        (a, b) => Number(b.favorite) - Number(a.favorite) || b.updatedAt.localeCompare(a.updatedAt)
+      ),
+    [savedSchedules]
   );
-  const featured = sorted[0]?.timetable ?? null;
 
   function reopen(scheduleId: string) {
     const saved = savedSchedules.find((item) => item.id === scheduleId);
-    if (!saved) {
-      return;
-    }
+    if (!saved) return;
     setGeneratedSchedules([saved.timetable]);
     toast.success("Schedule reopened in results.");
     router.push("/results");
   }
 
-  return (
-    <div className="pb-20 lg:pb-0">
-      <SectionHeader
-        title="Saved"
-      />
+  function rerun() {
+    toast("Add your latest courses on the planner, then re-generate to check this week still holds.");
+    router.push("/planner");
+  }
 
-      {savedSchedules.length === 0 ? (
-        <Card className="flex min-h-96 items-center justify-center text-center border-primary/20 bg-primary/5">
-          <CardContent className="max-w-md">
-            <GalleryVerticalEnd className="mx-auto mb-4 h-10 w-10 text-primary/70" />
-            <p className="text-lg font-semibold">No saved schedules yet</p>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Save schedules to view them here.
-            </p>
-            <Link
-              href="/planner"
-              className="mt-6 inline-flex h-10 items-center justify-center rounded-md bg-primary px-5 text-sm font-semibold text-on-primary shadow-sm hover:bg-primary-hover transition"
-            >
-              Open Planner
-            </Link>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-5 xl:grid-cols-[420px_minmax(0,1fr)]">
-          <div className="flex flex-col rounded-md border border-hairline bg-surface-card divide-y divide-hairline">
-            {sorted.map((saved) => (
-              <div key={saved.id} className="p-4 flex flex-col gap-3">
-                <div className="flex items-center gap-3">
-                  <Input
-                    value={saved.name}
-                    className="h-8 bg-canvas"
-                    onChange={(event) =>
-                      renameSavedSchedule(saved.id, event.target.value)
-                    }
-                  />
-                  <Button
-                    type="button"
-                    variant={saved.favorite ? "default" : "secondary"}
-                    size="sm"
-                    className="h-8 w-8 px-0"
-                    title="Favorite"
-                    onClick={() => toggleFavoriteSchedule(saved.id)}
-                  >
-                    <Heart
-                      className={cn("h-4 w-4", saved.favorite && "fill-current")}
-                    />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    className="h-8 w-8 px-0"
-                    title="Delete"
-                    onClick={() => deleteSavedSchedule(saved.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex flex-wrap gap-2">
-                    <Badge>Score {saved.timetable.score}</Badge>
-                    <Badge>
-                      {saved.timetable.selections.reduce(
-                        (sum, selection) => sum + selection.credits,
-                        0
-                      )}{" "}
-                      credits
-                    </Badge>
-                    <Badge>
-                      {formatDistanceToNow(new Date(saved.updatedAt), {
-                        addSuffix: true
-                      })}
-                    </Badge>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      size="sm"
-                      className="h-8"
-                      onClick={() => reopen(saved.id)}
-                    >
-                      <ExternalLink className="h-3.5 w-3.5" />
-                      Reopen
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="space-y-4">
-            <SlotMatrixTimetable schedule={featured} slots={slots} courses={courses} />
-            {featured ? (
-              <CourseSummaryPanel
-                schedule={featured}
-                slots={slots}
-                courses={courses}
-                highlightCourseCode={null}
-                previewCourseCode={null}
-                onHighlightCourseCodeChange={() => undefined}
-                onPreviewCourseCodeChange={() => undefined}
-              />
-            ) : null}
-          </div>
+  function compareTopThree() {
+    if (sorted.length === 0) {
+      toast.error("Nothing saved yet.");
+      return;
+    }
+    sorted.slice(0, 3).forEach((saved) => addCompareSchedule(saved.timetable.id));
+    router.push("/compare");
+  }
+
+  function exportAll() {
+    if (sorted.length === 0) {
+      toast.error("Nothing saved yet.");
+      return;
+    }
+    sorted.forEach((saved) => exportScheduleJson(saved.timetable));
+    toast.success(`Exported ${sorted.length} week${sorted.length === 1 ? "" : "s"}.`);
+  }
+
+  const [isSharing, setIsSharing] = useState(false);
+
+  async function createShareLink() {
+    const featured = sorted[0];
+    if (!featured) {
+      toast.error("Nothing saved yet.");
+      return;
+    }
+    setIsSharing(true);
+    try {
+      const url = await createSharedTimetableUrl({
+        schedule: featured.timetable,
+        slots,
+        courses,
+        metrics: featured.timetable.metrics,
+        score: featured.timetable.score,
+        generatedAt: new Date().toISOString()
+      });
+      await navigator.clipboard.writeText(url);
+      toast.success("Shared timetable URL copied.");
+    } catch {
+      toast.error("Failed to create a share link.");
+    } finally {
+      setIsSharing(false);
+    }
+  }
+
+  return (
+    <div className="-mx-4 -my-8 sm:-mx-6 lg:-mx-8">
+      <section className="flex flex-wrap items-end gap-5 border-b border-fp-border-default px-6 py-8">
+        <div>
+          <h1 className="font-fp-display text-[length:var(--text-display)] font-bold tracking-[-0.01em] text-fp-text-strong">My weeks</h1>
+          <p className="mt-1.5 max-w-xl text-[length:var(--text-body-size)] text-fp-text-body">
+            Your registration-day shortlist. Order them now &mdash; on the day you&apos;ll be typing slot codes, not
+            deciding.
+          </p>
         </div>
+        <div className="ml-auto flex gap-2">
+          <FPButton variant="secondary" size="sm" onClick={compareTopThree}>
+            Compare top 3
+          </FPButton>
+          <FPButton variant="secondary" size="sm" onClick={exportAll}>
+            Export all
+          </FPButton>
+        </div>
+      </section>
+
+      {sorted.length === 0 ? (
+        <div className="px-6 py-10">
+          <FPCard className="flex min-h-72 flex-col items-center justify-center gap-3 text-center">
+            <p className="font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong">No saved weeks yet</p>
+            <p className="max-w-sm text-[length:var(--text-small)] text-fp-text-dim">Save schedules from Results to see them here.</p>
+            <Link href="/planner" className="mt-2 inline-block">
+              <FPButton variant="primary" size="sm">
+                Open planner
+              </FPButton>
+            </Link>
+          </FPCard>
+        </div>
+      ) : (
+        <motion.div
+          className="flex flex-col gap-4 px-6 py-6"
+          variants={staggerContainer}
+          initial="initial"
+          animate="animate"
+        >
+          {sorted.map((saved) => {
+            const staleCourse = courses.find(
+              (course) => !saved.timetable.selections.some((selection) => selection.courseId === course.id)
+            );
+            let unverifiedCourseCode: string | null = null;
+            for (const selection of saved.timetable.selections) {
+              const course = courses.find((item) => item.id === selection.courseId);
+              const option = course?.options.find((item) => item.id === selection.optionId);
+              if (!option || option.professorRating === undefined) {
+                unverifiedCourseCode = selection.courseCode;
+                break;
+              }
+            }
+
+            return (
+              <motion.div key={saved.id} variants={fadeUp}>
+                <SavedWeekCard
+                  saved={saved}
+                  slots={slots}
+                  courses={courses}
+                  isStale={Boolean(staleCourse)}
+                  staleCourseCode={staleCourse?.courseCode ?? null}
+                  unverifiedCourseCode={unverifiedCourseCode}
+                  onToggleFavorite={() => toggleFavoriteSchedule(saved.id)}
+                  onRename={(name) => renameSavedSchedule(saved.id, name)}
+                  onDelete={() => deleteSavedSchedule(saved.id)}
+                  onReopen={() => reopen(saved.id)}
+                  onRerun={rerun}
+                />
+              </motion.div>
+            );
+          })}
+
+          <div className="mt-2 flex items-center gap-4 rounded-[var(--radius-lg)] border border-dashed border-fp-border-strong p-[18px]">
+            <div>
+              <FPLabel>Registration day</FPLabel>
+              <p className="mt-1 text-[length:var(--text-small)] text-fp-text-dim">
+                Weeks live in this browser only &mdash; clearing site data clears them. Share a link if you want one
+                on your phone too.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={createShareLink}
+              disabled={isSharing}
+              aria-busy={isSharing}
+              className="fp-text ml-auto inline-flex shrink-0 items-center gap-1 text-[length:var(--text-micro)] text-fp-accent hover:text-fp-accent-bright disabled:cursor-not-allowed disabled:text-fp-text-dim"
+            >
+              Create share link
+              {isSharing ? (
+                <Loader2 className="h-3 w-3 animate-spin" strokeWidth={1.5} />
+              ) : (
+                <ArrowRight className="h-3 w-3" strokeWidth={1.5} />
+              )}
+            </button>
+          </div>
+        </motion.div>
       )}
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
@@ -34,17 +35,17 @@ import { FPCard } from "@/components/fp-ui/card";
 // Same concept-to-icon mapping the classic app already uses for its own nav
 // (AppShell.tsx's navItems) — one icon vocabulary across both skins.
 const navItems = [
-  { href: "/new", label: "Home", icon: Home },
-  { href: "/new/planner", label: "Plan", icon: CalendarCheck },
-  { href: "/new/results", label: "Results", icon: Table2 },
-  { href: "/new/compare", label: "Compare", icon: Layers3 },
-  { href: "/new/saved", label: "Saved", icon: GalleryVerticalEnd },
-  { href: "/new/settings", label: "Settings", icon: Settings }
+  { href: "/", label: "Home", icon: Home },
+  { href: "/planner", label: "Plan", icon: CalendarCheck },
+  { href: "/results", label: "Results", icon: Table2 },
+  { href: "/compare", label: "Compare", icon: Layers3 },
+  { href: "/saved", label: "Saved", icon: GalleryVerticalEnd },
+  { href: "/settings", label: "Settings", icon: Settings }
 ];
 
 // Longest-prefix step order for directional page transitions — anything
 // outside this list (settings/admin/legal) is treated as trailing/forward.
-const ROUTE_ORDER = ["/new", "/new/planner", "/new/results", "/new/compare", "/new/saved"];
+const ROUTE_ORDER = ["/", "/planner", "/results", "/compare", "/saved"];
 
 function routeIndex(pathname: string | null) {
   if (!pathname) return ROUTE_ORDER.length;
@@ -78,17 +79,17 @@ export function FPShell({ children }: { children: React.ReactNode }) {
   const isMobile = useMediaQuery("(max-width: 767px)");
 
   const bypassCampusGate =
-    pathname === "/new" ||
-    pathname?.startsWith("/new/admin") ||
-    pathname === "/new/privacy" ||
-    pathname === "/new/terms" ||
-    pathname === "/new/disclaimer";
+    pathname === "/" ||
+    pathname?.startsWith("/admin") ||
+    pathname === "/privacy" ||
+    pathname === "/terms" ||
+    pathname === "/disclaimer";
 
   const activeHref = useMemo(() => {
     const match = navItems
       .filter((item) => pathname === item.href || pathname?.startsWith(`${item.href}/`))
       .sort((a, b) => b.href.length - a.href.length)[0];
-    return match?.href ?? "/new";
+    return match?.href ?? "/";
   }, [pathname]);
 
   const prevRouteIndexRef = useRef(routeIndex(pathname));
@@ -126,7 +127,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
     setCampus(pendingCampus);
     setPendingCampus(null);
     setCampusMenuOpen(false);
-    router.push("/new/planner");
+    router.push("/planner");
   }
 
   const mainContent = !hasHydrated ? (
@@ -142,8 +143,9 @@ export function FPShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col bg-fp-bg-page text-fp-text-body">
       <header className="sticky top-0 z-40 flex items-center gap-5 border-b border-fp-border-default bg-fp-bg-surface px-6 py-3">
-        <Link href="/new" className="select-none font-fp-display text-[length:var(--text-h)] font-bold tracking-[-0.01em] text-fp-text-strong">
-          FFCS Planner
+        <Link href="/" aria-label="Ultimate FFCS" className="flex select-none items-center">
+          <Image src="/logo.svg" alt="Ultimate FFCS" width={1101} height={256} priority className="h-8 w-auto dark:hidden" />
+          <Image src="/logo-reversed.svg" alt="Ultimate FFCS" width={1101} height={256} priority className="hidden h-8 w-auto dark:block" />
         </Link>
         <nav className="fp-text hidden items-center gap-[6px] text-[length:var(--text-small)] lg:flex">
           {navItems.map((item) => {
@@ -270,13 +272,13 @@ export function FPShell({ children }: { children: React.ReactNode }) {
       <footer className="flex items-center gap-4 border-t border-fp-border-default bg-fp-bg-surface px-6 py-5">
         <FPLabel>Not affiliated with VIT University</FPLabel>
         <div className="ml-auto flex gap-5 text-[length:var(--text-small)] text-fp-text-dim">
-          <Link href="/new/privacy" className="hover:text-fp-text-body">
+          <Link href="/privacy" className="hover:text-fp-text-body">
             Privacy
           </Link>
-          <Link href="/new/terms" className="hover:text-fp-text-body">
+          <Link href="/terms" className="hover:text-fp-text-body">
             Terms
           </Link>
-          <Link href="/new/disclaimer" className="hover:text-fp-text-body">
+          <Link href="/disclaimer" className="hover:text-fp-text-body">
             Disclaimer
           </Link>
         </div>
