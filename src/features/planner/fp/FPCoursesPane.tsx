@@ -26,10 +26,9 @@ function clampRailWidth(width: number) {
  * FPCoursesPane — "01 Courses" tab of /planner.
  *
  * Two columns: a resizable rail on the left holding course-adding controls
- * (search/paste/import/manual tabs) and the added-courses list stacked
- * below them, and the live FFCS preview grid alone on the right, dominant
- * and full-height — the whole pane scrolls normally with the page, nothing
- * pinned.
+ * (search/paste/import/manual tabs), and the live FFCS preview grid on
+ * the right with the added-courses boxes underneath it — the whole pane
+ * scrolls normally with the page, nothing pinned.
  */
 export function FPCoursesPane({
   actions,
@@ -89,15 +88,15 @@ export function FPCoursesPane({
 
   return (
     <div
-      className="lg:grid lg:items-start"
+      className="flex flex-col lg:grid lg:items-start"
       style={{ gridTemplateColumns: `minmax(0, ${railWidth}px) 6px minmax(0, 1fr)` }}
     >
       <section className="min-w-0">
-        <div className="border-b border-fp-border-default px-6 py-6">
+        <div className="border-b border-fp-border-default px-4 py-4 lg:px-6 lg:py-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="font-fp-display text-[22px] font-bold text-fp-text-strong">Add every course you&apos;re taking</h2>
-              <p className="mt-1.5 text-[length:var(--text-small)] text-fp-text-dim">
+              <p className="mt-1.5 hidden text-[length:var(--text-small)] text-fp-text-dim sm:block">
                 Tick every professor you&apos;d accept. More ticks, more working weeks.
               </p>
             </div>
@@ -136,9 +135,6 @@ export function FPCoursesPane({
           {tab === "manual" ? <FPCourseList showAddForm showList={false} /> : null}
         </div>
 
-        <div className="mt-6 border-t border-fp-border-default pt-6">
-          <FPCourseList showAddForm={false} showList />
-        </div>
       </section>
 
       <div
@@ -156,8 +152,15 @@ export function FPCoursesPane({
         />
       </div>
 
-      <aside className="min-w-0 border-t border-fp-border-default bg-fp-bg-surface px-6 py-6 lg:border-t-0">
-        <FPLiveSlotMatrix courses={courses} slots={slots} actions={actions} generation={generation} />
+      {/* Phone: the 860px live grid is unreadable at 375px and Results shows the real one,
+          so drop it and lift "your courses" above the add-course controls. */}
+      <aside className="order-first min-w-0 border-b border-fp-border-default bg-fp-bg-surface px-4 py-4 lg:order-none lg:border-b-0 lg:px-6 lg:py-6">
+        <div className="hidden lg:block">
+          <FPLiveSlotMatrix courses={courses} slots={slots} actions={actions} generation={generation} />
+        </div>
+        <div className="lg:mt-6 lg:border-t lg:border-fp-border-default lg:pt-6">
+          <FPCourseList showAddForm={false} showList />
+        </div>
       </aside>
     </div>
   );

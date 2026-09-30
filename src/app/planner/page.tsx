@@ -41,10 +41,32 @@ export default function NewPlannerPage() {
 
   const rankingProfiles = useMemo(() => getRankingProfiles(), []);
   const slots = useAppStore((state) => state.slots);
+  const courseCount = useAppStore((state) => state.courses.length);
 
   useEffect(() => {
     if (campus) loadCatalog(campus).catch(() => {});
   }, [campus]);
+
+  const rankingControls = (
+    <>
+      <select
+        value={rankingMode}
+        onChange={(event) => setRankingMode(event.target.value as RankingMode)}
+        aria-label="Ranking profile"
+        className="fp-text rounded-[var(--radius-md)] border border-fp-border-strong bg-transparent px-2.5 py-[7px] text-[length:var(--text-micro)] text-fp-text-body outline-none hover:border-fp-accent"
+      >
+        {rankingProfiles.map((profile) => (
+          <option key={profile} value={profile}>
+            {profile}
+          </option>
+        ))}
+      </select>
+      <label className="fp-text inline-flex cursor-pointer items-center gap-1.5 text-[length:var(--text-micro)] text-fp-text-dim">
+        <FPCheckbox checked={usePriorityRanking} onCheckedChange={setUsePriorityRanking} />
+        My list order
+      </label>
+    </>
+  );
 
   return (
     <div className="-mx-4 -my-8 sm:-mx-6 lg:-mx-8">
@@ -113,22 +135,7 @@ export default function NewPlannerPage() {
               generation={{ active: isGenerating, found: accepted, candidate }}
               actions={
                 <>
-                  <select
-                    value={rankingMode}
-                    onChange={(event) => setRankingMode(event.target.value as RankingMode)}
-                    aria-label="Ranking profile"
-                    className="fp-text rounded-[var(--radius-md)] border border-fp-border-strong bg-transparent px-2.5 py-[7px] text-[length:var(--text-micro)] text-fp-text-body outline-none hover:border-fp-accent"
-                  >
-                    {rankingProfiles.map((profile) => (
-                      <option key={profile} value={profile}>
-                        {profile}
-                      </option>
-                    ))}
-                  </select>
-                  <label className="fp-text inline-flex cursor-pointer items-center gap-1.5 text-[length:var(--text-micro)] text-fp-text-dim">
-                    <FPCheckbox checked={usePriorityRanking} onCheckedChange={setUsePriorityRanking} />
-                    My list order
-                  </label>
+                  {rankingControls}
                   <FPButton
                     data-tour-id="planner-generate"
                     variant={isGenerating ? "secondary" : "primary"}
@@ -152,6 +159,33 @@ export default function NewPlannerPage() {
           )}
         </motion.div>
       </AnimatePresence>
+
+      {/* Phone: the classic skin's pinned bottom action, sitting on the shell's tab bar. */}
+      {courseCount > 0 ? (
+        <>
+          <div className="h-28 lg:hidden" />
+          <div className="fixed inset-x-0 bottom-[calc(64px+env(safe-area-inset-bottom))] z-30 border-t border-fp-border-default bg-fp-bg-surface px-4 py-2.5 lg:hidden">
+            <div className="mb-2 flex items-center gap-3">{rankingControls}</div>
+            <div className="flex gap-2">
+              {!isGenerating && accepted > 0 ? (
+                <Link href="/results" className="flex-1">
+                  <FPButton variant="secondary" className="w-full">
+                    {accepted} weeks
+                    <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
+                  </FPButton>
+                </Link>
+              ) : null}
+              <FPButton
+                variant={isGenerating ? "secondary" : "primary"}
+                className="flex-1"
+                onClick={isGenerating ? cancel : runGeneration}
+              >
+                {isGenerating ? `Cancel · ${accepted} found` : `Find my weeks · ${courseCount} course${courseCount === 1 ? "" : "s"}`}
+              </FPButton>
+            </div>
+          </div>
+        </>
+      ) : null}
     </div>
   );
 }

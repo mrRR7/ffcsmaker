@@ -67,16 +67,15 @@ function iconButtonClass(active: boolean, tone: "accent" | "warn" | "default" = 
 /**
  * FPCourseList — reskin of `src/features/courses/CourseBuilder.tsx`. Same
  * store actions, dnd-kit reordering and picker logic as the classic Manual
- * tab; only the JSX changed. Rendered below every tab (mirrors the classic
- * `StepCourses` layout, where the course list is always visible and only the
- * "add a course" form is tab-gated). Pass `showAddForm` to also render that
+ * tab; only the JSX changed. Rendered as a grid of compact boxes under the live
+ * timetable; a box expands to a full row when opened. Pass `showAddForm` to also render that
  * form (Manual tab only).
  */
 export function FPCourseList({ showAddForm, showList = true }: { showAddForm: boolean; showList?: boolean }) {
   const [courseCode, setCourseCode] = useState("");
   const [courseName, setCourseName] = useState("");
   const [credits, setCredits] = useState("");
-  const [collapsedCourseIds, setCollapsedCourseIds] = useState<Record<string, boolean>>({});
+  const [expandedCourseIds, setExpandedCourseIds] = useState<Record<string, boolean>>({});
   const [isDeleteAllOpen, setIsDeleteAllOpen] = useState(false);
   const [showAllCourses, setShowAllCourses] = useState(false);
   const courses = useAppStore((state) => state.courses);
@@ -92,13 +91,13 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [isDeleteAllOpen]);
 
-  function toggleCourseCollapse(courseId: string) {
-    setCollapsedCourseIds((current) => ({ ...current, [courseId]: !current[courseId] }));
+  function toggleCourseExpanded(courseId: string) {
+    setExpandedCourseIds((current) => ({ ...current, [courseId]: !current[courseId] }));
   }
 
   function confirmDeleteAllCourses() {
     clearCourses();
-    setCollapsedCourseIds({});
+    setExpandedCourseIds({});
     setShowAllCourses(false);
     setIsDeleteAllOpen(false);
     toast.success("All courses cleared.");
@@ -117,7 +116,7 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
   }
 
   return (
-    <div className="space-y-4 p-6">
+    <div className={cn("space-y-4", showAddForm && "p-6")}>
       {showAddForm ? (
         <div className="rounded-[var(--radius-lg)] border border-fp-border-default bg-fp-bg-surface p-4">
           <FPLabel tone="strong" className="block text-[length:var(--text-small)] normal-case">
@@ -167,21 +166,21 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
               No courses added yet.
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               {(showAllCourses ? courses : courses.slice(0, COURSE_LIST_CAP)).map((course, index) => (
                 <CourseCard
                   key={course.id}
                   courseId={course.id}
                   index={index}
-                  collapsed={Boolean(collapsedCourseIds[course.id])}
-                  onToggleCollapse={toggleCourseCollapse}
+                  collapsed={!expandedCourseIds[course.id]}
+                  onToggleCollapse={toggleCourseExpanded}
                 />
               ))}
               {!showAllCourses && courses.length > COURSE_LIST_CAP ? (
                 <button
                   type="button"
                   onClick={() => setShowAllCourses(true)}
-                  className="fp-text w-full rounded-[var(--radius-md)] border border-dashed border-fp-border-strong px-4 py-3 text-center text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
+                  className="fp-text col-span-full w-full rounded-[var(--radius-md)] border border-dashed border-fp-border-strong px-4 py-3 text-center text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
                 >
                   {courses.length - COURSE_LIST_CAP} more course{courses.length - COURSE_LIST_CAP === 1 ? "" : "s"}
                 </button>
@@ -309,8 +308,9 @@ function CourseCard({
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-r-[var(--radius-md)] border-y border-r bg-fp-bg-surface",
-        isRisky ? "border-l-2 border-l-fp-warn border-y-fp-border-default border-r-fp-border-default" : "border-l-2 border-l-fp-accent border-y-fp-border-default border-r-fp-border-default"
+        "overflow-hidden rounded-[var(--radius-md)] border bg-fp-bg-surface",
+        collapsed ? "" : "sm:col-span-full",
+        isRisky ? "border-fp-warn" : "border-fp-border-default"
       )}
       style={isRisky ? { backgroundColor: "var(--warn-wash)" } : undefined}
     >
