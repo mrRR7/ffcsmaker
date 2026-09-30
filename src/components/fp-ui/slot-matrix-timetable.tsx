@@ -268,5 +268,9 @@ export function readableTextColor(hex: string | undefined): string {
     return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
   });
   const luminance = 0.2126 * rl + 0.7152 * gl + 0.0722 * bl;
-  return luminance > 0.55 ? "#0b0e11" : "#f2f7f4";
+  // Pick whichever ink gives more WCAG contrast. Against #0b0e11 / #f2f7f4 the
+  // crossover sits near L=0.18 — the old 0.55 cut put white on amber/teal at ~2:1.
+  const onDark = (luminance + 0.05) / (0.0044 + 0.05);
+  const onLight = (0.92 + 0.05) / (luminance + 0.05);
+  return onDark >= onLight ? "#0b0e11" : "#f2f7f4";
 }

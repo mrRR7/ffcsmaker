@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { TOUR_STEPS, type TourStep } from "./tourSteps";
+import { TOUR_STEPS, isStepVisible, snapshotTourStart, type TourStep } from "./tourSteps";
 import { markTourSeen } from "./tourStorage";
 
 const POLL_TICK_MS = 100;
@@ -34,9 +34,7 @@ interface TourContextValue extends TourState {
 
 const TourContext = React.createContext<TourContextValue | null>(null);
 
-function isValid(step: TourStep): boolean {
-  return step.precondition ? step.precondition() : true;
-}
+const isValid = isStepVisible;
 
 function isTargetVisible(targetId: string): boolean {
   const el = document.querySelector(`[data-tour-id="${targetId}"]`);
@@ -144,6 +142,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
   // already no-ops when the route matches (no redundant push), so this is a
   // no-behavior-change for the existing home-page entry point.
   const start = React.useCallback(() => {
+    snapshotTourStart();
     goTo(0, "forward");
   }, [goTo]);
 

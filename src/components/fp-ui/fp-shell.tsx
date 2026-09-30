@@ -26,6 +26,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useTour } from "@/features/tour/useTour";
 import { CAMPUS_LABELS, type Campus } from "@/engine/types";
+import { BRAND_PALETTE } from "@/lib/coursePalette";
 import { decodeSharedState } from "@/utils/share";
 import { FPButton } from "@/components/fp-ui/button";
 import { FPBadge } from "@/components/fp-ui/badge";
@@ -55,11 +56,12 @@ function routeIndex(pathname: string | null) {
   return match ? ROUTE_ORDER.indexOf(match) : ROUTE_ORDER.length;
 }
 
-const campusOptions: Array<{ campus: Campus; active: boolean }> = [
-  { campus: "chennai", active: true },
-  { campus: "vellore", active: true },
-  { campus: "bhopal", active: true },
-  { campus: "ap", active: false }
+// Same order + swatches as the landing CampusPicker, so a campus looks the same on both screens.
+const campusOptions: Array<{ campus: Campus; active: boolean; swatch: string }> = [
+  { campus: "chennai", active: true, swatch: BRAND_PALETTE[0] },
+  { campus: "vellore", active: true, swatch: BRAND_PALETTE[1] },
+  { campus: "bhopal", active: true, swatch: BRAND_PALETTE[2] },
+  { campus: "ap", active: false, swatch: BRAND_PALETTE[3] }
 ];
 
 export function FPShell({ children }: { children: React.ReactNode }) {
@@ -388,10 +390,19 @@ function FPCampusGate({ onPick }: { onPick: (campus: Campus) => void }) {
                 "rounded-[var(--radius-md)] border p-5 text-left transition-[border-color,background-color,transform] duration-[var(--dur-fast)]",
                 option.active
                   ? "border-fp-border-default bg-fp-bg-surface hover:border-fp-border-accent active:scale-[0.98]"
-                  : "cursor-not-allowed border-fp-border-default bg-fp-bg-inset opacity-60"
+                  : "cursor-not-allowed border-dashed border-fp-border-default bg-transparent"
               )}
             >
-              <div className="font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong">
+              <div
+                className={cn(
+                  "flex items-center gap-2 font-fp-display text-[length:var(--text-h)] font-bold",
+                  option.active ? "text-fp-text-strong" : "text-fp-text-dim"
+                )}
+              >
+                <span
+                  className={cn("h-2.5 w-2.5 shrink-0 rounded-[2px]", !option.active && "opacity-40")}
+                  style={{ background: option.swatch }}
+                />
                 {CAMPUS_LABELS[option.campus]}
               </div>
               <FPLabel tone={option.active ? "accent" : "dim"} className="mt-3.5 inline-flex items-center gap-1">

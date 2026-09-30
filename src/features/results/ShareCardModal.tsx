@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { Copy, Download, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { FPButton } from "@/components/fp-ui/button";
 import { Campus, ScoredTimetable, TimeSlot } from "@/engine/types";
 import {
   captureShareCard,
@@ -75,6 +75,15 @@ export function ShareCardModal({ open, onClose, schedule, slots }: Props) {
     }
   }, []);
 
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   if (!open) {
     return null;
   }
@@ -97,29 +106,32 @@ export function ShareCardModal({ open, onClose, schedule, slots }: Props) {
         onClick={onClose}
       >
         <div
-          className="w-full max-w-lg rounded-xl border border-border bg-card shadow-card"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="share-card-title"
+          className="w-full max-w-lg rounded-[var(--radius-lg)] border border-fp-border-default bg-fp-bg-surface"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Modal header */}
           <div className="flex items-center justify-between gap-4 px-5 pt-5">
             <div>
-              <h2 className="text-base font-semibold text-foreground">
+              <h2 id="share-card-title" className="font-fp-display text-[17px] font-bold text-fp-text-strong">
                 Share your timetable
               </h2>
-              <p className="mt-0.5 text-xs text-muted-foreground">
+              <p className="mt-0.5 text-[length:var(--text-small)] text-fp-text-dim">
                 Export a polished PNG of your schedule.
               </p>
             </div>
-            <Button type="button" variant="ghost" size="icon" onClick={onClose}>
+            <FPButton type="button" variant="ghost" size="sm" onClick={onClose} aria-label="Close">
               <X className="h-4 w-4" />
-            </Button>
+            </FPButton>
           </div>
 
           {/* Live preview — responsive scaling */}
           <div className="mt-4 px-5">
             <div
               ref={containerRef}
-              className="relative w-full overflow-hidden rounded-md border border-border/50 bg-[#0b0e11]"
+              className="relative w-full overflow-hidden rounded-[var(--radius-md)] border border-fp-border-default bg-[#0b0e11]"
               style={{ paddingBottom: `${(SHARE_CARD_HEIGHT / SHARE_CARD_WIDTH) * 100}%` }}
             >
               <div
@@ -137,32 +149,32 @@ export function ShareCardModal({ open, onClose, schedule, slots }: Props) {
                 />
               </div>
             </div>
-            <p className="mt-2 text-center text-[11px] text-muted-foreground/60">
+            <p className="mt-2 text-center text-[length:var(--text-micro)] text-fp-text-dim">
               Preview · exports as 1200 × 630 PNG
             </p>
           </div>
 
           {/* Actions */}
           <div className="flex gap-2 px-5 pb-5 pt-4">
-            <Button
+            <FPButton
               type="button"
-              className="flex-1"
+              className="flex-1 justify-center"
               onClick={handleDownload}
               disabled={isCapturing || isCopying}
             >
               <Download className="h-4 w-4" />
               {isCapturing ? "Generating…" : "Download PNG"}
-            </Button>
-            <Button
+            </FPButton>
+            <FPButton
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={handleCopy}
               disabled={isCapturing || isCopying}
               title="Copy to clipboard"
             >
               <Copy className="h-4 w-4" />
               {isCopying ? "Copying…" : "Copy"}
-            </Button>
+            </FPButton>
           </div>
         </div>
       </div>

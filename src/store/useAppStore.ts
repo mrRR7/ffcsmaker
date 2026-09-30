@@ -33,6 +33,9 @@ const GENERATION_TTL_MS = 24 * 60 * 60 * 1000;
 
 export const defaultSlots = getSlotCatalog("standard");
 
+export type GenerationStatus = { running: boolean; progress: number; checked: number; accepted: number };
+export const IDLE_GENERATION: GenerationStatus = { running: false, progress: 0, checked: 0, accepted: 0 };
+
 export const defaultConstraints: Constraints = {
   blockedWindows: [],
   noAfterTime: null,
@@ -112,6 +115,9 @@ export interface UniTimeStore {
   generatedSchedules: ScoredTimetable[];
   generatedShapeGroups: TimetableShapeGroup[];
   generatedAt: number | null;
+  /** Live search status — session-only (not in partialize), read by /results
+   * to show the generating screen while the worker runs. */
+  generation: GenerationStatus;
   activeShapeId: string | null;
   activeVariantId: string | null;
   savedSchedules: SavedSchedule[];
@@ -171,6 +177,7 @@ export interface UniTimeStore {
   setFacultyRanking: (courseId: string, optionIds: string[]) => void;
   setAvoidedFaculty: (courseId: string, optionIds: string[]) => void;
   setGeneratedSchedules: (schedules: ScoredTimetable[]) => void;
+  setGeneration: (patch: Partial<GenerationStatus>) => void;
   setActiveShapeId: (shapeId: string | null) => void;
   setActiveVariantId: (variantId: string | null) => void;
   saveSchedule: (schedule: ScoredTimetable, name?: string) => void;
@@ -196,6 +203,7 @@ export const useAppStore = create<UniTimeStore>()(
       generatedSchedules: [],
       generatedShapeGroups: [],
       generatedAt: null,
+      generation: IDLE_GENERATION,
       activeShapeId: null,
       activeVariantId: null,
       savedSchedules: [],
@@ -606,6 +614,7 @@ export const useAppStore = create<UniTimeStore>()(
             }
           }
         })),
+      setGeneration: (patch) => set((state) => ({ generation: { ...state.generation, ...patch } })),
       setGeneratedSchedules: (schedules) =>
         set((state) => {
           const generatedShapeGroups = groupSchedulesByShape(schedules, state.slots);
@@ -648,7 +657,7 @@ export const useAppStore = create<UniTimeStore>()(
                 id: nanoid(),
                 name:
                   name ??
-                  `${schedule.rankingMode} schedule ${state.savedSchedules.length + 1}`,
+                  `Week ${state.savedSchedules.length + 1}`,
                 createdAt: now,
                 updatedAt: now,
                 favorite: false,

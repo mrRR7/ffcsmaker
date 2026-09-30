@@ -140,6 +140,16 @@ export function FPSearchTab() {
     setSelectedOptions((current) => ({ ...current, [optionId]: !current[optionId] }));
   }
 
+  /** Tick every option in the list, or untick them all if they're already ticked. */
+  function toggleAll(options: DBCourseOption[]) {
+    setSelectedOptions((current) => {
+      const allTicked = options.every((option) => current[option.id]);
+      const next = { ...current };
+      options.forEach((option) => (next[option.id] = !allTicked));
+      return next;
+    });
+  }
+
   function addSelected(course: DBCourse) {
     const selected = course.course_options.filter((option) => selectedOptions[option.id]);
     if (selected.length === 0) {
@@ -169,6 +179,7 @@ export function FPSearchTab() {
       return next;
     });
 
+    setExpandedCourseId(null);
     toast.success(`${course.course_code} added with ${result.addedOptions} professor option${result.addedOptions === 1 ? "" : "s"}.`);
   }
 
@@ -212,10 +223,11 @@ export function FPSearchTab() {
 
   return (
     <div className="space-y-4 p-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+      <div className="flex flex-col gap-2">
         <div className="flex flex-1 items-center gap-2.5 rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-[14px] py-[11px] focus-within:border-[var(--border-selected)]">
           <span className="font-fp-mono text-fp-text-dim">/</span>
           <input
+            aria-label="Search courses by code or name"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Course code or name"
@@ -225,7 +237,7 @@ export function FPSearchTab() {
         <select
           value={semesterId}
           onChange={(event) => setSemesterId(event.target.value)}
-          className="fp-text rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-[11px] text-[length:var(--text-micro)] text-fp-text-dim focus:border-[var(--border-selected)] focus:outline-none sm:max-w-[220px]"
+          className="fp-text rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-[11px] text-[length:var(--text-micro)] text-fp-text-dim focus:border-[var(--border-selected)] focus:outline-none"
         >
           {semesters.length === 0 ? (
             <option value="">No semester</option>
@@ -280,6 +292,9 @@ export function FPSearchTab() {
               (group) => timeFilter === "all" || group.timeOfDay === "unscheduled" || group.timeOfDay === timeFilter
             );
             const expandedGroupKey = expandedGroupByCourse[course.id] ?? null;
+            const inPlanCount =
+              coursesInPlanner.find((c) => c.courseCode === course.course_code)?.options.length ?? 0;
+            const visibleOptions = visibleGroups.flatMap((group) => group.options);
             return (
               <div
                 key={course.id}
@@ -307,6 +322,10 @@ export function FPSearchTab() {
                     <FPLabel tone="accent" className="shrink-0">
                       {tickedCount} ticked
                     </FPLabel>
+                  ) : inPlanCount > 0 ? (
+                    <FPBadge tone="accent" pill className="shrink-0">
+                      In plan · {inPlanCount} prof{inPlanCount === 1 ? "" : "s"}
+                    </FPBadge>
                   ) : null}
                   <ChevronDown className={cn("h-4 w-4 shrink-0 text-fp-text-dim transition-transform", expanded && "rotate-180")} />
                 </button>
@@ -338,6 +357,17 @@ export function FPSearchTab() {
                               }))
                             }
                           >
+                            {group.options.length > 1 ? (
+                              <button
+                                type="button"
+                                onClick={() => toggleAll(group.options)}
+                                className="fp-text text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-accent"
+                              >
+                                {group.options.every((option) => selectedOptions[option.id])
+                                  ? "Untick all in this slot"
+                                  : `Tick all ${group.options.length} in this slot`}
+                              </button>
+                            ) : null}
                             {group.options.map((option) => optionRow(course, option))}
                           </FPSlotOptionChip>
                         );
@@ -345,10 +375,21 @@ export function FPSearchTab() {
                     </div>
 
                     <div className="mt-1 flex flex-wrap items-center gap-3">
-                      <FPButton variant="primary" size="sm" onClick={() => addSelected(course)}>
-                        {tickedCount > 0 ? `Add ${tickedCount} professor${tickedCount === 1 ? "" : "s"}` : "Add professors"}
+                      <FPButton
+                        variant="primary"
+                        size="sm"
+                        onClick={() => addSelected(course)}
+                        disabled={tickedCount === 0}
+                      >
+                        {tickedCount > 0 ? `Add ${tickedCount} professor${tickedCount === 1 ? "" : "s"}` : "Tick professors to add"}
                       </FPButton>
-                      <FPLabel>Slot codes are what you type into VTOP</FPLabel>
+                      {visibleOptions.length > 1 ? (
+                        <FPButton variant="ghost" size="sm" onClick={() => toggleAll(visibleOptions)}>
+                          {visibleOptions.every((option) => selectedOptions[option.id])
+                            ? "Untick all"
+                            : `Tick all ${visibleOptions.length}`}
+                        </FPButton>
+                      ) : null}
                     </div>
                   </div>
                 ) : null}

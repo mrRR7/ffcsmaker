@@ -7,7 +7,8 @@ import { cn } from "@/utils/cn";
 import { FPButton } from "@/components/fp-ui/button";
 import { FPLabel } from "@/components/fp-ui/label";
 import { useTour } from "./useTour";
-import { TOUR_STEPS } from "./tourSteps";
+import { TOUR_STEPS, isStepVisible } from "./tourSteps";
+import { useAppStore } from "@/store/useAppStore";
 
 /** Every fp-* CSS variable/class is scoped under `.fp-root` (see fp-tokens.css) —
  * portaling to `document.body` directly would escape that scope and render
@@ -34,6 +35,16 @@ export function TourCard() {
   const [targetEl, setTargetEl] = React.useState<Element | null>(null);
 
   const targetId = currentStep?.targetId;
+  const campus = useAppStore((s) => s.campus);
+  const waitingForCampus = !!currentStep?.waitsForCampus && !campus;
+
+  // Picking a campus IS the action this step asks for — advance on it instead
+  // of making the user also hit Next.
+  const wasWaiting = React.useRef(false);
+  React.useEffect(() => {
+    if (wasWaiting.current && !waitingForCampus && currentStep?.waitsForCampus) next();
+    wasWaiting.current = waitingForCampus;
+  }, [waitingForCampus, currentStep, next]);
 
   React.useEffect(() => {
     if (!targetId) {
@@ -86,7 +97,9 @@ export function TourCard() {
       {/* Progress dots — same active/done/upcoming distinction as FPStepNav: accent
           marks done, neutral-strong marks "you are here", dim marks upcoming. */}
       <div className="mt-3 flex items-center gap-1.5">
-        {TOUR_STEPS.map((step, i) => (
+        {TOUR_STEPS.map((step, i) => ({ step, i }))
+          .filter(({ step, i }) => i === stepIndex || isStepVisible(step))
+          .map(({ step, i }) => (
           <span
             key={step.id}
             className={cn(
@@ -107,9 +120,13 @@ export function TourCard() {
           <FPButton variant="secondary" size="sm" onClick={back} disabled={stepIndex === 0}>
             Back
           </FPButton>
-          <FPButton variant="primary" size="sm" onClick={next}>
-            {isLastStep ? "Done" : "Next"}
-          </FPButton>
+          {waitingForCampus ? (
+            <span className="fp-text text-[length:var(--text-small)] text-fp-text-dim">Pick one to continue</span>
+          ) : (
+            <FPButton variant="primary" size="sm" onClick={next}>
+              {isLastStep ? "Done" : "Next"}
+            </FPButton>
+          )}
         </div>
       </div>
     </div>,

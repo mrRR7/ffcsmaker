@@ -17,6 +17,7 @@ export function CompareWeekCard({
   courses,
   eyebrow,
   recommended,
+  differingCourseIds,
   onRemove
 }: {
   schedule: ScoredTimetable;
@@ -24,6 +25,7 @@ export function CompareWeekCard({
   courses: Course[];
   eyebrow: string;
   recommended: boolean;
+  differingCourseIds?: Set<string>;
   onRemove: () => void;
 }) {
   const saveSchedule = useAppStore((state) => state.saveSchedule);
@@ -79,14 +81,24 @@ export function CompareWeekCard({
         <div className="flex flex-col gap-1.5">
           {schedule.selections.map((selection) => {
             const course = courses.find((c) => c.id === selection.courseId);
+            const differs = differingCourseIds?.has(selection.courseId) ?? false;
             return (
-              <div key={selection.courseId} className="flex items-center gap-2.5 text-[length:var(--text-small)]">
+              <div
+                key={selection.courseId}
+                className={
+                  "-mx-2 flex items-center gap-2.5 rounded-[var(--radius-sm)] px-2 py-0.5 text-[length:var(--text-small)]" +
+                  (differs ? " bg-[var(--accent-wash)]" : "")
+                }
+                title={differs ? "Different from the other week(s)" : undefined}
+              >
                 <span
                   className="h-2 w-2 shrink-0 rounded-full"
                   style={{ backgroundColor: course?.color ?? "var(--text-dim)" }}
                 />
                 <span className="font-fp-mono text-fp-text-strong">{selection.courseCode}</span>
-                <span className="ml-auto truncate text-fp-text-dim">{selection.professorName}</span>
+                <span className={"ml-auto truncate " + (differs ? "font-medium text-fp-text-accent" : "text-fp-text-dim")}>
+                  {selection.professorName}
+                </span>
               </div>
             );
           })}
@@ -95,7 +107,7 @@ export function CompareWeekCard({
         <FPButton
           variant={recommended ? "primary" : "secondary"}
           size="sm"
-          className="w-full justify-center"
+          className="self-end"
           onClick={() => {
             saveSchedule(schedule);
             toast.success("Week saved.");
