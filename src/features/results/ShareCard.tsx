@@ -9,6 +9,7 @@ import {
 } from "@/engine/types";
 import { getSlotDaysForSlots } from "@/engine/slotCatalog";
 import { parseTime } from "@/engine/conflict";
+import { colorForIndex } from "@/lib/coursePalette";
 
 // Fixed export dimensions — single unified design
 export const SHARE_CARD_WIDTH = 1200;
@@ -27,14 +28,8 @@ function buildGrid(schedule: ScoredTimetable, slots: TimeSlot[]) {
   const slotById = new Map(slots.map((s) => [s.id, s]));
   const courseBySlotId = new Map<string, { code: string; color: string; name: string }>();
 
-  // Assign each course a color from the course.color field or a fallback palette
-  const palette = [
-    "#14b8a6", "#6366f1", "#22c55e", "#f59e0b",
-    "#ec4899", "#38bdf8", "#a78bfa", "#f97316"
-  ];
-
   schedule.selections.forEach((sel, idx) => {
-    const color = palette[idx % palette.length];
+    const color = colorForIndex(idx);
     const allIds = [
       ...sel.theorySlotIds,
       ...sel.labSlotIds,
@@ -257,11 +252,6 @@ export function ShareCard({ id, schedule, slots, campus, semesterLabel }: Props)
     fontWeight: 800,
     color: "#ffffff"
   };
-
-  const palette = [
-    "#14b8a6", "#6366f1", "#22c55e", "#f59e0b",
-    "#ec4899", "#38bdf8", "#a78bfa", "#f97316"
-  ];
 
   return (
     <div id={id} style={root}>
