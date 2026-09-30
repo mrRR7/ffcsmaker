@@ -18,7 +18,7 @@ import { FPBlockedWindowsPanel } from "./FPBlockedWindowsPanel";
  * global start/end exists. Ranking profile moved to the Courses page, next
  * to "Find my weeks" — see src/app/planner/page.tsx.
  */
-export function FPPreferencesPane() {
+export function FPPreferencesPane({ actions }: { actions?: React.ReactNode }) {
   const constraints = useAppStore((state) => state.constraints);
   const setConstraint = useAppStore((state) => state.setConstraint);
   const resetConstraints = useAppStore((state) => state.resetConstraints);
@@ -35,10 +35,10 @@ export function FPPreferencesPane() {
           When can classes happen?
         </FPLabel>
         <FPNote className="mt-2">
-          Global hard bounds &mdash; schedules that violate these are rejected outright, not just penalized.
+          Weeks with any class outside these times are left out entirely.
         </FPNote>
         <div className="mt-3 grid gap-3 rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface p-4 sm:grid-cols-2">
-          <FPFieldGroup label="start_after">
+          <FPFieldGroup label="Classes start after">
             <input
               type="time"
               className={fpInputClass}
@@ -46,7 +46,7 @@ export function FPPreferencesPane() {
               onChange={(event) => setConstraint("earliestStart", event.target.value || null)}
             />
           </FPFieldGroup>
-          <FPFieldGroup label="end_before">
+          <FPFieldGroup label="Classes end by">
             <input
               type="time"
               className={fpInputClass}
@@ -69,10 +69,11 @@ export function FPPreferencesPane() {
         </div>
       </section>
 
-      <div className="mt-8 flex justify-center border-t border-fp-border-default pt-6">
-        <FPButton variant="secondary" size="md" onClick={resetConstraints}>
-          Reset all constraints
+      <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-fp-border-default pt-6">
+        <FPButton variant="ghost" size="sm" onClick={resetConstraints}>
+          Clear all
         </FPButton>
+        <div className="ml-auto flex flex-wrap items-center gap-2.5">{actions}</div>
       </div>
     </div>
   );

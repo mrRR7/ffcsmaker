@@ -44,18 +44,16 @@ export function FPVtopRecommendation({
   return (
     <>
       <div
-        className="flex flex-col gap-3 border-b border-l-2 border-b-fp-border-default border-l-fp-accent px-6 py-4 sm:flex-row sm:items-center"
-        style={{ backgroundColor: "var(--accent-wash)" }}
+        className="flex flex-col gap-3 border-y border-fp-border-default px-6 py-4"
       >
         <div className="min-w-0 flex-1">
-          <FPLabel tone="accent">Need your exact FFCS data</FPLabel>
-          <p className="mt-1 text-[length:var(--text-small)] leading-[1.5] text-fp-text-body">
-            Can&apos;t find your course or faculty in the catalog. Import your actual VTOP registration data
-            with a one-click bookmark &mdash; no install required.
+          <FPLabel>Course or faculty missing?</FPLabel>
+          <p className="mt-1 text-[length:var(--text-small)] leading-[1.5] text-fp-text-dim">
+            Import your real VTOP registration data with a one-click bookmark. Nothing to install.
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          <FPButton variant="primary" size="sm" onClick={() => setModalOpen(true)}>
+          <FPButton variant="secondary" size="sm" onClick={() => setModalOpen(true)}>
             <Download className="h-3.5 w-3.5" />
             Import from VTOP
           </FPButton>

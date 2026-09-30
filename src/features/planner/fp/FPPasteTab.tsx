@@ -32,10 +32,26 @@ export function FPPasteTab() {
   function parseText() {
     try {
       const parsed = parseImport(rawText);
-      const validated = parsed.rows.map((row) => validateAndParseRow(row, slots));
+      // Pasted lists rarely carry a course name or credits — default them the
+      // same way addRows() does, so the validator only rejects real problems
+      // (unknown slot codes, missing professor).
+      const validated = parsed.rows.map((row) => {
+        const result = validateAndParseRow(
+          { ...row, courseName: row.courseName || row.courseCode, credits: row.credits || "3" },
+          slots
+        );
+        // A pasted line with no recognisable slot code is almost always a typo
+        // ("ZZ9"), and would add a course the generator can never place.
+        if (!result.theorySlots.trim() && !result.labSlots.trim()) {
+          return { ...result, isValid: false, errors: [...result.errors, "No slot codes recognised"] };
+        }
+        return result;
+      });
       setRows(validated);
       setImportMetadata(parsed.metadata);
-      toast.success(`${validated.length} course options parsed from your input.`);
+      const ok = validated.filter((row) => row.isValid).length;
+      if (ok === validated.length) toast.success(`${ok} professor options ready to add.`);
+      else toast.error(`${validated.length - ok} of ${validated.length} rows need fixing — see the table.`);
     } catch (error) {
       setRows([]);
       setImportMetadata({});
@@ -65,6 +81,8 @@ export function FPPasteTab() {
     }
 
     setCourses(result.courses);
+    setRows([]);
+    setRawText("");
     toast.success(`${result.addedOptions} professor options added to planner.`);
   }
 
@@ -86,11 +104,21 @@ export function FPPasteTab() {
       />
 
       <div className="flex flex-wrap items-center gap-3">
-        <FPButton variant="primary" size="sm" onClick={parseText} disabled={!rawText.trim()}>
+        <FPButton
+          variant={validRows.length > 0 ? "secondary" : "primary"}
+          size="sm"
+          onClick={parseText}
+          disabled={!rawText.trim()}
+        >
           Parse text
         </FPButton>
-        <FPButton variant="secondary" size="sm" onClick={addRows} disabled={validRows.length === 0}>
-          Add parsed options
+        <FPButton
+          variant={validRows.length > 0 ? "primary" : "secondary"}
+          size="sm"
+          onClick={addRows}
+          disabled={validRows.length === 0}
+        >
+          {validRows.length > 0 ? `Add ${validRows.length} options` : "Add parsed options"}
         </FPButton>
         {rows.length > 0 ? (
           <FPLabel>
@@ -108,11 +136,19 @@ export function FPPasteTab() {
           <FPSlotTable
             columns={[
               { key: "code", header: "Course", render: (row: ParsedImportRow) => <span className="font-fp-mono text-fp-text-strong">{row.courseCode || "Unknown"}</span> },
-              { key: "name", header: "Name", render: (row: ParsedImportRow) => row.courseName || "Unknown" },
               { key: "prof", header: "Professor", render: (row: ParsedImportRow) => row.professorName || "Unknown" },
               { key: "theory", header: "Theory", render: (row: ParsedImportRow) => row.theorySlots || "None" },
               { key: "lab", header: "Lab", render: (row: ParsedImportRow) => row.labSlots || "None" },
-              { key: "credits", header: "Credits", render: (row: ParsedImportRow) => String(row.credits || 3) }
+              {
+                key: "status",
+                header: "Status",
+                render: (row: ParsedImportRow) =>
+                  row.isValid ? (
+                    <span className="text-fp-text-accent">Ready</span>
+                  ) : (
+                    <span className="text-fp-warn">{row.errors.join("; ")}</span>
+                  )
+              }
             ]}
             rows={rows}
             rowKey={(row) => row.id}

@@ -1,62 +1,56 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
-import { GeneratePayload, TimetableSelection, WorkerDoneMessage, WorkerMessage } from "@/engine/types";
+import { GeneratePayload, WorkerDoneMessage, WorkerMessage } from "@/engine/types";
 import { useAppStore } from "@/store/useAppStore";
 import { useRouter } from "next/navigation";
 
-// With `playback`, real accepted schedules streamed from the worker are shown
-// one at a time before navigating, so the search reads as work being done
-// rather than a bar that flashes past. Off by default so other callers still
-// navigate the instant the search finishes.
-const SAMPLE_INTERVAL_MS = 160;
-const MIN_HOLD_MS = 700;
+// "Find my weeks" navigates to /results at once; /results shows the generating
+// screen while `generation.running` is true. The worker lives at module scope so
+// it survives the planner unmounting, and reports through the store.
+// Hold the screen at least this long so a fast search still reads as a moment
+// instead of a flash.
+const MIN_HOLD_MS = 1200; // one full --matrix-cycle sweep
 
-export type GenerationCandidate = { key: number; selections: TimetableSelection[] };
+let worker: Worker | null = null;
+let landTimer: number | null = null;
 
-function prefersReducedMotion() {
-  return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+function stopWorker() {
+  worker?.terminate();
+  worker = null;
+  if (landTimer !== null) {
+    window.clearTimeout(landTimer);
+    landTimer = null;
+  }
 }
 
-export function useGenerator({ playback = false }: { playback?: boolean } = {}) {
-  const router = useRouter();
-  const workerRef = useRef<Worker | null>(null);
-  const timerRef = useRef<number | null>(null);
-  const queueRef = useRef<TimetableSelection[][]>([]);
-  const doneRef = useRef<WorkerDoneMessage | null>(null);
-  const startedAtRef = useRef(0);
-  const keyRef = useRef(0);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [checked, setChecked] = useState(0);
-  const [accepted, setAccepted] = useState(0);
-  const [candidate, setCandidate] = useState<GenerationCandidate | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const setGeneratedSchedules = useAppStore((state) => state.setGeneratedSchedules);
-
-  const clearPlayback = useCallback(() => {
-    if (timerRef.current !== null) {
-      window.clearInterval(timerRef.current);
-      timerRef.current = null;
+function summarize(result: WorkerDoneMessage) {
+  if (result.schedules.length === 0) {
+    // Zero results: /results explains why, so only toast what it can't show.
+    if (result.capped) {
+      toast.error("Search timed out before finding a clash-free schedule. Try narrowing your constraints.");
     }
-    queueRef.current = [];
-    doneRef.current = null;
-    setCandidate(null);
-  }, []);
+    return;
+  }
+  const groups = useAppStore.getState().generatedShapeGroups;
+  const weeks = `${groups.length} ${groups.length === 1 ? "week" : "weeks"}`;
+  const options = `${result.schedules.length} professor ${result.schedules.length === 1 ? "option" : "options"}`;
+  const summary = `Found ${weeks}, ${options}.`;
+  toast.success(
+    result.capped ? `${summary} Search was capped after 8s — try narrowing constraints for a full search.` : summary
+  );
+}
+
+export function useGenerator() {
+  const router = useRouter();
+  const generation = useAppStore((state) => state.generation);
+  const [error, setError] = useState<string | null>(null);
 
   const cancel = useCallback(() => {
-    workerRef.current?.terminate();
-    workerRef.current = null;
-    // Results are only stored once a search finishes, so a cancel before that
-    // must not leave a found-count pointing at results that don't exist.
-    const hadResult = doneRef.current !== null;
-    clearPlayback();
-    if (!hadResult) setAccepted(0);
-    setIsGenerating(false);
-  }, [clearPlayback]);
-
-  useEffect(() => () => clearPlayback(), [clearPlayback]);
+    stopWorker();
+    useAppStore.getState().setGeneration({ running: false });
+  }, []);
 
   const generate = useCallback(
     (payload: GeneratePayload) => {
@@ -64,133 +58,63 @@ export function useGenerator({ playback = false }: { playback?: boolean } = {}) 
         toast.error("Add at least one course and one slot first.");
         return;
       }
-
       if (payload.courses.some((course) => course.options.length === 0)) {
         toast.error("Every course needs at least one professor option.");
         return;
       }
 
-      cancel();
+      stopWorker();
       setError(null);
-      setProgress(0);
-      setChecked(0);
-      setAccepted(0);
-      setIsGenerating(true);
+      const { setGeneration, setGeneratedSchedules } = useAppStore.getState();
+      setGeneration({ running: true, progress: 0, checked: 0, accepted: 0 });
+      router.push("/results");
 
-      const animate = playback && !prefersReducedMotion();
-
-      function finish(result: WorkerDoneMessage) {
-        if (timerRef.current !== null) {
-          window.clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
-        setCandidate(null);
-        setIsGenerating(false);
-        router.push("/results");
-        if (result.schedules.length === 0) {
-          toast.error(
-            result.capped
-              ? "Search timed out before finding a clash-free schedule. Try narrowing your constraints."
-              : "No clash-free schedules matched the hard constraints."
-          );
-        } else {
-          const groups = useAppStore.getState().generatedShapeGroups;
-          const summary = `Generated ${result.schedules.length} schedules across ${groups.length} unique shapes.`;
-          if (result.capped) {
-            toast.success(`${summary} Search was capped after 8s — try narrowing constraints for a full search.`);
-          } else {
-            toast.success(summary);
-          }
-        }
-      }
-
-      // Runs on every playback tick and when the search finishes: release the
-      // next sample, and navigate once the search is done, every sample has
-      // been shown, and the minimum hold has elapsed.
-      function tick() {
-        const next = queueRef.current.shift();
-        if (next) {
-          keyRef.current += 1;
-          setCandidate({ key: keyRef.current, selections: next });
-          return;
-        }
-        const result = doneRef.current;
-        if (result && performance.now() - startedAtRef.current >= MIN_HOLD_MS) {
-          finish(result);
-        }
-      }
-
-      startedAtRef.current = performance.now();
-      if (animate) {
-        timerRef.current = window.setInterval(tick, SAMPLE_INTERVAL_MS);
-      }
-
-      const worker = new Worker(new URL("../engine/worker.ts", import.meta.url), {
-        type: "module"
-      });
-      workerRef.current = worker;
-
-      worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
-        if (event.data.type === "progress") {
-          setProgress(event.data.progress);
-          setChecked(event.data.checked);
-          setAccepted(event.data.accepted);
-          return;
-        }
-
-        if (event.data.type === "sample") {
-          if (animate) queueRef.current.push(event.data.selections);
-          return;
-        }
-
-        if (event.data.type === "done") {
-          const result = event.data;
-          setGeneratedSchedules(result.schedules);
-          setProgress(100);
-          setChecked(result.checked);
-          setAccepted(result.schedules.length);
-          worker.terminate();
-          workerRef.current = null;
-
-          if (animate && result.schedules.length > 0) {
-            doneRef.current = result;
-          } else {
-            finish(result);
-          }
-          return;
-        }
-
-        setError(event.data.message);
-        toast.error(event.data.message);
-        clearPlayback();
-        setIsGenerating(false);
-        worker.terminate();
-        workerRef.current = null;
-      };
-
-      worker.onerror = () => {
-        const message = "The generation worker crashed.";
+      const startedAt = performance.now();
+      const fail = (message: string) => {
+        stopWorker();
         setError(message);
         toast.error(message);
-        clearPlayback();
-        setIsGenerating(false);
-        worker.terminate();
-        workerRef.current = null;
+        setGeneration({ running: false });
       };
 
-      worker.postMessage(payload);
+      const w = new Worker(new URL("../engine/worker.ts", import.meta.url), { type: "module" });
+      worker = w;
+
+      w.onmessage = (event: MessageEvent<WorkerMessage>) => {
+        const data = event.data;
+        if (data.type === "progress") {
+          setGeneration({ progress: data.progress, checked: data.checked, accepted: data.accepted });
+          return;
+        }
+        if (data.type === "sample") return;
+        if (data.type === "done") {
+          w.terminate();
+          worker = null;
+          setGeneration({ progress: 100, checked: data.checked, accepted: data.schedules.length });
+          const land = () => {
+            landTimer = null;
+            setGeneratedSchedules(data.schedules);
+            setGeneration({ running: false });
+            summarize(data);
+          };
+          landTimer = window.setTimeout(land, Math.max(0, MIN_HOLD_MS - (performance.now() - startedAt)));
+          return;
+        }
+        fail(data.message);
+      };
+      w.onerror = () => fail("The generation worker crashed.");
+      w.postMessage(payload);
     },
-    [cancel, clearPlayback, playback, setGeneratedSchedules, router]
+    [router]
   );
 
   return {
     generate,
     cancel,
-    isGenerating,
-    progress,
-    checked,
-    accepted,
-    candidate,
+    isGenerating: generation.running,
+    progress: generation.progress,
+    checked: generation.checked,
+    accepted: generation.accepted,
     error
   };
 }

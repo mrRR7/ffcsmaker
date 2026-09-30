@@ -25,7 +25,9 @@ import { ScoredTimetable, DayOfWeek } from "@/engine/types";
 import { exportElementPng, exportScheduleJson, exportTimetablePdf } from "@/utils/export";
 import { createSharedTimetableUrl } from "@/utils/share";
 import { useAppStore } from "@/store/useAppStore";
+import { cn } from "@/utils/cn";
 import { ZeroResultsFP } from "./ZeroResultsFP";
+import { GeneratingFP } from "./GeneratingFP";
 import { buildShapeThumbnail, freeDayNames, shortDay } from "./resultsVisuals";
 
 type SortMode = "score" | "lowGaps" | "earlyFinish";
@@ -55,6 +57,7 @@ function buildSlotListText(schedule: ScoredTimetable): string {
 
 function ResultsContent() {
   const exportRef = useRef<HTMLDivElement>(null);
+  const exportMenuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -64,7 +67,25 @@ function ResultsContent() {
   const [highlightCourseCode, setHighlightCourseCode] = useState<string | null>(null);
   const [shareCardOpen, setShareCardOpen] = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
-  const [showAllShapes, setShowAllShapes] = useState(false);
+
+  // Generating screen → results hand-off: "loading" while the worker runs,
+  // "leaving" for one reveal duration (loader blurs out), then the results
+  // mount with the matching blur-in. `revealed` marks that entrance.
+  const generationRunning = useAppStore((state) => state.generation.running);
+  const [phase, setPhase] = useState<"loading" | "leaving" | "idle">(generationRunning ? "loading" : "idle");
+  const [revealed, setRevealed] = useState(false);
+  useEffect(() => {
+    if (generationRunning) setPhase("loading");
+    else setPhase((current) => (current === "loading" ? "leaving" : current));
+  }, [generationRunning]);
+  useEffect(() => {
+    if (phase !== "leaving") return;
+    const timer = window.setTimeout(() => {
+      setPhase("idle");
+      setRevealed(true);
+    }, 400); // --reveal-dur
+    return () => window.clearTimeout(timer);
+  }, [phase]);
 
   const slots = useAppStore((state) => state.slots);
   const courses = useAppStore((state) => state.courses);
@@ -217,11 +238,6 @@ function ResultsContent() {
     );
   }, [activeSchedule]);
 
-  // Keep the selected shape's card in view within the rail's fold.
-  useEffect(() => {
-    if (activeShapeIndex >= 3) setShowAllShapes(true);
-  }, [activeShapeIndex]);
-
   // --- URL sync — verbatim ---
 
   useEffect(() => {
@@ -270,6 +286,24 @@ function ResultsContent() {
   }
 
   const [isSharing, setIsSharing] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+
+  // Export menu: close on outside click / Escape like every other popover.
+  useEffect(() => {
+    if (!exportMenuOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (!exportMenuRef.current?.contains(e.target as Node)) setExportMenuOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setExportMenuOpen(false);
+    };
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [exportMenuOpen]);
   const [exportingType, setExportingType] = useState<"png" | "pdf" | null>(null);
 
   async function shareActive(schedule: ScoredTimetable) {
@@ -283,8 +317,13 @@ function ResultsContent() {
         score: schedule.score,
         generatedAt: new Date().toISOString()
       });
-      await navigator.clipboard.writeText(url);
-      toast.success("Shared timetable URL copied.");
+      setShareUrl(url);
+      // Clipboard can reject after the network await (user activation
+      // expired); the link stays on screen either way, so this is best-effort.
+      navigator.clipboard.writeText(url).then(
+        () => toast.success("Share link copied."),
+        () => undefined
+      );
     } catch {
       toast.error("Failed to share timetable.");
     } finally {
@@ -341,31 +380,72 @@ function ResultsContent() {
       .catch(() => toast.success("Saved to your weeks."));
   }
 
-  function swapProfessorFor(courseId: string, currentOptionId: string) {
-    if (allVariants.length < 2 || !activeSchedule) return;
-    const startIndex = allVariants.findIndex((v) => v.id === activeSchedule.id);
-    for (let step = 1; step < allVariants.length; step += 1) {
-      const candidate = allVariants[(startIndex + step) % allVariants.length];
-      const sel = candidate.selections.find((s) => s.courseId === courseId);
-      if (sel && sel.optionId !== currentOptionId) {
-        selectVariant(candidate.id);
-        return;
-      }
-    }
+  function optionIdFor(variant: ScoredTimetable, courseId: string) {
+    return variant.selections.find((s) => s.courseId === courseId)?.optionId;
   }
 
-  function hasSwapAlternative(courseId: string, currentOptionId: string) {
-    return allVariants.some((v) => {
-      const sel = v.selections.find((s) => s.courseId === courseId);
-      return sel && sel.optionId !== currentOptionId;
-    });
+  function swapProfessorTo(courseId: string, optionId: string) {
+    if (!activeSchedule) return;
+    const withOption = allVariants.filter((v) => optionIdFor(v, courseId) === optionId);
+    // Prefer the variant that changes only this course's professor.
+    const exact = withOption.find((v) =>
+      v.selections.every(
+        (s) => s.courseId === courseId || optionIdFor(activeSchedule, s.courseId) === s.optionId
+      )
+    );
+    const target = exact ?? withOption[0];
+    if (!target) return;
+    selectVariant(target.id);
+    // Briefly spotlight the swapped course so the change is visible in the grid.
+    const code = target.selections.find((s) => s.courseId === courseId)?.courseCode ?? null;
+    setHighlightCourseCode(code);
+    window.setTimeout(() => setHighlightCourseCode((current) => (current === code ? null : current)), 1400);
+  }
+
+  /** Distinct professor options this layout allows for a course. */
+  function swapOptionsFor(courseId: string) {
+    const course = courses.find((c) => c.id === courseId);
+    const ids = Array.from(
+      new Set(allVariants.map((v) => optionIdFor(v, courseId)).filter((id): id is string => Boolean(id)))
+    );
+    return ids.map((id) => ({
+      id,
+      name: course?.options.find((o) => o.id === id)?.professorName ?? id
+    }));
+  }
+
+  // Courses whose professor differs between combos: the only thing worth
+  // printing on a combo card, since the layout is identical by definition.
+  const varyingCourseIds =
+    allVariants.length > 1
+      ? courses
+          .map((c) => c.id)
+          .filter((id) => new Set(allVariants.map((v) => optionIdFor(v, id))).size > 1)
+      : [];
+
+  function comboTitle(variant: ScoredTimetable) {
+    return varyingCourseIds
+      .map((id) => {
+        const course = courses.find((c) => c.id === id);
+        return course?.options.find((o) => o.id === optionIdFor(variant, id))?.professorName;
+      })
+      .filter(Boolean)
+      .join(" · ");
   }
 
   // --- Empty states ---
 
+  if (phase !== "idle") {
+    return <GeneratingFP leaving={phase === "leaving"} />;
+  }
+
   if (generatedSchedules.length === 0) {
     if (generatedAt !== null) {
-      return <ZeroResultsFP />;
+      return (
+        <div className={revealed ? "t-skel-enter" : undefined}>
+          <ZeroResultsFP />
+        </div>
+      );
     }
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
@@ -403,17 +483,14 @@ function ResultsContent() {
     );
   }
 
-  const visibleGroupCount = showAllShapes ? filteredGroups.length : Math.min(3, filteredGroups.length);
-  const hiddenGroupCount = filteredGroups.length - visibleGroupCount;
-
   return (
-    <div className="-mx-4 -my-8 pb-16 sm:-mx-6 lg:-mx-8">
+    <div className={cn("-mx-4 -my-8 pb-16 sm:-mx-6 lg:-mx-8", revealed && "t-skel-enter")}>
       {/* Top nav strip */}
       <nav className="flex items-center justify-end border-b border-fp-border-default bg-fp-bg-inset px-6 py-2.5">
         <FPMetricRun
           items={[
             `${filteredGroups.length} ${filteredGroups.length === 1 ? "week" : "weeks"}`,
-            `${generatedSchedules.length} ${generatedSchedules.length === 1 ? "schedule" : "schedules"}`,
+            `${generatedSchedules.length} professor ${generatedSchedules.length === 1 ? "option" : "options"}`,
             `generated ${formatRelativeTime(generatedAt)}`
           ]}
         />
@@ -430,9 +507,12 @@ function ResultsContent() {
         </div>
       ) : null}
 
-      <div className="flex flex-col lg:flex-row">
+      <div className="flex flex-col lg:flex-row lg:items-start">
         {/* Shapes rail */}
-        <aside className="w-full shrink-0 border-b border-fp-border-default bg-fp-bg-surface px-4 py-5 lg:w-[212px] lg:border-b-0 lg:border-r lg:px-4">
+        {/* Phone: the week itself first, other shapes after it. */}
+        {/* Desktop: sticks under the 57px header and scrolls on its own, so
+            switching shapes never means scrolling the whole page back up. */}
+        <aside className="order-last w-full shrink-0 border-t border-fp-border-default bg-fp-bg-surface px-4 py-5 lg:sticky lg:top-[57px] lg:order-none lg:max-h-[calc(100dvh-57px)] lg:w-[212px] lg:overflow-y-auto lg:overscroll-contain lg:[scrollbar-width:thin] lg:border-r lg:border-t-0 lg:px-4">
           <FPLabel>Shapes · {filteredGroups.length}</FPLabel>
           <p className="mt-2 text-[length:var(--text-small)] leading-[1.4] text-fp-text-dim">
             Each one is a different week layout. Best first.
@@ -444,7 +524,7 @@ function ResultsContent() {
             initial="initial"
             animate="animate"
           >
-            {filteredGroups.slice(0, visibleGroupCount).map((group, index) => {
+            {filteredGroups.map((group, index) => {
               const selected = group.shapeId === activeShapeGroup?.shapeId;
               const thumbnail = buildShapeThumbnail(group.representative, slots, courses);
               const isBest = index === 0;
@@ -492,15 +572,6 @@ function ResultsContent() {
               );
             })}
 
-            {hiddenGroupCount > 0 ? (
-              <button
-                type="button"
-                onClick={() => setShowAllShapes(true)}
-                className="fp-text rounded-[var(--radius-md)] border border-dashed border-fp-border-strong px-4 py-4 text-center text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
-              >
-                {hiddenGroupCount} more
-              </button>
-            ) : null}
           </motion.div>
 
           <div className="mt-5 flex flex-col items-start gap-2.5 border-t border-fp-border-default pt-4">
@@ -544,10 +615,18 @@ function ResultsContent() {
                       className="rounded-[var(--radius-sm)] px-3 py-1.5 font-fp-mono text-[17px] text-fp-accent sm:text-[length:var(--text-h)]"
                       style={{ backgroundColor: "var(--accent-wash-strong)" }}
                     >
-                      {Math.round(displayedScore)} / 100
+                      <span className="mr-1.5 text-[length:var(--text-micro)] uppercase tracking-[.14em] text-fp-text-dim">
+                        score
+                      </span>
+                      {Math.round(displayedScore)}
                     </span>
                     {hasUnverifiedProfessor ? (
-                      <FPBadge tone="warn">Unverified professor</FPBadge>
+                      <FPBadge
+                        tone="warn"
+                        title="At least one professor here came from a student paste or import, not the official catalog. Double-check the slot in VTOP."
+                      >
+                        Unverified professor
+                      </FPBadge>
                     ) : null}
                   </div>
                   <div className="mt-2">
@@ -581,7 +660,7 @@ function ResultsContent() {
                   <FPButton variant="secondary" size="sm" onClick={() => setShareCardOpen(true)}>
                     Share image
                   </FPButton>
-                  <div className="relative">
+                  <div ref={exportMenuRef} className="relative">
                     <FPButton
                       variant="secondary"
                       size="sm"
@@ -631,6 +710,37 @@ function ResultsContent() {
                 </div>
               </div>
 
+              {shareUrl ? (
+                <FPNote className="mt-4 flex flex-wrap items-center gap-3">
+                  <span className="shrink-0">Share link</span>
+                  <input
+                    readOnly
+                    value={shareUrl}
+                    onFocus={(e) => e.currentTarget.select()}
+                    className="min-w-0 flex-1 rounded-[var(--radius-sm)] bg-fp-bg-inset px-2 py-1 font-fp-mono text-[length:var(--text-micro)] text-fp-text-body outline-none"
+                  />
+                  <FPButton
+                    variant="secondary"
+                    size="sm"
+                    onClick={() =>
+                      navigator.clipboard.writeText(shareUrl).then(
+                        () => toast.success("Share link copied."),
+                        () => toast.error("Could not copy. Select the link and copy it manually.")
+                      )
+                    }
+                  >
+                    Copy
+                  </FPButton>
+                  <button
+                    type="button"
+                    onClick={() => setShareUrl(null)}
+                    className="fp-text text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
+                  >
+                    Close
+                  </button>
+                </FPNote>
+              ) : null}
+
               {/* Week grid — the real FFCS slot matrix (day rows x THEORY/LAB
                   sub-rows x period columns), structurally identical to the
                   classic app's SlotMatrixTimetable. This structure is
@@ -678,8 +788,8 @@ function ResultsContent() {
                             selected={selected}
                             eyebrow={`Combo ${String(index + 1).padStart(2, "0")}`}
                             score={Math.round(variant.score)}
-                            title={notesCount === 0 ? "No notes flagged" : "Has notes"}
-                            meta={`${variant.selections.length} profs · ${notesCount} notes`}
+                            title={comboTitle(variant) || `Combo ${index + 1}`}
+                            meta={notesCount === 0 ? "no notes" : `${notesCount} with notes`}
                             onClick={() => selectVariant(variant.id)}
                             className="cursor-pointer"
                           />
@@ -786,18 +896,24 @@ function ResultsContent() {
                             const selection = activeSchedule.selections.find(
                               (s) => s.courseId === row.courseId
                             );
-                            if (!selection || !hasSwapAlternative(row.courseId, selection.optionId)) {
-                              return null;
-                            }
+                            const options = swapOptionsFor(row.courseId);
+                            if (!selection || options.length < 2) return null;
                             return (
-                              <button
-                                type="button"
-                                onClick={() => swapProfessorFor(row.courseId, selection.optionId)}
-                                className="fp-text inline-flex items-center gap-1 text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-accent"
-                              >
+                              <label className="fp-text inline-flex items-center gap-1.5 text-[length:var(--text-micro)] text-fp-text-dim">
                                 Swap
-                                <ChevronDown className="h-3 w-3" strokeWidth={1.5} />
-                              </button>
+                                <select
+                                  aria-label={`Swap professor for ${row.courseCode}`}
+                                  value={selection.optionId}
+                                  onChange={(e) => swapProfessorTo(row.courseId, e.target.value)}
+                                  className="max-w-[160px] cursor-pointer rounded-[var(--radius-sm)] bg-fp-bg-inset px-1.5 py-1 text-fp-text-body outline-none"
+                                >
+                                  {options.map((o) => (
+                                    <option key={o.id} value={o.id}>
+                                      {o.name}
+                                    </option>
+                                  ))}
+                                </select>
+                              </label>
                             );
                           }
                         }
@@ -902,11 +1018,8 @@ function ResultsContent() {
             <FPButton variant="ghost" size="sm" onClick={() => router.push("/planner")}>
               Relax a constraint
             </FPButton>
-            <FPButton variant="secondary" size="sm" onClick={() => saveActive(activeSchedule)}>
-              Save to my weeks
-            </FPButton>
             <FPButton variant="primary" size="sm" onClick={() => registerWeek(activeSchedule)}>
-              Register week
+              Save &amp; copy slots for VTOP
             </FPButton>
           </div>
         </footer>

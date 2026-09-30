@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { HeroWeekGrid } from "@/features/landing/HeroWeekGrid";
 import { CampusPicker } from "@/features/landing/CampusPicker";
 import { LandingSteps } from "@/features/landing/LandingSteps";
+import { FaqList } from "@/features/landing/FaqList";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" }
@@ -50,8 +51,7 @@ export default function LandingPage() {
               Your FFCS timetable, built in about a minute.
             </h1>
             <p className="mt-4 max-w-xl text-[length:var(--text-body-size)] leading-[1.5] text-fp-text-body">
-              Free, no login, nothing sent to VTOP. Every conflict-free combination of your courses, ranked. First
-              &mdash; which campus?
+              Free, no login, nothing sent to VTOP. Every conflict-free combination of your courses, ranked.
             </p>
             <CampusPicker />
           </div>
@@ -68,18 +68,7 @@ export default function LandingPage() {
         <h2 className="font-fp-display text-[length:var(--text-h)] font-bold tracking-[-0.01em] text-fp-text-strong">
           FFCS questions
         </h2>
-        <div className="mt-5 divide-y divide-fp-border-default border-y border-fp-border-default">
-          {faqs.map((faq) => (
-            <details key={faq.q} className="py-4">
-              <summary className="cursor-pointer list-none text-[length:var(--text-body-size)] font-medium text-fp-text-strong [&::-webkit-details-marker]:hidden hover:text-fp-accent">
-                {faq.q}
-              </summary>
-              <p className="mt-2.5 max-w-2xl text-[length:var(--text-body-size)] leading-[1.5] text-fp-text-body">
-                {faq.a}
-              </p>
-            </details>
-          ))}
-        </div>
+        <FaqList faqs={faqs} />
       </section>
     </div>
   );

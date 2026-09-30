@@ -43,11 +43,22 @@ export default function NewComparePage() {
 
   const diffs = useMemo(() => computeDiffs(selected, slots, courses), [selected, slots, courses]);
 
+  // Courses whose professor isn't the same in every selected week — highlighted per card.
+  const differingCourseIds = useMemo(() => {
+    if (selected.length < 2) return new Set<string>();
+    const ids = new Set(selected.flatMap((s) => s.selections.map((sel) => sel.courseId)));
+    return new Set(
+      Array.from(ids).filter(
+        (id) => new Set(selected.map((s) => s.selections.find((sel) => sel.courseId === id)?.optionId)).size > 1
+      )
+    );
+  }, [selected]);
+
   const headline =
     selected.length === 3
-      ? "Three weeks, side by side"
+      ? "Three weeks, compared"
       : selected.length === 2
-        ? "Two weeks, side by side"
+        ? "Two weeks, compared"
         : selected.length === 1
           ? "One week, on its own"
           : "Pick weeks to compare";
@@ -168,6 +179,7 @@ export default function NewComparePage() {
               courses={courses}
               eyebrow={RANK_EYEBROWS[index] ?? "Alternative"}
               recommended={index === 0}
+              differingCourseIds={differingCourseIds}
               onRemove={() => removeCompareSchedule(schedule.id)}
             />
           ))}

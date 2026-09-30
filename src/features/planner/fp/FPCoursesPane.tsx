@@ -11,7 +11,7 @@ import { FPSearchTab } from "@/features/planner/fp/FPSearchTab";
 import { FPPasteTab } from "@/features/planner/fp/FPPasteTab";
 import { FPImportTab } from "@/features/planner/fp/FPImportTab";
 import { FPCourseList } from "@/features/planner/fp/FPCourseList";
-import { FPLiveSlotMatrix, type LiveSlotMatrixGeneration } from "@/features/planner/fp/FPLiveSlotMatrix";
+import { FPLiveSlotMatrix } from "@/features/planner/fp/FPLiveSlotMatrix";
 
 const DEFAULT_RAIL_WIDTH = 400;
 const MIN_RAIL_WIDTH = 340;
@@ -32,8 +32,7 @@ function clampRailWidth(width: number) {
  */
 export function FPCoursesPane({
   actions,
-  generation
-}: { actions?: ReactNode; generation?: LiveSlotMatrixGeneration } = {}) {
+}: { actions?: ReactNode } = {}) {
   const [tab, setTab] = useState<PlannerTabId>("search");
   const courses = useAppStore((state) => state.courses);
   const slots = useAppStore((state) => state.slots);
@@ -103,7 +102,7 @@ export function FPCoursesPane({
             <FPCreditSummary />
           </div>
 
-          <div data-tour-id="planner-add-courses" className="mt-5 flex flex-wrap gap-2">
+          <div data-tour-id="planner-add-courses" className="mt-5 flex gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {PLANNER_TABS.map((item) => {
               const active = tab === item.id;
               return (
@@ -112,21 +111,18 @@ export function FPCoursesPane({
                   type="button"
                   onClick={() => setTab(item.id)}
                   className={cn(
-                    "fp-text rounded-[var(--radius-sm)] px-3 py-[7px] text-[length:var(--text-small)] transition-colors",
+                    "fp-text shrink-0 whitespace-nowrap rounded-[var(--radius-sm)] px-3 py-[7px] text-[length:var(--text-small)] transition-colors",
                     active ? "text-fp-text-strong font-medium" : "text-fp-text-dim hover:text-fp-text-body"
                   )}
                   style={active ? { backgroundColor: "var(--surface-selected)" } : undefined}
                 >
-                  {item.label}
+                  {/* Short labels so all four fit on one row in the rail. */}
+                  {item.mobileLabel}
                 </button>
               );
             })}
           </div>
         </div>
-
-        {!tour.active ? (
-          <FPVtopRecommendation campus={campus} hasImportedData={courses.length > 0} />
-        ) : null}
 
         <div>
           {tab === "search" ? <FPSearchTab /> : null}
@@ -134,6 +130,12 @@ export function FPCoursesPane({
           {tab === "import" ? <FPImportTab /> : null}
           {tab === "manual" ? <FPCourseList showAddForm showList={false} /> : null}
         </div>
+
+        {/* Below the input, not above it: the search box is the first thing
+            a student needs; this is the fallback when the catalog misses. */}
+        {!tour.active ? (
+          <FPVtopRecommendation campus={campus} hasImportedData={courses.length > 0} />
+        ) : null}
 
       </section>
 
@@ -156,7 +158,7 @@ export function FPCoursesPane({
           so drop it and lift "your courses" above the add-course controls. */}
       <aside className="order-first min-w-0 border-b border-fp-border-default bg-fp-bg-surface px-4 py-4 lg:order-none lg:border-b-0 lg:px-6 lg:py-6">
         <div className="hidden lg:block">
-          <FPLiveSlotMatrix courses={courses} slots={slots} actions={actions} generation={generation} />
+          <FPLiveSlotMatrix courses={courses} slots={slots} actions={actions} />
         </div>
         <div className="lg:mt-6 lg:border-t lg:border-fp-border-default lg:pt-6">
           <FPCourseList showAddForm={false} showList />

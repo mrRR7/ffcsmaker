@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
+import { FPButton } from "@/components/fp-ui/button";
 import { staggerContainer, fadeUp } from "@/utils/motion";
 import { useAppStore } from "@/store/useAppStore";
 import { CAMPUS_LABELS, type Campus } from "@/engine/types";
@@ -26,6 +27,7 @@ export function CampusPicker() {
   const campus = useAppStore((state) => state.campus);
   const setCampus = useAppStore((state) => state.setCampus);
   const hasHydrated = useAppStore((state) => state.hasHydrated);
+  const courseCount = useAppStore((state) => state.courses.length);
   const tour = useTour();
   const [tourPromptDismissed, setTourPromptDismissed] = useState(false);
   const isMobile = useMediaQuery("(max-width: 767px)");
@@ -38,11 +40,28 @@ export function CampusPicker() {
     router.push("/planner");
   }
 
+  const returning = hasHydrated && campus && courseCount > 0;
+
   return (
     <>
+      {returning ? (
+        <div className="mt-7 flex flex-wrap items-center gap-3">
+          <FPButton variant="primary" onClick={() => router.push("/planner")}>
+            Continue planning · {courseCount} course{courseCount === 1 ? "" : "s"}
+            <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
+          </FPButton>
+          <span className="text-[length:var(--text-small)] text-fp-text-dim">or switch campus below</span>
+        </div>
+      ) : (
+        // Returning users already have a campus; only ask first-timers.
+        <p className="mt-2 text-[length:var(--text-body-size)] text-fp-text-body">First &mdash; which campus?</p>
+      )}
       <motion.div
         data-tour-id="home-cta"
-        className="mt-9 grid w-full max-w-4xl grid-cols-2 gap-4 text-left sm:grid-cols-4 lg:grid-cols-2"
+        className={cn(
+          "grid w-full max-w-4xl grid-cols-1 gap-4 text-left min-[480px]:grid-cols-2 sm:grid-cols-4 lg:grid-cols-2",
+          returning ? "mt-5" : "mt-7"
+        )}
         variants={staggerContainer}
         initial="initial"
         animate="animate"
@@ -58,13 +77,15 @@ export function CampusPicker() {
               onClick={() => pickCampus(card.campus)}
               className={cn(
                 "rounded-[var(--radius-md)] border p-5 text-left transition-[border-color,background-color,transform] duration-[var(--dur-fast)]",
+                // Disabled = dashed + no fill; selected = accent border + check.
+                // Both used to be a tinted fill, which read the same in light mode.
                 !card.active
-                  ? "cursor-not-allowed border-fp-border-default bg-fp-bg-inset"
+                  ? "cursor-not-allowed border-dashed border-fp-border-default bg-transparent"
                   : isCurrent
-                    ? "border-[var(--border-selected)] active:scale-[0.98]"
+                    ? "border-fp-border-accent bg-fp-bg-surface active:scale-[0.98]"
                     : "border-fp-border-default bg-fp-bg-surface hover:border-fp-border-accent active:scale-[0.98]"
               )}
-              style={card.active && isCurrent ? { backgroundColor: "var(--surface-selected)" } : undefined}
+              aria-current={isCurrent ? "true" : undefined}
             >
               <div
                 className={cn(
@@ -80,12 +101,16 @@ export function CampusPicker() {
               </div>
               <div className="mt-1.5 text-[length:var(--text-small)] text-fp-text-dim">{card.detail}</div>
               <FPLabel tone={card.active ? "accent" : "dim"} className="mt-3.5 inline-flex items-center gap-1">
-                {card.active ? (
+                {!card.active ? (
+                  "Not yet"
+                ) : isCurrent && hasHydrated ? (
+                  <>
+                    <Check className="h-3 w-3" strokeWidth={2} /> Your campus
+                  </>
+                ) : (
                   <>
                     Ready <ArrowRight className="h-3 w-3" strokeWidth={1.5} />
                   </>
-                ) : (
-                  "Not yet"
                 )}
               </FPLabel>
             </motion.button>

@@ -24,9 +24,10 @@ export function FPFieldGroup({
   className?: string;
 }) {
   return (
-    <div className={cn("space-y-1.5", className)}>
+    // A real <label> wrapper so the text names the input for screen readers.
+    <label className={cn("block space-y-1.5", className)}>
       <FPLabel className="block">{label}</FPLabel>
       {children}
-    </div>
+    </label>
   );
 }

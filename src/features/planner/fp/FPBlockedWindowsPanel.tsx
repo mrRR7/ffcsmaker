@@ -9,7 +9,7 @@ import { cn } from "@/utils/cn";
 import { FPLabel } from "@/components/fp-ui/label";
 
 const GRID_START_HOUR = 8;
-const GRID_END_HOUR = 19;
+const GRID_END_HOUR = 20; // last VIT slot ends 19:25
 const HOURS = Array.from({ length: GRID_END_HOUR - GRID_START_HOUR }, (_, i) => GRID_START_HOUR + i);
 
 function hourLabel(hour: number) {

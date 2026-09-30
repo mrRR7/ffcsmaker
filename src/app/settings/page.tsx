@@ -51,7 +51,7 @@ export default function NewSettingsPage() {
 
   function clearCatalogCache() {
     clearAllCache();
-    toast.success("Course catalog cache cleared.");
+    toast.success("Course catalog will refresh on next search.");
   }
 
   function clearSavedResults() {
@@ -108,13 +108,13 @@ export default function NewSettingsPage() {
         <FPPanel title="Data & cache">
           <div className="space-y-4 p-4">
             <Row
-              label="Course catalog cache"
-              detail="Active, refreshes every 10min"
-              action="Clear"
+              label="Course catalog"
+              detail="Refreshes every 10 minutes. Refresh now if a course looks out of date."
+              action="Refresh"
               onClick={clearCatalogCache}
             />
             <Row
-              label="Saved results"
+              label="Generated weeks"
               detail={
                 generatedAt
                   ? `Last generated: ${new Date(generatedAt).toLocaleString()}`
@@ -124,8 +124,8 @@ export default function NewSettingsPage() {
               onClick={clearSavedResults}
             />
             <Row
-              label="Preliminary announcement banner"
-              detail={bannerDismissed ? "Hidden on Planner page" : "Visible on Planner page"}
+              label="First-time tips"
+              detail={bannerDismissed ? "Hidden on the Planner" : "Shown on the Planner"}
               action={bannerDismissed ? "Show" : "Hide"}
               onClick={toggleBanner}
             />
@@ -139,7 +139,7 @@ export default function NewSettingsPage() {
             ) : null}
             <div className="rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-inset p-4">
               <div className="flex items-center justify-between gap-4 text-[length:var(--text-small)]">
-                <span className="text-fp-text-body">Local storage used</span>
+                <span className="text-fp-text-body">Space used on this device</span>
                 <span className="font-fp-mono text-fp-text-dim">
                   {formatBytes(storage.usedBytes)} / ~5 MB
                 </span>

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import "./fp-tokens.css";
+import "./fp-transitions.css";
 import { FPRoot } from "@/components/fp-ui/fp-root";
 import { cn } from "@/utils/cn";
 import { Analytics } from "@vercel/analytics/react";

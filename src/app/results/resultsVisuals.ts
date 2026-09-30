@@ -3,35 +3,6 @@ import { buildMatrixCells } from "@/features/results/timetableMatrix";
 import { getSlotDaysForSlots } from "@/engine/slotCatalog";
 import { parseTime } from "@/engine/conflict";
 
-/**
- * Picks readable text color (near-black or near-white) for a given hex
- * background using relative luminance. Courses carry an arbitrary
- * student-picked color, so we can't assume a fixed text color for every
- * block — this keeps the mono course-code label legible either way.
- */
-export function readableTextColor(hex: string | undefined): string {
-  if (!hex || hex[0] !== "#" || (hex.length !== 7 && hex.length !== 4)) {
-    return "#0b0e11";
-  }
-  const full =
-    hex.length === 4
-      ? `#${hex[1]}${hex[1]}${hex[2]}${hex[2]}${hex[3]}${hex[3]}`
-      : hex;
-  const r = Number.parseInt(full.slice(1, 3), 16);
-  const g = Number.parseInt(full.slice(3, 5), 16);
-  const b = Number.parseInt(full.slice(5, 7), 16);
-  if ([r, g, b].some((c) => Number.isNaN(c))) {
-    return "#0b0e11";
-  }
-  // Relative luminance (sRGB).
-  const [rl, gl, bl] = [r, g, b].map((c) => {
-    const s = c / 255;
-    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
-  });
-  const luminance = 0.2126 * rl + 0.7152 * gl + 0.0722 * bl;
-  return luminance > 0.55 ? "#0b0e11" : "#f2f7f4";
-}
-
 export type ThumbnailCell = { color: string | null };
 
 const THUMBNAIL_BANDS = 4;

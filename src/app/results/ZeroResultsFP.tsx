@@ -6,8 +6,8 @@ import { RefreshCw } from "lucide-react";
 import { FPButton } from "@/components/fp-ui/button";
 import { FPCard } from "@/components/fp-ui/card";
 import { FPLabel } from "@/components/fp-ui/label";
-import { FPNote } from "@/components/fp-ui/note";
 import { useAppStore, defaultConstraints } from "@/store/useAppStore";
+import type { Constraints } from "@/engine/types";
 import { useGenerator } from "@/hooks/useGenerator";
 import { analyzeZeroResultCause, ConflictFinding } from "@/engine/conflictAnalyzer";
 
@@ -20,6 +20,21 @@ function suggestionFor(finding: ConflictFinding): string {
     case "course_no_eligible_options":
       return `${finding.courseCodeA} has no available options — add professor options from the catalog`;
   }
+}
+
+/** The constraint fields behind an analyzer label (see
+ * identifyEliminatingConstraint), so "Drop" can clear just that rule. */
+function patchForLabel(label: string): Partial<Constraints> {
+  if (label === "Professor lock") return { professorLocks: [] };
+  if (label === "Avoided professor list") return { avoidProfessors: [] };
+  if (label.startsWith("No classes after")) return { noAfterTime: null };
+  if (label.startsWith("No classes before")) return { earliestStart: null };
+  if (label.startsWith("Must end before")) return { latestEnd: null };
+  if (label === "Avoid first period") return { avoidFirstPeriod: false };
+  if (label === "Avoid last period") return { avoidLastPeriod: false };
+  // ponytail: busy blocks are labelled by name, not id — dropping clears all
+  // of them. Carry the window id on the finding if people keep several.
+  return { blockedWindows: [] };
 }
 
 /**
@@ -41,6 +56,7 @@ export function ZeroResultsFP() {
   const rankingMode = useAppStore((state) => state.rankingMode);
   const usePriorityRanking = useAppStore((state) => state.uiPreferences.usePriorityRanking);
   const resetConstraints = useAppStore((state) => state.resetConstraints);
+  const setConstraint = useAppStore((state) => state.setConstraint);
 
   const { generate, isGenerating, progress } = useGenerator();
 
@@ -56,39 +72,35 @@ export function ZeroResultsFP() {
 
   const topFinding = findings[0] ?? null;
 
-  const courseNotes = useMemo(() => {
-    const byCourse = new Map<string, { tone: "warn" | "default"; lines: string[] }>();
-    findings.forEach((finding) => {
-      for (const code of [finding.courseCodeA, finding.courseCodeB]) {
-        if (!code) continue;
-        const entry = byCourse.get(code) ?? { tone: "warn" as const, lines: [] };
-        entry.lines.push(finding.description);
-        byCourse.set(code, entry);
-      }
-    });
-    return Array.from(byCourse.entries());
-  }, [findings]);
+  function regenerateWith(next: Constraints) {
+    generate({ courses, slots, constraints: next, rankingMode, usePriorityRanking, maxResults: 500 });
+  }
 
   function relaxAndRegenerate() {
     resetConstraints();
-    generate({
-      courses,
-      slots,
-      constraints: defaultConstraints,
-      rankingMode,
-      usePriorityRanking,
-      maxResults: 500
-    });
+    regenerateWith(defaultConstraints);
   }
+
+  function dropAndRegenerate(label: string) {
+    const patch = patchForLabel(label);
+    for (const [key, value] of Object.entries(patch)) {
+      setConstraint(key as keyof Constraints, value as never);
+    }
+    regenerateWith({ ...constraints, ...patch });
+  }
+
+  const topIsConstraint = topFinding?.type === "constraint_eliminates_course" && !!topFinding.constraintLabel;
 
   return (
     <div className="grid grid-cols-1 gap-8 pb-16 lg:grid-cols-[minmax(0,1fr)_340px]">
       <div className="space-y-6">
         <div>
           <h1 className="font-fp-display text-[28px] font-bold text-fp-text-strong sm:text-[length:var(--text-display)]">
-            {findings.length > 0
-              ? "No week survives all of your rules."
-              : "No week survives this combination of courses and rules."}
+            {topFinding?.type === "course_always_conflicts"
+              ? "Two of your courses can't fit together."
+              : findings.length > 0
+                ? "No week survives all of your rules."
+                : "No week survives this combination of courses and rules."}
           </h1>
           <p className="mt-3 max-w-2xl text-[length:var(--text-body-size)] leading-[1.5] text-fp-text-body">
             We checked every combination of professors and slots your courses allow. None of them
@@ -112,15 +124,23 @@ export function ZeroResultsFP() {
                   {topFinding.description} {suggestionFor(topFinding)}.
                 </p>
               </div>
-              <FPButton
-                variant="primary"
-                onClick={relaxAndRegenerate}
-                disabled={isGenerating}
-                className="shrink-0"
-              >
-                <RefreshCw className={isGenerating ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"} />
-                {isGenerating ? `Regenerating · ${Math.round(progress)}%` : "Relax all rules · regenerate"}
-              </FPButton>
+              {topIsConstraint || topFinding.type !== "constraint_eliminates_course" ? (
+                <FPButton
+                  variant="primary"
+                  onClick={() =>
+                    topIsConstraint ? dropAndRegenerate(topFinding.constraintLabel!) : router.push("/planner")
+                  }
+                  disabled={isGenerating}
+                  className="shrink-0"
+                >
+                  <RefreshCw className={isGenerating ? "h-3.5 w-3.5 animate-spin" : "h-3.5 w-3.5"} />
+                  {isGenerating
+                    ? `Regenerating · ${Math.round(progress)}%`
+                    : topIsConstraint
+                      ? `Drop "${topFinding.constraintLabel}" · regenerate`
+                      : "Add professor options"}
+                </FPButton>
+              ) : null}
             </div>
           </div>
         ) : (
@@ -132,35 +152,40 @@ export function ZeroResultsFP() {
           </FPCard>
         )}
 
-        {findings.length > 0 ? (
+        {/* The top finding is already the card above — list the rest only. */}
+        {findings.length > 1 ? (
           <div className="overflow-hidden rounded-[var(--radius-md)] border border-fp-border-default">
             <div className="fp-text grid grid-cols-[1fr_1fr_auto] gap-4 border-b border-fp-border-default bg-fp-bg-inset px-4 py-[11px] text-[length:var(--text-micro)] text-fp-text-dim">
               <span>Rule</span>
-              <span>What it costs you</span>
+              <span>Fix</span>
               <span className="text-right">Action</span>
             </div>
-            {findings.map((finding, index) => {
-              const isWorst = index === 0;
+            {findings.slice(1).map((finding, i) => {
+              const index = i + 1;
               const isConstraint = finding.type === "constraint_eliminates_course";
               return (
                 <div
                   key={`${finding.type}-${finding.courseCodeA}-${finding.courseCodeB ?? index}`}
                   className="grid grid-cols-[1fr_1fr_auto] items-center gap-4 border-b border-fp-border-default px-4 py-[13px] text-[length:var(--text-small)] last:border-b-0"
-                  style={isWorst ? { backgroundColor: "var(--warn-wash)" } : undefined}
                 >
-                  <span className={isWorst ? "text-fp-warn" : index > 2 ? "text-fp-text-dim" : "text-fp-text-body"}>
+                  <span className={index > 2 ? "text-fp-text-dim" : "text-fp-text-body"}>
                     {finding.description}
                   </span>
-                  <span className={isWorst ? "text-fp-warn" : "text-fp-text-dim"}>
+                  <span className="text-fp-text-dim">
                     {suggestionFor(finding)}
                   </span>
                   <button
                     type="button"
-                    onClick={isConstraint ? relaxAndRegenerate : () => router.push("/planner")}
+                    onClick={
+                      isConstraint && finding.constraintLabel
+                        ? () => dropAndRegenerate(finding.constraintLabel!)
+                        : () => router.push("/planner")
+                    }
                     disabled={isConstraint && isGenerating}
                     className={
-                      "fp-text text-right text-[length:var(--text-micro)] " +
-                      (isWorst ? "text-fp-warn" : index > 2 ? "text-fp-text-dim" : "text-fp-text-dim hover:text-fp-accent")
+                      // -m-2 p-2: ~32px hit area without shifting the text.
+                      "fp-text -m-2 p-2 text-right text-[length:var(--text-micro)] " +
+                      "text-fp-text-dim hover:text-fp-accent"
                     }
                   >
                     {isConstraint ? "Drop" : "Edit"}
@@ -173,23 +198,7 @@ export function ZeroResultsFP() {
       </div>
 
       <aside className="h-fit rounded-[var(--radius-lg)] border border-fp-border-default bg-fp-bg-surface">
-        <div className="fp-text border-b border-fp-border-default px-4 py-[14px] text-[length:var(--text-micro)] text-fp-text-dim">
-          Courses under strain
-        </div>
-        <div className="divide-y divide-fp-border-default">
-          {courseNotes.length > 0 ? (
-            courseNotes.map(([code, entry]) => (
-              <FPNote key={code} tone="warn" className="m-4">
-                <span className="font-fp-mono text-[length:var(--text-small)] text-fp-text-strong">{code}</span>
-                <br />
-                {entry.lines[0]}
-              </FPNote>
-            ))
-          ) : (
-            <p className="p-4 text-[length:var(--text-small)] text-fp-text-dim">No single course stands out — see the rule list.</p>
-          )}
-        </div>
-        <div className="border-t border-fp-border-default p-4">
+        <div className="p-4">
           <FPLabel>If you change nothing</FPLabel>
           <p className="mt-2 text-[length:var(--text-small)] leading-[1.5] text-fp-text-dim">
             Registration works without us — but you&apos;d be cross-checking{" "}
@@ -205,9 +214,10 @@ export function ZeroResultsFP() {
           <FPButton
             variant="ghost"
             className="mt-2 w-full justify-center"
-            onClick={() => resetConstraints()}
+            onClick={relaxAndRegenerate}
+            disabled={isGenerating}
           >
-            Clear all rules
+            Clear all rules · regenerate
           </FPButton>
         </div>
       </aside>

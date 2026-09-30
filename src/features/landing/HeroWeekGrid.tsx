@@ -11,7 +11,7 @@ import { buildShapeThumbnail, shortDay, ThumbnailCell } from "@/app/results/resu
 import { cn } from "@/utils/cn";
 
 const LAYOUT_COUNT = 4;
-const BANDS = 8;
+const BANDS = 6;
 const HOLD_MS = 2600;
 const DAYS: DayOfWeek[] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
 
@@ -29,7 +29,10 @@ const SAMPLE_COURSES: SampleCourse[] = [
   { code: "MAT2001", name: "Linear Algebra", options: [{ theory: ["B1", "TB1"] }, { theory: ["B2", "TB2"] }, { theory: ["G1", "TG1"] }] },
   { code: "PHY1001", name: "Physics", options: [{ theory: ["C1", "TC1"] }, { theory: ["C2", "TC2"] }, { theory: ["E1", "TE1"] }] },
   { code: "ENG1002", name: "Communication", options: [{ theory: ["D1", "TD1"] }, { theory: ["D2", "TD2"] }] },
-  { code: "CSE2002", name: "Programming Lab", options: [{ lab: ["L1 + L2"] }, { lab: ["L13 + L14"] }, { lab: ["L31 + L32"] }] }
+  { code: "CSE2002", name: "Programming Lab", options: [{ lab: ["L1 + L2"] }, { lab: ["L13 + L14"] }, { lab: ["L31 + L32"] }] },
+  // Afternoon-heavy options so the sample week isn't all mornings.
+  { code: "HUM1021", name: "Economics", options: [{ theory: ["E2", "TE2"] }, { theory: ["F2", "TF2"] }, { theory: ["G2", "TG2"] }] },
+  { code: "CSE3001", name: "Networks", options: [{ theory: ["A2", "TA2"] }, { theory: ["C2", "TC2"] }, { theory: ["B2", "TB2"] }] }
 ];
 
 function buildHeroLayouts(): ThumbnailCell[][][] {

@@ -11,8 +11,7 @@ export function usePlannerGeneration() {
     (state) => state.uiPreferences.usePriorityRanking
   );
 
-  const { generate, cancel, isGenerating, progress, checked, accepted, candidate } =
-    useGenerator({ playback: true });
+  const { generate, cancel, isGenerating, progress, checked, accepted } = useGenerator();
 
   function runGeneration() {
     const slotIds = new Set(slots.map((slot) => slot.id));
@@ -48,6 +47,5 @@ export function usePlannerGeneration() {
     progress,
     checked,
     accepted,
-    candidate,
   };
 }

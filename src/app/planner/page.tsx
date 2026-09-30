@@ -37,7 +37,7 @@ export default function NewPlannerPage() {
   const usePriorityRanking = useAppStore((state) => state.uiPreferences.usePriorityRanking);
   const setUsePriorityRanking = useAppStore((state) => state.setUsePriorityRanking);
 
-  const { cancel, isGenerating, accepted, candidate, runGeneration } = usePlannerGeneration();
+  const { cancel, isGenerating, accepted, runGeneration } = usePlannerGeneration();
 
   const rankingProfiles = useMemo(() => getRankingProfiles(), []);
   const slots = useAppStore((state) => state.slots);
@@ -46,6 +46,26 @@ export default function NewPlannerPage() {
   useEffect(() => {
     if (campus) loadCatalog(campus).catch(() => {});
   }, [campus]);
+
+  const findWeeksButton = (
+    <FPButton
+      data-tour-id="planner-generate"
+      variant={isGenerating ? "secondary" : "primary"}
+      size="sm"
+      onClick={isGenerating ? cancel : runGeneration}
+      disabled={!isGenerating && courseCount === 0}
+      title={courseCount === 0 ? "Add a course first" : undefined}
+    >
+      {isGenerating ? (
+        "Cancel"
+      ) : (
+        <>
+          Find my weeks
+          <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
+        </>
+      )}
+    </FPButton>
+  );
 
   const rankingControls = (
     <>
@@ -89,7 +109,7 @@ export default function NewPlannerPage() {
         ]}
       />
 
-      {showNotice && !tour.active ? (
+      {showNotice && !tour.active && courseCount === 0 ? (
         <div className="flex items-center gap-4 border-b border-fp-border-default px-6 py-[11px]" style={{ backgroundColor: "var(--accent-wash)" }}>
           <FPLabel tone="accent">First time here</FPLabel>
           <span className="text-[length:var(--text-small)] text-fp-text-body">
@@ -132,30 +152,22 @@ export default function NewPlannerPage() {
         <motion.div key={tab} variants={fadeUp} initial="initial" animate="animate" exit="exit">
           {tab === "courses" ? (
             <FPCoursesPane
-              generation={{ active: isGenerating, found: accepted, candidate }}
               actions={
                 <>
                   {rankingControls}
-                  <FPButton
-                    data-tour-id="planner-generate"
-                    variant={isGenerating ? "secondary" : "primary"}
-                    size="sm"
-                    onClick={isGenerating ? cancel : runGeneration}
-                  >
-                    {isGenerating ? (
-                      "Cancel"
-                    ) : (
-                      <>
-                        Find my weeks
-                        <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
-                      </>
-                    )}
-                  </FPButton>
+                  {findWeeksButton}
                 </>
               }
             />
           ) : (
-            <FPPreferencesPane />
+            <FPPreferencesPane
+              actions={
+                <div className="hidden items-center gap-2.5 lg:flex">
+                  {rankingControls}
+                  {findWeeksButton}
+                </div>
+              }
+            />
           )}
         </motion.div>
       </AnimatePresence>

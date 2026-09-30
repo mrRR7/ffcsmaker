@@ -63,7 +63,7 @@
   --ci4: #e6edea;
   --c5: #12331f;
   --ci5: #cfe0d5;
-  --busy: #2b353b;
+  --busy: rgba(216, 162, 58, 0.5);
   --busy-ink: #7e8b90;
 
   /* typography */
@@ -176,7 +176,7 @@
   --ci4: #08240f;
   --c5: #2f8c5a;
   --ci5: #f4faf6;
-  --busy: #3c4449;
+  --busy: rgba(138, 93, 10, 0.35);
   --busy-ink: var(--muted);
 }
 
