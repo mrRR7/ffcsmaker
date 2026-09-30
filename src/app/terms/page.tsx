@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { FPLabel } from "@/components/fp-ui/label";
+
+export const metadata: Metadata = {
+  title: "Terms",
+  description: "Terms of use for Ultimate FFCS, a free, unofficial FFCS timetable planner for VIT students.",
+  alternates: { canonical: "/terms" }
+};
 
 export default function NewTermsPage() {
   return (

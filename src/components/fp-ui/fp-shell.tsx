@@ -87,7 +87,8 @@ export function FPShell({ children }: { children: React.ReactNode }) {
     pathname?.startsWith("/admin") ||
     pathname === "/privacy" ||
     pathname === "/terms" ||
-    pathname === "/disclaimer";
+    pathname === "/disclaimer" ||
+    pathname?.startsWith("/timetable/");
 
   const activeHref = useMemo(() => {
     const match = navItems
@@ -134,11 +135,15 @@ export function FPShell({ children }: { children: React.ReactNode }) {
     router.push("/planner");
   }
 
-  const mainContent = !hasHydrated ? (
+  // Public routes render straight away so their content is in the server HTML;
+  // only campus-dependent routes wait for the persisted store.
+  const mainContent = bypassCampusGate ? (
+    children
+  ) : !hasHydrated ? (
     <div
       className="mx-auto mt-20 h-32 max-w-lg animate-pulse rounded-[var(--radius-lg)] border border-fp-border-default bg-fp-bg-surface"
     />
-  ) : !campus && !bypassCampusGate ? (
+  ) : !campus ? (
     <FPCampusGate onPick={setCampus} />
   ) : (
     children

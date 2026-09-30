@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { FPLabel } from "@/components/fp-ui/label";
+
+export const metadata: Metadata = {
+  title: "Privacy",
+  description: "How Ultimate FFCS handles your data: course lists and timetables stay on your device unless you choose to share them.",
+  alternates: { canonical: "/privacy" }
+};
 
 export default function NewPrivacyPage() {
   return (
