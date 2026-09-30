@@ -75,9 +75,17 @@ function priorityScore(
   return Number(((raw / selections.length) * 15).toFixed(1));
 }
 
+type SampleCallback = (selections: TimetableSelection[]) => void;
+
+// How many accepted schedules are reported to `onSample`. Bounded, so the
+// callback needs no throttling; the UI uses these to show real valid weeks
+// while the search runs.
+const MAX_SAMPLES = 8;
+
 export function generateTimetables(
   payload: GeneratePayload,
-  onProgress?: ProgressCallback
+  onProgress?: ProgressCallback,
+  onSample?: SampleCallback
 ): { schedules: ScoredTimetable[]; checked: number; capped: boolean } {
   const { courses, slots, constraints, rankingMode } = payload;
   const maxResults = payload.maxResults ?? 500;
@@ -85,6 +93,7 @@ export function generateTimetables(
   const schedules: ScoredTimetable[] = [];
   let checked = 0;
   let lastProgressEmit = 0;
+  let samplesSent = 0;
 
   // Hard wall-clock ceiling on the search. Without this, a large course
   // list with loose constraints can walk a huge fraction of the
@@ -173,6 +182,10 @@ export function generateTimetables(
           scoreBreakdown:
             priority > 0 ? { ...scoreBreakdown, priority } : scoreBreakdown
         });
+        if (onSample && samplesSent < MAX_SAMPLES) {
+          samplesSent += 1;
+          onSample([...selections]);
+        }
       }
       emitProgress();
       return;

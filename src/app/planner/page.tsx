@@ -37,7 +37,7 @@ export default function NewPlannerPage() {
   const usePriorityRanking = useAppStore((state) => state.uiPreferences.usePriorityRanking);
   const setUsePriorityRanking = useAppStore((state) => state.setUsePriorityRanking);
 
-  const { cancel, isGenerating, progress, checked, accepted, runGeneration } = usePlannerGeneration();
+  const { cancel, isGenerating, accepted, candidate, runGeneration } = usePlannerGeneration();
 
   const rankingProfiles = useMemo(() => getRankingProfiles(), []);
   const slots = useAppStore((state) => state.slots);
@@ -94,28 +94,15 @@ export default function NewPlannerPage() {
         </div>
       ) : null}
 
-      {isGenerating || checked > 0 ? (
-        <div className="border-b border-fp-border-default px-6 py-4">
-          <div className="mb-2 flex items-center justify-between">
-            <FPLabel>
-              Checked {checked} branches, accepted {accepted}
-            </FPLabel>
-            <span className="font-fp-mono text-[length:var(--text-small)] text-fp-text-strong">{Math.round(progress)}%</span>
-          </div>
-          <div className="h-1.5 overflow-hidden rounded-[var(--radius-pill)] bg-fp-bg-inset">
-            <div
-              className="h-full bg-fp-accent transition-[width] duration-[var(--dur-base)]"
-              style={{ width: `${Math.max(2, progress)}%` }}
-            />
-          </div>
-          {accepted > 0 && !isGenerating ? (
-            <Link href="/results" className="mt-3 inline-block">
-              <FPButton variant="primary" size="sm">
-                Open Results
-                <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
-              </FPButton>
-            </Link>
-          ) : null}
+      {!isGenerating && accepted > 0 ? (
+        <div className="flex items-center gap-4 border-b border-fp-border-default px-6 py-3">
+          <FPLabel>{accepted} weeks found</FPLabel>
+          <Link href="/results">
+            <FPButton variant="primary" size="sm">
+              Open Results
+              <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />
+            </FPButton>
+          </Link>
         </div>
       ) : null}
 
@@ -123,6 +110,7 @@ export default function NewPlannerPage() {
         <motion.div key={tab} variants={fadeUp} initial="initial" animate="animate" exit="exit">
           {tab === "courses" ? (
             <FPCoursesPane
+              generation={{ active: isGenerating, found: accepted, candidate }}
               actions={
                 <>
                   <select

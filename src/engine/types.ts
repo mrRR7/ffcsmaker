@@ -218,6 +218,11 @@ export type WorkerProgressMessage = {
   progress: number;
 };
 
+export type WorkerSampleMessage = {
+  type: "sample";
+  selections: TimetableSelection[];
+};
+
 export type WorkerDoneMessage = {
   type: "done";
   schedules: ScoredTimetable[];
@@ -232,5 +237,6 @@ export type WorkerErrorMessage = {
 
 export type WorkerMessage =
   | WorkerProgressMessage
+  | WorkerSampleMessage
   | WorkerDoneMessage
   | WorkerErrorMessage;
