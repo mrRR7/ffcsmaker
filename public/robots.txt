@@ -4,4 +4,4 @@ Allow: /
 Disallow: /admin
 Disallow: /api/
 
-Sitemap: https://ffcsmaker.vercel.app//sitemap.xml
+Sitemap: https://ffcsmaker.vercel.app/sitemap.xml

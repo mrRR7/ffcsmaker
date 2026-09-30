@@ -78,12 +78,17 @@ export function FPShell({ children }: { children: React.ReactNode }) {
   const tour = useTour();
   const isMobile = useMediaQuery("(max-width: 767px)");
 
+  // Landing has its own CTAs; admin is a separate tool. Everywhere else gets the
+  // phone tab bar the classic skin had.
+  const showBottomNav = pathname !== "/" && !pathname?.startsWith("/admin");
+
   const bypassCampusGate =
     pathname === "/" ||
     pathname?.startsWith("/admin") ||
     pathname === "/privacy" ||
     pathname === "/terms" ||
-    pathname === "/disclaimer";
+    pathname === "/disclaimer" ||
+    pathname?.startsWith("/timetable/");
 
   const activeHref = useMemo(() => {
     const match = navItems
@@ -130,22 +135,26 @@ export function FPShell({ children }: { children: React.ReactNode }) {
     router.push("/planner");
   }
 
-  const mainContent = !hasHydrated ? (
+  // Public routes render straight away so their content is in the server HTML;
+  // only campus-dependent routes wait for the persisted store.
+  const mainContent = bypassCampusGate ? (
+    children
+  ) : !hasHydrated ? (
     <div
       className="mx-auto mt-20 h-32 max-w-lg animate-pulse rounded-[var(--radius-lg)] border border-fp-border-default bg-fp-bg-surface"
     />
-  ) : !campus && !bypassCampusGate ? (
+  ) : !campus ? (
     <FPCampusGate onPick={setCampus} />
   ) : (
     children
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-fp-bg-page text-fp-text-body">
-      <header className="sticky top-0 z-40 flex items-center gap-5 border-b border-fp-border-default bg-fp-bg-surface px-6 py-3">
+    <div className={cn("flex min-h-screen flex-col bg-fp-bg-page text-fp-text-body", showBottomNav && "pb-[calc(64px+env(safe-area-inset-bottom))] lg:pb-0")}>
+      <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-fp-border-default bg-fp-bg-surface px-4 py-3 sm:gap-5 sm:px-6">
         <Link href="/" aria-label="Ultimate FFCS" className="flex select-none items-center">
-          <Image src="/logo.svg" alt="Ultimate FFCS" width={1101} height={256} priority className="h-8 w-auto dark:hidden" />
-          <Image src="/logo-reversed.svg" alt="Ultimate FFCS" width={1101} height={256} priority className="hidden h-8 w-auto dark:block" />
+          <Image src="/logo.svg" alt="Ultimate FFCS" width={1101} height={256} priority className="h-7 w-auto dark:hidden sm:h-8" />
+          <Image src="/logo-reversed.svg" alt="Ultimate FFCS" width={1101} height={256} priority className="hidden h-7 w-auto dark:block sm:h-8" />
         </Link>
         <nav className="fp-text hidden items-center gap-[6px] text-[length:var(--text-small)] lg:flex">
           {navItems.map((item) => {
@@ -176,13 +185,13 @@ export function FPShell({ children }: { children: React.ReactNode }) {
             );
           })}
         </nav>
-        <div className="ml-auto flex items-center gap-2.5">
+        <div className="ml-auto flex items-center gap-2 sm:gap-2.5">
           {campus ? (
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setCampusMenuOpen((v) => !v)}
-                className="fp-text inline-flex items-center gap-1.5 rounded-[var(--radius-md)] border border-fp-border-default px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-dim hover:text-fp-text-body"
+                className="fp-text inline-flex items-center gap-1.5 whitespace-nowrap rounded-[var(--radius-md)] border border-fp-border-default px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-dim hover:text-fp-text-body"
               >
                 {CAMPUS_LABELS[campus]}
                 <ChevronDown className="h-3.5 w-3.5" />
@@ -230,7 +239,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
               </AnimatePresence>
             </div>
           ) : null}
-          <FPBadge tone="neutral" pill>
+          <FPBadge tone="neutral" pill className="hidden sm:inline-flex">
             Fall 2026
           </FPBadge>
           {isMobile === false ? (
@@ -291,6 +300,35 @@ export function FPShell({ children }: { children: React.ReactNode }) {
           </Link>
         </div>
       </footer>
+
+      {showBottomNav ? (
+        <nav
+          aria-label="Primary"
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-fp-border-default bg-fp-bg-surface px-2 pt-1.5 pb-[calc(6px+env(safe-area-inset-bottom))] lg:hidden"
+        >
+          <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
+            {navItems.slice(1).map((item) => {
+              const active = item.href === activeHref;
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "fp-text flex flex-col items-center gap-1 rounded-[var(--radius-md)] py-2 text-[11px] transition-colors duration-[var(--dur-fast)]",
+                    active ? "font-medium text-fp-text-strong" : "text-fp-text-dim"
+                  )}
+                  style={active ? { backgroundColor: "var(--surface-selected)" } : undefined}
+                >
+                  <Icon className={cn("h-[18px] w-[18px]", active && "text-fp-accent")} strokeWidth={1.5} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        </nav>
+      ) : null}
 
       <Toaster
         position="top-right"

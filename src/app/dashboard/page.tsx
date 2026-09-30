@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { FPCard } from "@/components/fp-ui/card";
 import { FPButton } from "@/components/fp-ui/button";
+
+export const metadata: Metadata = {
+  title: "Dashboard",
+  robots: { index: false, follow: true }
+};
 
 export default function NewDashboardPage() {
   return (
