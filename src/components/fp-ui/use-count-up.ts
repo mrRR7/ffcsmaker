@@ -12,6 +12,11 @@ export function useCountUp(value: number, durationMs = 500): number {
   const frameRef = useRef<number>();
 
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setDisplay(value);
+      return;
+    }
+
     const start = performance.now();
     const from = 0;
 
