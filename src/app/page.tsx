@@ -56,7 +56,7 @@ export default function LandingPage() {
             <CampusPicker />
           </div>
 
-          <HeroWeekGrid className="hidden lg:block" />
+          <HeroWeekGrid className="mx-auto max-w-md lg:max-w-none" />
         </div>
       </section>
 

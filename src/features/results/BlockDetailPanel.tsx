@@ -130,7 +130,7 @@ export function BlockDetailPanel({
                 </Badge>
                 <Badge>{details.selection?.professorName}</Badge>
                 <Badge>{block.typeLabel ?? block.track}</Badge>
-                <Badge>{details.selection?.credits} credits</Badge>
+                <Badge>{details.selection?.credits} credit{details.selection?.credits === 1 ? "" : "s"}</Badge>
               </div>
               <div className="grid gap-2 text-sm text-muted-foreground">
                 <p>
@@ -201,7 +201,7 @@ export function BlockDetailPanel({
               <p className="text-sm text-muted-foreground">{details.selection?.professorName}</p>
               <div className="flex flex-wrap gap-2">
                 <Badge>{block.typeLabel ?? block.track}</Badge>
-                <Badge>{details.selection?.credits} credits</Badge>
+                <Badge>{details.selection?.credits} credit{details.selection?.credits === 1 ? "" : "s"}</Badge>
                 <Badge>{block.day}</Badge>
               </div>
               <div className="grid gap-2 text-sm text-muted-foreground">

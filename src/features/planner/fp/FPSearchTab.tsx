@@ -46,6 +46,8 @@ export function FPSearchTab() {
   const [showAllResults, setShowAllResults] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [catalogError, setCatalogError] = useState("");
+  // Split theory/lab codes (BCSE204L / BCSE204P) are separate courses; nudge to add the lab.
+  const [labHint, setLabHint] = useState<DBCourse | null>(null);
 
   const coursesInPlanner = useAppStore((state) => state.courses);
   const slots = useAppStore((state) => state.slots);
@@ -180,6 +182,11 @@ export function FPSearchTab() {
     });
 
     setExpandedCourseId(null);
+    const code = course.course_code;
+    const lab = code.endsWith("L")
+      ? allCourses.find((c) => c.course_code === `${code.slice(0, -1)}P`)
+      : undefined;
+    setLabHint(lab && !result.courses.some((c) => c.courseCode === lab.course_code) ? lab : null);
     toast.success(`${course.course_code} added with ${result.addedOptions} professor option${result.addedOptions === 1 ? "" : "s"}.`);
   }
 
@@ -267,6 +274,31 @@ export function FPSearchTab() {
 
       {catalogError ? <FPNote tone="warn">{catalogError}</FPNote> : null}
 
+      {labHint && !coursesInPlanner.some((c) => c.courseCode === labHint.course_code) ? (
+        <FPNote className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span>
+            <span className="font-fp-mono text-fp-text-body">{labHint.course_code}</span> (lab) is a separate course. Add it too?
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setQuery(labHint.course_code);
+              setExpandedCourseId(labHint.id);
+            }}
+            className="text-fp-accent underline underline-offset-[3px]"
+          >
+            Show lab professors
+          </button>
+          <button
+            type="button"
+            onClick={() => setLabHint(null)}
+            className="text-fp-text-dim underline underline-offset-[3px] hover:text-fp-text-body"
+          >
+            Skip
+          </button>
+        </FPNote>
+      ) : null}
+
       {query.trim().length < 2 ? (
         <div className="p-8 text-center text-[length:var(--text-small)] text-fp-text-dim">
           Type at least 2 characters to search.
@@ -292,8 +324,8 @@ export function FPSearchTab() {
               (group) => timeFilter === "all" || group.timeOfDay === "unscheduled" || group.timeOfDay === timeFilter
             );
             const expandedGroupKey = expandedGroupByCourse[course.id] ?? null;
-            const inPlanCount =
-              coursesInPlanner.find((c) => c.courseCode === course.course_code)?.options.length ?? 0;
+            const inPlan = coursesInPlanner.find((c) => c.courseCode === course.course_code);
+            const inPlanCount = inPlan?.options.length ?? 0;
             const visibleOptions = visibleGroups.flatMap((group) => group.options);
             return (
               <div
@@ -314,7 +346,7 @@ export function FPSearchTab() {
                       {course.course_code}
                     </div>
                     <div className="mt-0.5 truncate text-[length:var(--text-small)] text-fp-text-dim">
-                      {course.course_name} &middot; {course.credits} credits &middot; {course.course_options.length} professor
+                      {course.course_name} &middot; {course.credits} credit{course.credits === 1 ? "" : "s"} &middot; {course.course_options.length} professor
                       {course.course_options.length === 1 ? "" : "s"}
                     </div>
                   </div>
@@ -323,7 +355,8 @@ export function FPSearchTab() {
                       {tickedCount} ticked
                     </FPLabel>
                   ) : inPlanCount > 0 ? (
-                    <FPBadge tone="accent" pill className="shrink-0">
+                    <FPBadge tone="accent" pill className="shrink-0 items-center gap-1.5">
+                      <span className="h-2 w-2 rounded-[2px]" style={{ backgroundColor: inPlan?.color ?? "var(--accent)" }} />
                       In plan · {inPlanCount} prof{inPlanCount === 1 ? "" : "s"}
                     </FPBadge>
                   ) : null}

@@ -74,7 +74,7 @@ export function CompareWeekCard({
             freeDay ? `${freeDay.slice(0, 3)} free` : "No free day",
             `by ${schedule.metrics.latestEndTime}`,
             `${gapCount} gap${gapCount === 1 ? "" : "s"}`,
-            `${totalCredits} credits`
+            `${totalCredits} credit${totalCredits === 1 ? "" : "s"}`
           ]}
         />
 

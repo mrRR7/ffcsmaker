@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   }
   const courses: Array<{ credits?: number }> = snapshot.courses ?? [];
   const credits = courses.reduce((sum, c) => sum + (c.credits ?? 0), 0);
-  const title = `Shared FFCS timetable: ${courses.length} courses, ${credits} credits`;
+  const title = `Shared FFCS timetable: ${courses.length} courses, ${credits} credit${credits === 1 ? "" : "s"}`;
   const description = "A clash-free VIT FFCS timetable built with Ultimate FFCS. Open it to see the full week.";
   return {
     title,

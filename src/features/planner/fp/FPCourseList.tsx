@@ -314,7 +314,11 @@ function CourseCard({
         collapsed ? "" : "sm:col-span-full",
         isRisky ? "border-fp-warn" : "border-fp-border-default"
       )}
-      style={isRisky ? { backgroundColor: "var(--warn-wash)" } : undefined}
+      // Course colour from the moment it's added, matching its blocks on Results.
+      style={{
+        borderLeft: `4px solid ${course.color ?? "var(--accent)"}`,
+        ...(isRisky ? { backgroundColor: "var(--warn-wash)" } : {})
+      }}
     >
       <div className="flex items-start gap-3 px-4 py-3">
         <button
@@ -323,16 +327,12 @@ function CourseCard({
           aria-expanded={!collapsed}
           className="flex min-w-0 flex-1 items-start gap-3 text-left"
         >
-          <span
-            className="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full border border-fp-border-strong"
-            style={{ backgroundColor: course.color ?? "var(--accent)" }}
-          />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
               <span className="truncate font-fp-mono text-[length:var(--text-small)] text-fp-text-strong">
                 {course.courseCode || "Untitled course"}
               </span>
-              <FPBadge>{course.credits} credits</FPBadge>
+              <FPBadge>{course.credits} credit{course.credits === 1 ? "" : "s"}</FPBadge>
               <FPBadge>
                 {course.options.length} prof{course.options.length !== 1 ? "s" : ""}
               </FPBadge>

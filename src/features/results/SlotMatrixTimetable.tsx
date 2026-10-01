@@ -107,7 +107,7 @@ export function SlotMatrixTimetable({
                 {schedule.rankingMode}
               </Badge>
               <Badge className="border-border/60 bg-background/50">
-                {totalCredits} credits
+                {totalCredits} credit{totalCredits === 1 ? "" : "s"}
               </Badge>
             </div>
             <p className="mt-2 text-sm text-muted-foreground">

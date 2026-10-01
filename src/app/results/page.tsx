@@ -639,7 +639,7 @@ function ResultsContent() {
                         `done by ${activeSchedule.metrics.latestEndTime}`,
                         `${activeSchedule.metrics.totalGapSlots} gap${activeSchedule.metrics.totalGapSlots === 1 ? "" : "s"}`,
                         "0 clash",
-                        `${totalCredits} credits`
+                        `${totalCredits} credit${totalCredits === 1 ? "" : "s"}`
                       ]}
                     />
                   </div>
@@ -779,7 +779,7 @@ function ResultsContent() {
                       <FPMetricRun
                         items={[
                           `${activeSchedule.selections.length} courses`,
-                          `${totalCredits} credits`,
+                          `${totalCredits} credit${totalCredits === 1 ? "" : "s"}`,
                           Math.round(activeSchedule.score)
                         ]}
                       />
@@ -956,7 +956,7 @@ function ResultsContent() {
                       <FPMetricRun
                         items={[
                           `${activeSchedule.selections.length} courses`,
-                          `${totalCredits} credits`,
+                          `${totalCredits} credit${totalCredits === 1 ? "" : "s"}`,
                           Math.round(activeSchedule.score)
                         ]}
                       />
