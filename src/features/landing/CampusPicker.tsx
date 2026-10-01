@@ -77,10 +77,10 @@ export function CampusPicker() {
               onClick={() => pickCampus(card.campus)}
               className={cn(
                 "rounded-[var(--radius-md)] border p-5 text-left transition-[border-color,background-color,transform] duration-[var(--dur-fast)]",
-                // Disabled = dashed + no fill; selected = accent border + check.
-                // Both used to be a tinted fill, which read the same in light mode.
+                // Disabled = muted solid card + "Coming soon"; selected = accent border + check.
+                // (Dashed read as broken, a tinted fill read the same as selected in light mode.)
                 !card.active
-                  ? "cursor-not-allowed border-dashed border-fp-border-default bg-transparent"
+                  ? "cursor-not-allowed border-fp-border-default bg-fp-bg-inset"
                   : isCurrent
                     ? "border-fp-border-accent bg-fp-bg-surface active:scale-[0.98]"
                     : "border-fp-border-default bg-fp-bg-surface hover:border-fp-border-accent active:scale-[0.98]"
@@ -102,7 +102,7 @@ export function CampusPicker() {
               <div className="mt-1.5 text-[length:var(--text-small)] text-fp-text-dim">{card.detail}</div>
               <FPLabel tone={card.active ? "accent" : "dim"} className="mt-3.5 inline-flex items-center gap-1">
                 {!card.active ? (
-                  "Not yet"
+                  "Coming soon"
                 ) : isCurrent && hasHydrated ? (
                   <>
                     <Check className="h-3 w-3" strokeWidth={2} /> Your campus

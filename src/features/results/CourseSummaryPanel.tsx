@@ -112,7 +112,7 @@ export function CourseSummaryPanel({
                   </p>
                 </div>
                 <Badge className="border-primary/25 bg-primary/10 text-primary">
-                  {selection.credits} credits
+                  {selection.credits} credit{selection.credits === 1 ? "" : "s"}
                 </Badge>
               </div>
               <div className="mt-3 grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">

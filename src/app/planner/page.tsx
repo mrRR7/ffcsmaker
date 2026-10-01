@@ -110,7 +110,8 @@ export default function NewPlannerPage() {
       />
 
       {showNotice && !tour.active && courseCount === 0 ? (
-        <div className="flex items-center gap-4 border-b border-fp-border-default px-6 py-[11px]" style={{ backgroundColor: "var(--accent-wash)" }}>
+        // Desktop only: on phone it pushes the search box below the fold.
+        <div className="hidden items-center gap-4 border-b border-fp-border-default px-6 py-[11px] lg:flex" style={{ backgroundColor: "var(--accent-wash)" }}>
           <FPLabel tone="accent">First time here</FPLabel>
           <span className="text-[length:var(--text-small)] text-fp-text-body">
             Add your courses and tick every professor you&apos;d accept &middot; set anything you&apos;d rather avoid &middot; pick from

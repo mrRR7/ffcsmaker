@@ -155,8 +155,13 @@ export function FPCoursesPane({
       </div>
 
       {/* Phone: the 860px live grid is unreadable at 375px and Results shows the real one,
-          so drop it and lift "your courses" above the add-course controls. */}
-      <aside className="order-first min-w-0 border-b border-fp-border-default bg-fp-bg-surface px-4 py-4 lg:order-none lg:border-b-0 lg:px-6 lg:py-6">
+          so drop it; search stays first and "your courses" appears below it once non-empty. */}
+      <aside
+        className={cn(
+          "min-w-0 border-t border-fp-border-default bg-fp-bg-surface px-4 py-4 lg:border-t-0 lg:px-6 lg:py-6",
+          courses.length === 0 && "hidden lg:block"
+        )}
+      >
         <div className="hidden lg:block">
           <FPLiveSlotMatrix courses={courses} slots={slots} actions={actions} />
         </div>

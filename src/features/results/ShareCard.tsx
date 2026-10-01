@@ -220,7 +220,7 @@ export function ShareCard({ id, schedule, slots, courses, campus, semesterLabel 
           <img src="/logo-reversed.svg" alt="Ultimate FFCS" height={28} style={{ height: 28, width: "auto", display: "block" }} />
           <div style={titleBlock}>
             <p style={titleText}>My FFCS Timetable</p>
-            <p style={subtitleText}>{semesterLabel} · {totalCredits} credits</p>
+            <p style={subtitleText}>{semesterLabel} · {totalCredits} credit{totalCredits === 1 ? "" : "s"}</p>
           </div>
         </div>
         <div style={campusBadge}>{CAMPUS_LABELS[campus]}</div>

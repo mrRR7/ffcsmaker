@@ -140,7 +140,7 @@ export function FPSlotMatrixTimetable({
             <div className="flex flex-wrap items-center gap-2">
               <FPBadge tone="accent">Score {schedule.score}</FPBadge>
               <FPBadge tone="neutral">{schedule.rankingMode}</FPBadge>
-              <FPBadge tone="neutral">{totalCredits} credits</FPBadge>
+              <FPBadge tone="neutral">{totalCredits} credit{totalCredits === 1 ? "" : "s"}</FPBadge>
             </div>
           </div>
           <div className="flex gap-2 text-[length:var(--text-micro)] text-fp-text-dim">

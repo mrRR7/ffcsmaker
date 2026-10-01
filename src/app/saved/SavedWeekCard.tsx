@@ -133,7 +133,7 @@ export function SavedWeekCard({
 
         <div className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-1">
           <FPLabel className="inline">
-            {schedule.selections.length} courses &middot; {totalCredits} credits &middot;{" "}
+            {schedule.selections.length} courses &middot; {totalCredits} credit{totalCredits === 1 ? "" : "s"} &middot;{" "}
             {freeDayCount > 0 ? `${freeDayCount} free day${freeDayCount === 1 ? "" : "s"}` : "no free day"} &middot;{" "}
             {schedule.metrics.totalGapSlots} gap{schedule.metrics.totalGapSlots === 1 ? "" : "s"}
           </FPLabel>
