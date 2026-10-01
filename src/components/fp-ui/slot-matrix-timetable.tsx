@@ -109,7 +109,8 @@ export function FPSlotMatrixTimetable({
           disabled={isLunch}
           onClick={(event) => onCellClick?.(cell, event.currentTarget.getBoundingClientRect())}
           className={cn(
-            "min-h-[52px] w-full px-1 py-1 text-center transition-colors focus-visible:outline-none",
+            // opacity too, so the swap spotlight dims the other courses instead of snapping.
+            "min-h-[52px] w-full px-1 py-1 text-center transition-[background-color,color,opacity] duration-[var(--duration-fast)] ease-[var(--ease-smooth-out)] focus-visible:outline-none",
             isLunch ? "cursor-default" : cell.occupied ? "hover:z-10 hover:brightness-110" : "bg-fp-bg-inset text-fp-text-dim hover:bg-fp-bg-raised",
             isActive && "ring-2 ring-inset",
             isMatched && "ring-1 ring-inset opacity-100",

@@ -3,10 +3,27 @@
    only the :root tunables are themed onto the fp tokens. */
 
 .fp-root {
-  /* motion tokens */
+  /* motion tokens (transitions.dev scale) — mirrored for Framer in src/utils/motion.ts */
+  --duration-stagger: 40ms;
+  --duration-micro: 80ms;
   --duration-quick: 150ms;
+  --duration-fast: 250ms;
+  --duration-medium: 350ms;
   --duration-slow: 400ms;
+  --duration-very-slow: 500ms;
   --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: ease-in-out;
+  --ease-out: ease-out;
+  --ease-linear: linear;
+  --distance-micro: 4px;
+  --distance-base: 8px;
+  --distance-medium: 12px;
+  --scale-large: 0.96;
+  --scale-medium: 0.97;
+  --scale-small: 0.98;
+  --scale-tiny: 0.99;
+  --blur-small: 2px;
+  --blur-medium: 3px;
 
   /* 31 matrix loader */
   --matrix-cycle: 1200ms;
@@ -178,9 +195,12 @@
 /* ── 14 Skeleton reveal — content side, as a mount animation ─────
    The loader and the results page are different trees, so instead of
    stacking both we run the snippet's content transition
-   (opacity 0 + blur → 1 + sharp) as an enter keyframe on mount. */
+   (opacity 0 + blur → 1 + sharp) as an enter keyframe on mount.
+   Fill is `backwards`, not `both`: a held `filter` (even blur(0)) makes this
+   element the containing block for position:fixed descendants (modals,
+   the phone action bar), so the end state must drop back to no filter. */
 .t-skel-enter {
-  animation: t-skel-enter var(--reveal-dur) var(--reveal-ease) both;
+  animation: t-skel-enter var(--reveal-dur) var(--reveal-ease) backwards;
 }
 @keyframes t-skel-enter {
   from { opacity: 0; filter: blur(var(--reveal-blur)); }

@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, Suspense } from "react";
 import toast from "react-hot-toast";
-import { motion } from "framer-motion";
-import { staggerContainer, fadeUp } from "@/utils/motion";
+import { AnimatePresence, motion } from "framer-motion";
+import { staggerContainer, fadeUp, popover } from "@/utils/motion";
 import { ArrowRight, Check, ChevronDown, Loader2 } from "lucide-react";
 import { FPButton } from "@/components/fp-ui/button";
 import { FPCard } from "@/components/fp-ui/card";
@@ -521,6 +521,7 @@ function ResultsContent() {
           <motion.div
             className="mt-4 flex flex-col gap-2.5"
             variants={staggerContainer}
+            custom={filteredGroups.length}
             initial="initial"
             animate="animate"
           >
@@ -669,8 +670,16 @@ function ResultsContent() {
                       Export
                       <ChevronDown className="h-3 w-3" />
                     </FPButton>
+                    <AnimatePresence>
                     {exportMenuOpen ? (
-                      <div className="absolute right-0 z-20 mt-1.5 w-44 rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface p-1">
+                      <motion.div
+                        variants={popover}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        style={{ transformOrigin: "top right" }}
+                        className="absolute right-0 z-20 mt-1.5 w-44 rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface p-1"
+                      >
                         <button
                           type="button"
                           onClick={() => exportActive("png")}
@@ -704,8 +713,9 @@ function ResultsContent() {
                         <div className="px-1 py-1">
                           <IcalExportDialog schedule={activeSchedule} slots={slots} />
                         </div>
-                      </div>
+                      </motion.div>
                     ) : null}
+                    </AnimatePresence>
                   </div>
                 </div>
               </div>
@@ -909,6 +919,7 @@ function ResultsContent() {
                   <motion.div
                     className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4"
                     variants={staggerContainer}
+                    custom={allVariants.length}
                     initial="initial"
                     animate="animate"
                   >
