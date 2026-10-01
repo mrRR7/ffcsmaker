@@ -761,44 +761,7 @@ function ResultsContent() {
               {/* Combos */}
               {allVariants.length > 1 ? (
                 <section className="mt-7 border-t border-fp-border-default pt-6">
-                  <div className="flex flex-wrap items-baseline gap-3">
-                    <h2 className="font-fp-display text-[17px] font-bold text-fp-text-strong sm:text-[length:var(--text-h)]">
-                      Same layout, different professors
-                    </h2>
-                    <FPLabel>{allVariants.length} combos · the grid above doesn&apos;t move</FPLabel>
-                  </div>
-
-                  <motion.div
-                    className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4"
-                    variants={staggerContainer}
-                    initial="initial"
-                    animate="animate"
-                  >
-                    {allVariants.map((variant, index) => {
-                      const selected = variant.id === activeSchedule.id;
-                      const notesCount = variant.selections.filter((selection) => {
-                        const course = courses.find((c) => c.id === selection.courseId);
-                        return Boolean(
-                          course?.options.find((opt) => opt.id === selection.optionId)?.notes
-                        );
-                      }).length;
-                      return (
-                        <motion.div key={variant.id} variants={fadeUp}>
-                          <FPComboCard
-                            selected={selected}
-                            eyebrow={`Combo ${String(index + 1).padStart(2, "0")}`}
-                            score={Math.round(variant.score)}
-                            title={comboTitle(variant) || `Combo ${index + 1}`}
-                            meta={notesCount === 0 ? "no notes" : `${notesCount} with notes`}
-                            onClick={() => selectVariant(variant.id)}
-                            className="cursor-pointer"
-                          />
-                        </motion.div>
-                      );
-                    })}
-                  </motion.div>
-
-                  <div className="mt-4 overflow-hidden rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface">
+                  <div className="overflow-hidden rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface">
                     <div className="flex items-center justify-between border-b border-fp-border-default px-4 py-3">
                       <FPLabel tone="strong">
                         Combo {String(activeVariantIndex + 1).padStart(2, "0")} · who you&apos;d register with
@@ -936,6 +899,43 @@ function ResultsContent() {
                       }
                     />
                   </div>
+                  <div className="mt-6 flex flex-wrap items-baseline gap-3">
+                    <h2 className="font-fp-display text-[17px] font-bold text-fp-text-strong sm:text-[length:var(--text-h)]">
+                      Same layout, different professors
+                    </h2>
+                    <FPLabel>{allVariants.length} combos · the grid above doesn&apos;t move</FPLabel>
+                  </div>
+
+                  <motion.div
+                    className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4"
+                    variants={staggerContainer}
+                    initial="initial"
+                    animate="animate"
+                  >
+                    {allVariants.map((variant, index) => {
+                      const selected = variant.id === activeSchedule.id;
+                      const notesCount = variant.selections.filter((selection) => {
+                        const course = courses.find((c) => c.id === selection.courseId);
+                        return Boolean(
+                          course?.options.find((opt) => opt.id === selection.optionId)?.notes
+                        );
+                      }).length;
+                      return (
+                        <motion.div key={variant.id} variants={fadeUp}>
+                          <FPComboCard
+                            selected={selected}
+                            eyebrow={`Combo ${String(index + 1).padStart(2, "0")}`}
+                            score={Math.round(variant.score)}
+                            title={comboTitle(variant) || `Combo ${index + 1}`}
+                            meta={notesCount === 0 ? "no notes" : `${notesCount} with notes`}
+                            onClick={() => selectVariant(variant.id)}
+                            className="cursor-pointer"
+                          />
+                        </motion.div>
+                      );
+                    })}
+                  </motion.div>
+
                 </section>
               ) : (
                 <section className="mt-7 border-t border-fp-border-default pt-6">
