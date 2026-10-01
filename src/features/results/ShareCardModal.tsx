@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { Copy, Download, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { backdrop, modal } from "@/utils/motion";
 import { FPButton } from "@/components/fp-ui/button";
 import { Campus, ScoredTimetable, TimeSlot } from "@/engine/types";
 import {
@@ -84,28 +86,36 @@ export function ShareCardModal({ open, onClose, schedule, slots }: Props) {
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  if (!open) {
-    return null;
-  }
-
+  // Kept mounted through the exit so the dialog can scale out (modal tokens);
+  // the backdrop fades on the same timing.
   return (
     <>
-      {/* Off-screen capture target — full resolution, invisible */}
-      <ShareCard
-        id={CARD_ID}
-        schedule={schedule}
-        slots={slots}
-        courses={courses}
-        campus={campus}
-        semesterLabel={semesterLabel}
-      />
-
-      {/* Modal overlay */}
-      <div
+      {/* Off-screen capture target — full resolution, invisible. Kept OUTSIDE the
+          overlay: its z-index:-1 hides it behind the page, but inside the
+          overlay's stacking context it would paint above the backdrop. */}
+      {open ? (
+        <ShareCard
+          id={CARD_ID}
+          schedule={schedule}
+          slots={slots}
+          courses={courses}
+          campus={campus}
+          semesterLabel={semesterLabel}
+        />
+      ) : null}
+    <AnimatePresence>
+      {open ? (
+      <motion.div
+        key="share-card-overlay"
+        variants={backdrop}
+        initial="initial"
+        animate="animate"
+        exit="exit"
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/65 p-4"
         onClick={onClose}
       >
-        <div
+        <motion.div
+          variants={modal}
           role="dialog"
           aria-modal="true"
           aria-labelledby="share-card-title"
@@ -176,8 +186,10 @@ export function ShareCardModal({ open, onClose, schedule, slots }: Props) {
               {isCopying ? "Copying…" : "Copy"}
             </FPButton>
           </div>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
+      ) : null}
+    </AnimatePresence>
     </>
   );
 }

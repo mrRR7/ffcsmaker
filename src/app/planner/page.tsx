@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowRight, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
-import { fadeUp } from "@/utils/motion";
+import { routeSlide } from "@/utils/motion";
 import { useAppStore } from "@/store/useAppStore";
 import { getRankingProfiles } from "@/engine/ranking";
 import { RankingMode } from "@/engine/types";
@@ -148,8 +148,16 @@ export default function NewPlannerPage() {
         </div>
       ) : null}
 
-      <AnimatePresence mode="wait">
-        <motion.div key={tab} variants={fadeUp} initial="initial" animate="animate" exit="exit">
+      {/* Step 1 ↔ step 2: same page slide as route changes, direction by step order. */}
+      <AnimatePresence mode="wait" custom={tab === "preferences" ? 1 : -1}>
+        <motion.div
+          key={tab}
+          custom={tab === "preferences" ? 1 : -1}
+          variants={routeSlide}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+        >
           {tab === "courses" ? (
             <FPCoursesPane
               actions={
