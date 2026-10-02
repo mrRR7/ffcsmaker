@@ -22,7 +22,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS semesters_one_active_per_campus
   ON semesters (campus)
   WHERE is_active = true;
 
-CREATE INDEX IF NOT EXISTS semesters_campus_idx ON semesters(campus);
 CREATE INDEX IF NOT EXISTS semesters_campus_active_idx ON semesters(campus, is_active);
 
 CREATE TABLE IF NOT EXISTS courses (
@@ -37,7 +36,6 @@ CREATE TABLE IF NOT EXISTS courses (
   UNIQUE(semester_id, course_code)
 );
 
-CREATE INDEX IF NOT EXISTS courses_semester_idx ON courses(semester_id);
 CREATE INDEX IF NOT EXISTS courses_code_idx ON courses(course_code);
 
 -- The catalog search route filters with ILIKE ('code%' / '%name%'), which a
@@ -58,25 +56,18 @@ CREATE TABLE IF NOT EXISTS course_options (
   slot_timing JSONB,
   professor_notes TEXT,
   verified BOOLEAN NOT NULL DEFAULT false,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS options_course_idx ON course_options(course_id);
-
-CREATE TABLE IF NOT EXISTS share_links (
-  id TEXT PRIMARY KEY,
-  payload TEXT NOT NULL,
+  -- NULL means unclassified / fallback.
+  program TEXT DEFAULT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  expires_at TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '90 days'),
-  view_count INTEGER NOT NULL DEFAULT 0
+  CONSTRAINT course_options_unique
+    UNIQUE NULLS NOT DISTINCT (course_id, professor_name, theory_slots, lab_slots, program)
 );
 
-CREATE INDEX IF NOT EXISTS share_links_expiry_idx ON share_links(expires_at);
+CREATE INDEX IF NOT EXISTS course_options_course_program_idx ON course_options(course_id, program);
 
 ALTER TABLE semesters ENABLE ROW LEVEL SECURITY;
 ALTER TABLE courses ENABLE ROW LEVEL SECURITY;
 ALTER TABLE course_options ENABLE ROW LEVEL SECURITY;
-ALTER TABLE share_links ENABLE ROW LEVEL SECURITY;
 
 DO $$
 BEGIN
@@ -106,12 +97,11 @@ BEGIN
 
 END $$;
 
--- share_links is unused by the app (superseded by share_timetables below)
--- and share_timetables is only ever read/written via the service-role admin
--- client server-side, so neither needs (or should have) a public RLS policy
--- letting the anon key touch them directly from a browser. RLS stays
--- enabled with no policies, which defaults to deny for anon/authenticated
--- roles; the service role bypasses RLS entirely regardless.
+-- share_timetables is only ever read/written via the service-role admin
+-- client server-side, so it has no public RLS policy letting the anon key
+-- touch it from a browser. RLS stays enabled with no policies, which
+-- defaults to deny for anon/authenticated roles; the service role bypasses
+-- RLS entirely regardless.
 
 CREATE TABLE IF NOT EXISTS share_timetables (
   id TEXT PRIMARY KEY,
@@ -159,3 +149,11 @@ BEGIN
       CHECK (length(payload_json::text) < 2200000);
   END IF;
 END $$;
+
+-- Imports are deleted when consumed; this sweeps the ones nobody opened.
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+SELECT cron.schedule(
+  'purge-expired-vtop-imports',
+  '0 3 * * *',
+  $$DELETE FROM public.vtop_imports WHERE expires_at < now()$$
+);
