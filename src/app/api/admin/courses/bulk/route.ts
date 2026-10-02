@@ -190,14 +190,29 @@ export async function POST(request: Request) {
         );
       }
 
-      courseMap.get(courseCode)!.options.push({
+      const option = {
         professor_name: rawRow.professorName?.trim() || "Unknown",
         program: rawRow.program?.trim() || null,
         theory_slots: theorySlots,
         lab_slots: labSlots,
         professor_notes: rawRow.notes?.trim() || null,
         verified: true
-      });
+      };
+      // Same key as the course_options_unique constraint: a repeated CSV row
+      // would otherwise fail the whole insert batch for this course.
+      const options = courseMap.get(courseCode)!.options;
+      const isDuplicate = options.some(
+        (o) =>
+          o.professor_name === option.professor_name &&
+          o.program === option.program &&
+          o.theory_slots.join() === option.theory_slots.join() &&
+          o.lab_slots.join() === option.lab_slots.join()
+      );
+      if (isDuplicate) {
+        rowsSkipped += 1;
+      } else {
+        options.push(option);
+      }
     }
 
     let coursesCreated = 0;
