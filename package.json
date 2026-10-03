@@ -28,10 +28,10 @@
     "date-fns": "^4.1.0",
     "framer-motion": "^11.15.0",
     "html-to-image": "^1.11.11",
-    "jspdf": "^2.5.2",
+    "jspdf": "^4.2.1",
     "lucide-react": "^0.468.0",
     "lz-string": "^1.5.0",
-    "nanoid": "^5.0.9",
+    "nanoid": "^5.1.16",
     "next": "^14.2.23",
     "papaparse": "^5.5.3",
     "react": "^18.3.1",
@@ -41,7 +41,7 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.7.2",
-    "xlsx": "^0.18.5",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zustand": "^5.0.2"
   },
   "devDependencies": {
