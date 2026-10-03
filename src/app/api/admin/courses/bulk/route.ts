@@ -87,69 +87,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid campus" }, { status: 400 });
     }
 
-    const supabaseAdmin = createSupabaseAdminClient();
+    type ImportCourse = {
+      course_code: string;
+      course_name: string;
+      credits: number;
+      course_type: "theory" | "lab" | "both";
+      options: Array<{
+        professor_name: string;
+        program: string | null;
+        theory_slots: string[];
+        lab_slots: string[];
+        professor_notes: string | null;
+      }>;
+    };
 
-    if (isActive) {
-      const { error: deactivateError } = await supabaseAdmin
-        .from("semesters")
-        .update({ is_active: false })
-        .eq("is_active", true)
-        .eq("campus", selectedCampus);
-
-      if (deactivateError) {
-        return NextResponse.json(
-          { error: deactivateError.message },
-          { status: 500 }
-        );
-      }
-    }
-
-    const { data: semester, error: semError } = await supabaseAdmin
-      .from("semesters")
-      .upsert(
-        {
-          label: semesterLabel.trim(),
-          campus: selectedCampus,
-          slot_variant: slotVariant,
-          is_active: Boolean(isActive),
-          ffcs_opens: ffcsOpens || null,
-          start_date: startDate || null,
-          end_date: endDate || null
-        },
-        { onConflict: "label,campus" }
-      )
-      .select("id")
-      .single();
-
-    if (semError || !semester) {
-      return NextResponse.json(
-        { error: semError?.message ?? "Failed to upsert semester" },
-        { status: 500 }
-      );
-    }
-
-    const courseMap = new Map<
-      string,
-      {
-        course: {
-          semester_id: string;
-          course_code: string;
-          course_name: string;
-          credits: number;
-          course_type: "theory" | "lab" | "both";
-          verified: boolean;
-        };
-        options: Array<{
-          professor_name: string;
-          program: string | null;
-          theory_slots: string[];
-          lab_slots: string[];
-          professor_notes: string | null;
-          verified: boolean;
-        }>;
-      }
-    >();
-
+    const courseMap = new Map<string, ImportCourse>();
     let rowsSkipped = 0;
 
     for (const rawRow of rows as AdminImportRow[]) {
@@ -159,35 +111,30 @@ export async function POST(request: Request) {
       }
 
       const courseCode = rawRow.courseCode?.trim().toUpperCase();
-      if (!courseCode) {
+      const credits = Number(rawRow.credits) || 3;
+      // The import runs as one transaction, so a row the DB would reject
+      // (credits is INTEGER 1-10) has to be skipped here or it fails them all.
+      if (!courseCode || !Number.isInteger(credits) || credits < 1 || credits > 10) {
         rowsSkipped += 1;
         continue;
       }
 
       const theorySlots = splitSlots(rawRow.theorySlots);
       const labSlots = splitSlots(rawRow.labSlots);
-      const credits = Number(rawRow.credits) || 3;
-
       const nextCourseType = courseType(theorySlots, labSlots);
-      const existingCourse = courseMap.get(courseCode);
+      let course = courseMap.get(courseCode);
 
-      if (!existingCourse) {
-        courseMap.set(courseCode, {
-          course: {
-            semester_id: semester.id,
-            course_code: courseCode,
-            course_name: rawRow.courseName?.trim() || courseCode,
-            credits,
-            course_type: nextCourseType,
-            verified: true
-          },
+      if (!course) {
+        course = {
+          course_code: courseCode,
+          course_name: rawRow.courseName?.trim() || courseCode,
+          credits,
+          course_type: nextCourseType,
           options: []
-        });
-      } else if (existingCourse.course.course_type !== nextCourseType) {
-        existingCourse.course.course_type = mergeCourseType(
-          existingCourse.course.course_type,
-          nextCourseType
-        );
+        };
+        courseMap.set(courseCode, course);
+      } else {
+        course.course_type = mergeCourseType(course.course_type, nextCourseType);
       }
 
       const option = {
@@ -195,13 +142,11 @@ export async function POST(request: Request) {
         program: rawRow.program?.trim() || null,
         theory_slots: theorySlots,
         lab_slots: labSlots,
-        professor_notes: rawRow.notes?.trim() || null,
-        verified: true
+        professor_notes: rawRow.notes?.trim() || null
       };
       // Same key as the course_options_unique constraint: a repeated CSV row
-      // would otherwise fail the whole insert batch for this course.
-      const options = courseMap.get(courseCode)!.options;
-      const isDuplicate = options.some(
+      // would otherwise fail the whole import.
+      const isDuplicate = course.options.some(
         (o) =>
           o.professor_name === option.professor_name &&
           o.program === option.program &&
@@ -211,77 +156,36 @@ export async function POST(request: Request) {
       if (isDuplicate) {
         rowsSkipped += 1;
       } else {
-        options.push(option);
+        course.options.push(option);
       }
     }
 
-    let coursesCreated = 0;
-    let optionsCreated = 0;
+    // One transaction (supabase/migrations/20261003_import_catalog_rpc.sql):
+    // the semester switch, course upserts and option replacement all land
+    // together or not at all.
+    const { data, error } = await createSupabaseAdminClient().rpc("import_catalog", {
+      p_semester: {
+        label: semesterLabel.trim(),
+        campus: selectedCampus,
+        slot_variant: slotVariant,
+        is_active: Boolean(isActive),
+        ffcs_opens: ffcsOpens || null,
+        start_date: startDate || null,
+        end_date: endDate || null
+      },
+      p_courses: Array.from(courseMap.values())
+    });
 
-    for (const { course, options } of courseMap.values()) {
-      const { data: upsertedCourse, error: courseErr } = await supabaseAdmin
-        .from("courses")
-        .upsert(course, { onConflict: "semester_id,course_code" })
-        .select("id")
-        .single();
-
-      if (courseErr || !upsertedCourse) {
-        rowsSkipped += options.length;
-        continue;
-      }
-
-      coursesCreated += 1;
-
-      if (options.length > 0) {
-        const uniquePrograms = Array.from(new Set(options.map((opt) => opt.program)));
-        for (const prog of uniquePrograms) {
-          let deleteQuery = supabaseAdmin
-            .from("course_options")
-            .delete()
-            .eq("course_id", upsertedCourse.id);
-
-          if (prog === null) {
-            deleteQuery = deleteQuery.is("program", null);
-          } else {
-            deleteQuery = deleteQuery.eq("program", prog);
-          }
-
-          const { error: delErr } = await deleteQuery;
-          if (delErr) {
-            console.error("Error deleting course options for program:", prog, delErr);
-          }
-        }
-      } else {
-        await supabaseAdmin
-          .from("course_options")
-          .delete()
-          .eq("course_id", upsertedCourse.id);
-      }
-
-      if (options.length === 0) {
-        continue;
-      }
-
-      const { error: optErr } = await supabaseAdmin.from("course_options").insert(
-        options.map((option) => ({
-          ...option,
-          course_id: upsertedCourse.id
-        }))
-      );
-
-      if (optErr) {
-        rowsSkipped += options.length;
-      } else {
-        optionsCreated += options.length;
-      }
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
     return NextResponse.json(
       {
         ok: true,
-        semesterId: semester.id,
-        coursesCreated,
-        optionsCreated,
+        semesterId: data.semester_id,
+        coursesCreated: data.courses,
+        optionsCreated: data.options,
         rowsSkipped
       },
       { headers: { "Cache-Control": "no-store" } }
