@@ -47,7 +47,7 @@ const faqs = [
   },
   {
     q: "My course isn't in the search. What now?",
-    a: "Use Import from VTOP under the search box: a one-click bookmark that pulls your real registration data. Or switch from Search to another tab: Paste takes course lists copied from WhatsApp forwards or spreadsheets, File imports a CSV or XLSX, and Manual lets you type the course and its slots yourself."
+    a: "Switch the planner from Search to another tab. Paste takes course lists copied from WhatsApp forwards or spreadsheets, File imports a CSV or XLSX, and Manual lets you type the course and its slots yourself."
   },
   {
     q: "What if my slot fills up during registration?",

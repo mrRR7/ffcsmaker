@@ -135,15 +135,6 @@ export default function NewSavedPage() {
             const staleCourse = courses.find(
               (course) => !saved.timetable.selections.some((selection) => selection.courseId === course.id)
             );
-            let unverifiedCourseCode: string | null = null;
-            for (const selection of saved.timetable.selections) {
-              const course = courses.find((item) => item.id === selection.courseId);
-              const option = course?.options.find((item) => item.id === selection.optionId);
-              if (!option || option.professorRating === undefined) {
-                unverifiedCourseCode = selection.courseCode;
-                break;
-              }
-            }
 
             return (
               <motion.div key={saved.id} variants={fadeUp}>
@@ -153,7 +144,6 @@ export default function NewSavedPage() {
                   courses={courses}
                   isStale={Boolean(staleCourse)}
                   staleCourseCode={staleCourse?.courseCode ?? null}
-                  unverifiedCourseCode={unverifiedCourseCode}
                   onToggleFavorite={() => toggleFavoriteSchedule(saved.id)}
                   onRename={(name) => renameSavedSchedule(saved.id, name)}
                   onDelete={() => deleteSavedSchedule(saved.id)}

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { ChevronDown, ShieldCheck } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import { DBCourse, DBCourseOption, DBSemester } from "@/types/db";
 import { mergeCourseOptions } from "@/features/courses/mergeCourseOptions";
 import { loadCatalog } from "@/lib/catalogCache";
@@ -216,7 +216,6 @@ export function FPSearchTab() {
           <span className={cn("flex flex-wrap items-center gap-2 text-[length:var(--text-small)]", selected ? "text-fp-text-strong" : "text-fp-text-body")}>
             {option.professor_name}
             {option.program ? <FPLabel>{option.program}</FPLabel> : null}
-            {!option.verified ? <FPLabel tone="warn">Unverified</FPLabel> : null}
           </span>
           {option.professor_notes ? (
             <span className="mt-0.5 block text-[12px] text-fp-text-dim">{option.professor_notes}</span>
@@ -354,7 +353,6 @@ export function FPSearchTab() {
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2 font-fp-mono text-[length:var(--text-small)] text-fp-text-strong">
-                      {course.verified ? <ShieldCheck className="h-3.5 w-3.5 text-fp-accent" /> : null}
                       {course.course_code}
                     </div>
                     <div className="mt-0.5 truncate text-[length:var(--text-small)] text-fp-text-dim">

@@ -17,7 +17,6 @@ export function SavedWeekCard({
   courses,
   isStale,
   staleCourseCode,
-  unverifiedCourseCode,
   onToggleFavorite,
   onRename,
   onDelete,
@@ -29,7 +28,6 @@ export function SavedWeekCard({
   courses: Course[];
   isStale: boolean;
   staleCourseCode: string | null;
-  unverifiedCourseCode: string | null;
   onToggleFavorite: () => void;
   onRename: (name: string) => void;
   onDelete: () => void;
@@ -137,7 +135,6 @@ export function SavedWeekCard({
             {freeDayCount > 0 ? `${freeDayCount} free day${freeDayCount === 1 ? "" : "s"}` : "no free day"} &middot;{" "}
             {schedule.metrics.totalGapSlots} gap{schedule.metrics.totalGapSlots === 1 ? "" : "s"}
           </FPLabel>
-          {unverifiedCourseCode ? <FPBadge tone="warn">Unverified professor</FPBadge> : null}
         </div>
         <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
           {schedule.selections.map((selection) => {
@@ -157,10 +154,6 @@ export function SavedWeekCard({
         {isStale ? (
           <FPNote tone="warn" className="mt-2">
             Built before you added {staleCourseCode} &mdash; re-run to check it still holds.
-          </FPNote>
-        ) : unverifiedCourseCode ? (
-          <FPNote tone="warn" className="mt-2">
-            1 unverified professor &mdash; {unverifiedCourseCode} data came from a student, not the catalog.
           </FPNote>
         ) : null}
       </div>

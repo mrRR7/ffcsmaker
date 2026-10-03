@@ -98,6 +98,9 @@ export interface ScheduleMetrics {
   earliestStartTime: string;
   latestEndTime: string;
   averageEndTime: string;
+  /** Mean of each class day's first start / last end, in minutes. What a student feels day to day. */
+  averageDayStartMinutes: number;
+  averageDayEndMinutes: number;
   morningClassCount: number;
   eveningClassCount: number;
   totalClasses: number;

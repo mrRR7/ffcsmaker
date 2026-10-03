@@ -37,6 +37,8 @@ export function computeScheduleMetrics(
   const activeDays = DAYS.filter((day) => (byDay.get(day)?.length ?? 0) > 0);
   const gaps: number[] = [];
   let halfDays = 0;
+  let dayStartSum = 0;
+  let dayEndSum = 0;
   let morningClassCount = 0;
   let eveningClassCount = 0;
 
@@ -57,6 +59,8 @@ export function computeScheduleMetrics(
 
     const first = daySlots[0];
     const last = daySlots[daySlots.length - 1];
+    dayStartSum += parseTime(first.startTime);
+    dayEndSum += parseTime(last.endTime);
     const spanMinutes = parseTime(last.endTime) - parseTime(first.startTime);
     if (spanMinutes <= 4 * 60) {
       halfDays += 1;
@@ -102,6 +106,8 @@ export function computeScheduleMetrics(
     earliestStartTime: starts.length ? formatMinutes(Math.min(...starts)) : "00:00",
     latestEndTime: ends.length ? formatMinutes(Math.max(...ends)) : "00:00",
     averageEndTime: ends.length ? formatMinutes(averageEnd) : "00:00",
+    averageDayStartMinutes: activeDays.length ? dayStartSum / activeDays.length : 0,
+    averageDayEndMinutes: activeDays.length ? dayEndSum / activeDays.length : 0,
     morningClassCount,
     eveningClassCount,
     totalClasses: scheduledSlots.length,

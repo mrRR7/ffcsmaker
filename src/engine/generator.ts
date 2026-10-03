@@ -48,10 +48,9 @@ function optionScoreHint(course: Course, option: CourseOption) {
 
 function priorityScore(
   selections: TimetableSelection[],
-  courses: Course[],
-  enabled?: boolean
+  courses: Course[]
 ) {
-  if (!enabled || courses.length === 0 || selections.length === 0) {
+  if (courses.length === 0 || selections.length === 0) {
     return 0;
   }
 
@@ -72,7 +71,7 @@ function priorityScore(
     return sum + courseWeight * optionWeight;
   }, 0);
 
-  return Number(((raw / selections.length) * 15).toFixed(1));
+  return raw / selections.length;
 }
 
 type SampleCallback = (selections: TimetableSelection[]) => void;
@@ -164,23 +163,18 @@ export function generateTimetables(
           metrics,
           selections,
           rankingMode,
-          constraints
+          constraints,
+          payload.usePriorityRanking ? priorityScore(selections, courses) : null
         );
         metrics.facultyMatchPercentage = Math.max(0, Math.min(100, Math.round(rawFacultyScore * 100)));
 
-        const priority = priorityScore(
-          selections,
-          courses,
-          payload.usePriorityRanking
-        );
         schedules.push({
           id: nanoid(),
           selections: [...selections],
           metrics,
-          score: Number((score + priority).toFixed(1)),
+          score,
           rankingMode,
-          scoreBreakdown:
-            priority > 0 ? { ...scoreBreakdown, priority } : scoreBreakdown
+          scoreBreakdown
         });
         if (onSample && samplesSent < MAX_SAMPLES) {
           samplesSent += 1;

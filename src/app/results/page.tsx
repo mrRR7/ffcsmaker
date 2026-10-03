@@ -20,7 +20,6 @@ import { FPSlotMatrixTimetable } from "@/components/fp-ui/slot-matrix-timetable"
 import { useCountUp } from "@/components/fp-ui/use-count-up";
 import { BlockDetailPanel } from "@/features/results/BlockDetailPanel";
 import { IcalExportDialog } from "@/features/results/IcalExportDialog";
-import { ShareCardModal } from "@/features/results/ShareCardModal";
 import { buildMatrixCells, buildCourseSummaryRows, MatrixCell } from "@/features/results/timetableMatrix";
 import { ScoredTimetable, DayOfWeek } from "@/engine/types";
 import { exportElementPng, exportScheduleJson, exportTimetablePdf } from "@/utils/export";
@@ -66,7 +65,6 @@ function ResultsContent() {
   const [activeCellId, setActiveCellId] = useState<string | null>(null);
   const [activeBlockAnchor, setActiveBlockAnchor] = useState<DOMRect | null>(null);
   const [highlightCourseCode, setHighlightCourseCode] = useState<string | null>(null);
-  const [shareCardOpen, setShareCardOpen] = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
 
   // Generating screen → results hand-off: "loading" while the worker runs,
@@ -136,15 +134,6 @@ function ResultsContent() {
   }, [allVariants, activeVariantId]);
 
   const displayedScore = useCountUp(activeSchedule?.score ?? 0);
-
-  const hasUnverifiedProfessor = useMemo(() => {
-    if (!activeSchedule) return false;
-    return activeSchedule.selections.some((selection) => {
-      const course = courses.find((c) => c.id === selection.courseId);
-      const option = course?.options.find((item) => item.id === selection.optionId);
-      return !option || option.professorRating === undefined;
-    });
-  }, [activeSchedule, courses]);
 
   const activeShapeIndex = useMemo(() => {
     if (!activeShapeGroup) return -1;
@@ -622,21 +611,14 @@ function ResultsContent() {
                       </span>
                       {Math.round(displayedScore)}
                     </span>
-                    {hasUnverifiedProfessor ? (
-                      <FPBadge
-                        tone="warn"
-                        title="At least one professor here came from a student paste or import, not the official catalog. Double-check the slot in VTOP."
-                      >
-                        Unverified professor
-                      </FPBadge>
-                    ) : null}
                   </div>
                   <div className="mt-2">
                     <FPMetricRun
                       items={[
+                        // A free weekday is rare with a normal load, so lead with half days unless one exists.
                         freeDays.length > 0
                           ? `${freeDays.map((d) => shortDay(d)).join("+")} free`
-                          : "no free day",
+                          : `${activeSchedule.metrics.halfDays} half day${activeSchedule.metrics.halfDays === 1 ? "" : "s"}`,
                         `done by ${activeSchedule.metrics.latestEndTime}`,
                         `${activeSchedule.metrics.totalGapSlots} gap${activeSchedule.metrics.totalGapSlots === 1 ? "" : "s"}`,
                         "0 clash",
@@ -658,9 +640,6 @@ function ResultsContent() {
                     onClick={() => shareActive(activeSchedule)}
                   >
                     Share
-                  </FPButton>
-                  <FPButton variant="secondary" size="sm" onClick={() => setShareCardOpen(true)}>
-                    Share image
                   </FPButton>
                   <div ref={exportMenuRef} className="relative">
                     <FPButton
@@ -755,7 +734,7 @@ function ResultsContent() {
               <FPTip id="results-register" className="mt-5">
                 This doesn&apos;t register anything. When FFCS opens on VTOP, register these exact slots and professors
                 (&ldquo;Save &amp; copy slots for VTOP&rdquo; at the bottom copies them). Seats fill fast, so save two or three
-                backup weeks from the list too. The score only compares weeks against your ranking choice.
+                backup weeks from the list too. The score is out of 100 and measures how well a week fits the ranking you picked.
               </FPTip>
 
               {/* Week grid — the real FFCS slot matrix (day rows x THEORY/LAB
@@ -1052,14 +1031,6 @@ function ResultsContent() {
         mode="selected"
       />
 
-      {activeSchedule ? (
-        <ShareCardModal
-          open={shareCardOpen}
-          onClose={() => setShareCardOpen(false)}
-          schedule={activeSchedule}
-          slots={slots}
-        />
-      ) : null}
     </div>
   );
 }

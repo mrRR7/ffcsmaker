@@ -155,7 +155,7 @@ export async function exportTimetablePdf(
   cursorY += 6;
   cursorY = drawTextBox(
     pdf,
-    `${schedule.rankingMode} | Score ${schedule.score} | ${totalCredits} credits | ${schedule.metrics.freeDays} free days | ${schedule.metrics.totalGapSlots} gap slots | ends ${schedule.metrics.latestEndTime}`,
+    `${schedule.rankingMode} | Score ${schedule.score} | ${totalCredits} credits | ${schedule.metrics.halfDays} half days | ${schedule.metrics.totalGapSlots} gap slots | ends ${schedule.metrics.latestEndTime}`,
     margin,
     cursorY,
     width - margin * 2,
