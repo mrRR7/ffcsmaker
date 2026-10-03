@@ -13,6 +13,7 @@ import { FPBadge } from "@/components/fp-ui/badge";
 import { FPLabel } from "@/components/fp-ui/label";
 import { FPMetricRun } from "@/components/fp-ui/metric-run";
 import { FPNote } from "@/components/fp-ui/note";
+import { FPTip } from "@/components/fp-ui/tip";
 import { FPComboCard } from "@/components/fp-ui/combo-card";
 import { FPSlotTable, FP_EMPTY_CELL } from "@/components/fp-ui/slot-table";
 import { FPSlotMatrixTimetable } from "@/components/fp-ui/slot-matrix-timetable";
@@ -486,7 +487,7 @@ function ResultsContent() {
   return (
     <div className={cn("-mx-4 -my-8 pb-16 sm:-mx-6 lg:-mx-8", revealed && "t-skel-enter")}>
       {/* Top nav strip */}
-      <nav className="flex items-center justify-end border-b border-fp-border-default bg-fp-bg-inset px-6 py-2.5">
+      <nav className="flex items-center justify-end border-b border-fp-border-default bg-fp-bg-inset px-4 py-2.5 sm:px-6">
         <FPMetricRun
           items={[
             `${filteredGroups.length} ${filteredGroups.length === 1 ? "week" : "weeks"}`,
@@ -497,7 +498,7 @@ function ResultsContent() {
       </nav>
 
       {resultsAreStale ? (
-        <div className="border-b border-fp-border-default px-6 py-3">
+        <div className="border-b border-fp-border-default px-4 py-3 sm:px-6">
           <FPNote tone="warn" className="flex flex-wrap items-center justify-between gap-3">
             <span>These results are over 24 hours old. Regenerate for the latest schedule.</span>
             <Link href="/planner" className="fp-text text-[length:var(--text-micro)] text-fp-warn underline">
@@ -750,6 +751,12 @@ function ResultsContent() {
                   </button>
                 </FPNote>
               ) : null}
+
+              <FPTip id="results-register" className="mt-5">
+                This doesn&apos;t register anything. When FFCS opens on VTOP, register these exact slots and professors
+                (&ldquo;Save &amp; copy slots for VTOP&rdquo; at the bottom copies them). Seats fill fast, so save two or three
+                backup weeks from the list too. The score only compares weeks against your ranking choice.
+              </FPTip>
 
               {/* Week grid — the real FFCS slot matrix (day rows x THEORY/LAB
                   sub-rows x period columns), structurally identical to the
@@ -1023,7 +1030,7 @@ function ResultsContent() {
 
       {/* Bottom bar */}
       {activeSchedule ? (
-        <footer data-tour-id="results-save-register" className="flex flex-wrap items-center gap-3 border-t border-fp-border-default bg-fp-bg-surface px-6 py-4">
+        <footer data-tour-id="results-save-register" className="flex flex-wrap items-center gap-3 border-t border-fp-border-default bg-fp-bg-surface px-4 py-4 sm:px-6">
           <FPMetricRun items={[activeSchedule.rankingMode, "constraints held"]} />
           <div className="ml-auto flex flex-wrap gap-2.5">
             <FPButton variant="ghost" size="sm" onClick={() => router.push("/planner")}>

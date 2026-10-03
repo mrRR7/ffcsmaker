@@ -81,10 +81,6 @@ export interface Constraints {
   maxGapSlots: number | null;
   maxClassesPerDay: number | null;
   requireMinFreeDays: number | null;
-  minimizeDays: boolean;
-  preferCompactness: boolean;
-  preferHalfDays: boolean;
-  preferEarlyFinish: boolean;
   professorLocks: string[];
   avoidDays: DayOfWeek[];
   avoidProfessors: string[];

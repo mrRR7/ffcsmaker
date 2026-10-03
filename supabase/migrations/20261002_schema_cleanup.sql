@@ -52,9 +52,14 @@ WHERE o.course_id = keep.course_id
   AND o.program IS NOT DISTINCT FROM keep.program
   AND (o.created_at, o.id) > (keep.created_at, keep.id);
 
-ALTER TABLE course_options
-  ADD CONSTRAINT course_options_unique
-  UNIQUE NULLS NOT DISTINCT (course_id, professor_name, theory_slots, lab_slots, program);
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'course_options_unique') THEN
+    ALTER TABLE course_options
+      ADD CONSTRAINT course_options_unique
+      UNIQUE NULLS NOT DISTINCT (course_id, professor_name, theory_slots, lab_slots, program);
+  END IF;
+END $$;
 
 -- 5. Indexes already covered by a multi-column index with the same leading column.
 DROP INDEX IF EXISTS courses_semester_idx;        -- courses_semester_id_course_code_key

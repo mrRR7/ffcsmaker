@@ -24,7 +24,7 @@ export function FPPreferencesPane({ actions }: { actions?: React.ReactNode }) {
   const resetConstraints = useAppStore((state) => state.resetConstraints);
 
   return (
-    <div className="mx-auto max-w-2xl px-6 py-7">
+    <div className="mx-auto max-w-2xl px-4 py-7 sm:px-6">
       <h2 className="text-[22px]">Anything you&apos;d rather avoid?</h2>
       <p className="mb-6 mt-1.5 text-[length:var(--text-small)] text-fp-text-dim">
         All optional. Skip and we&apos;ll show you every week that works.

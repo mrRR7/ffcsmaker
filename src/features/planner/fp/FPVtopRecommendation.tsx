@@ -44,7 +44,7 @@ export function FPVtopRecommendation({
   return (
     <>
       <div
-        className="flex flex-col gap-3 border-y border-fp-border-default px-6 py-4"
+        className="flex flex-col gap-3 border-y border-fp-border-default px-4 py-4 lg:px-6"
       >
         <div className="min-w-0 flex-1">
           <FPLabel>Course or faculty missing?</FPLabel>

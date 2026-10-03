@@ -14,6 +14,7 @@ import { FPBadge } from "@/components/fp-ui/badge";
 import { FPNote } from "@/components/fp-ui/note";
 import { FPCheckbox } from "@/components/fp-ui/checkbox";
 import { FPMetricRun } from "@/components/fp-ui/metric-run";
+import { FPTip } from "@/components/fp-ui/tip";
 import {
   FPSlotOptionChip,
   FPTimeOfDayToggle,
@@ -229,7 +230,7 @@ export function FPSearchTab() {
   }
 
   return (
-    <div className="space-y-4 p-6">
+    <div className="space-y-4 p-4 lg:p-6">
       <div className="flex flex-col gap-2">
         <div className="flex flex-1 items-center gap-2.5 rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-[14px] py-[11px] focus-within:border-[var(--border-selected)]">
           <span className="font-fp-mono text-fp-text-dim">/</span>
@@ -300,8 +301,19 @@ export function FPSearchTab() {
       ) : null}
 
       {query.trim().length < 2 ? (
-        <div className="p-8 text-center text-[length:var(--text-small)] text-fp-text-dim">
-          Type at least 2 characters to search.
+        <div className="rounded-[var(--radius-md)] border border-fp-border-default p-4 text-[length:var(--text-small)] leading-[1.5] text-fp-text-dim">
+          <p className="font-medium text-fp-text-body">How to add a course</p>
+          <ol className="mt-2 list-decimal space-y-1.5 pl-4">
+            <li>
+              Search by code (<span className="font-fp-mono">BCSE202L</span>) or name (&ldquo;data structures&rdquo;).
+              Your course codes are in your programme&apos;s curriculum on VTOP.
+            </li>
+            <li>
+              Codes ending in <span className="font-fp-mono">L</span> are theory and <span className="font-fp-mono">P</span> is
+              the matching lab. They&apos;re separate courses, so add both.
+            </li>
+            <li>Open the course, tick every professor you&apos;d be okay with, and press Add.</li>
+          </ol>
         </div>
       ) : isLoading ? (
         <div className="space-y-2">
@@ -365,6 +377,11 @@ export function FPSearchTab() {
 
                 {expanded ? (
                   <div className="space-y-3 p-4">
+                    <FPTip id="slot-groups">
+                      Professors are grouped by slot. <span className="font-fp-mono">A1 + TA1</span> is a theory slot
+                      (TA1 is its tutorial hour); <span className="font-fp-mono">L23 + L24</span> is a two-period lab. Tick
+                      everyone you&apos;d accept: more ticks means more clash-free weeks to choose from.
+                    </FPTip>
                     {groups.length > 1 ? (
                       <FPTimeOfDayToggle
                         value={timeFilter}

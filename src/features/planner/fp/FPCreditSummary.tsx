@@ -18,7 +18,7 @@ export function FPCreditSummary() {
   const tone = isOver ? "danger" : isNear ? "warn" : "neutral";
 
   return (
-    <FPBadge tone={tone} mono>
+    <FPBadge tone={tone} mono title={`Total credits of the courses you've added. VIT's usual maximum is ${VIT_CREDIT_CAP} a semester.`}>
       {totalCredits} / {VIT_CREDIT_CAP} CR{isOver ? " · OVER" : ""}
     </FPBadge>
   );

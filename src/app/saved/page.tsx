@@ -94,7 +94,7 @@ export default function NewSavedPage() {
 
   return (
     <div className="-mx-4 -my-8 sm:-mx-6 lg:-mx-8">
-      <section className="flex flex-wrap items-end gap-5 border-b border-fp-border-default px-6 py-8">
+      <section className="flex flex-wrap items-end gap-5 border-b border-fp-border-default px-4 py-8 sm:px-6">
         <div>
           <h1 className="font-fp-display text-[length:var(--text-display)] font-bold tracking-[-0.01em] text-fp-text-strong">My weeks</h1>
           <p className="mt-1.5 max-w-xl text-[length:var(--text-body-size)] text-fp-text-body">
@@ -113,7 +113,7 @@ export default function NewSavedPage() {
       </section>
 
       {sorted.length === 0 ? (
-        <div className="px-6 py-10">
+        <div className="px-4 py-10 sm:px-6">
           <FPCard className="flex min-h-72 flex-col items-center justify-center gap-3 text-center">
             <p className="font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong">No saved weeks yet</p>
             <p className="max-w-sm text-[length:var(--text-small)] text-fp-text-dim">Save schedules from Results to see them here.</p>
@@ -126,7 +126,7 @@ export default function NewSavedPage() {
         </div>
       ) : (
         <motion.div
-          className="flex flex-col gap-4 px-6 py-6"
+          className="flex flex-col gap-4 px-4 py-6 sm:px-6"
           variants={staggerContainer}
           initial="initial"
           animate="animate"

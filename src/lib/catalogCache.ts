@@ -13,7 +13,9 @@ interface CatalogCacheEntry {
 // this in-memory list instead of hitting the network per keystroke.
 const catalogCache = new Map<string, CatalogCacheEntry>();
 const inFlight = new Map<string, Promise<CatalogCacheEntry>>();
-const CACHE_TTL_MS = 10 * 60 * 1000;
+// Matches the API's edge cache window (60s + 300s stale) so an admin import
+// reaches an open tab within a few minutes.
+const CACHE_TTL_MS = 5 * 60 * 1000;
 
 function catalogCacheKey(campus: Campus, semesterId: string) {
   return `${campus}::${semesterId}`;

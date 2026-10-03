@@ -22,8 +22,8 @@ export async function POST(request: Request) {
     );
   }
 
-  const { password } = await request.json();
-  const isValid = await verifyAdminPassword(password);
+  const body = await request.json().catch(() => null);
+  const isValid = await verifyAdminPassword(body?.password);
 
   if (!isValid) {
     return NextResponse.json({ error: "Wrong password" }, { status: 401 });

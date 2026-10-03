@@ -25,6 +25,7 @@ import {
 import { clearCampusCache } from "@/lib/catalogCache";
 import { checkStorageCapacity } from "@/lib/storageUtils";
 import { getSlotCatalog, getSlotDays } from "@/engine/slotCatalog";
+import { defaultConstraints } from "@/engine/defaults";
 import { groupSchedulesByShape } from "@/engine/consolidation";
 import { mapLegacyRankingMode } from "@/engine/ranking";
 import { colorForIndex } from "@/lib/coursePalette";
@@ -36,31 +37,7 @@ export const defaultSlots = getSlotCatalog("standard");
 export type GenerationStatus = { running: boolean; progress: number; checked: number; accepted: number };
 export const IDLE_GENERATION: GenerationStatus = { running: false, progress: 0, checked: 0, accepted: 0 };
 
-export const defaultConstraints: Constraints = {
-  blockedWindows: [],
-  noAfterTime: null,
-  avoidFirstPeriod: false,
-  avoidLastPeriod: false,
-  preferredDaysOff: [],
-  maxGapSlots: null,
-  maxClassesPerDay: null,
-  requireMinFreeDays: null,
-  minimizeDays: false,
-  preferCompactness: false,
-  preferHalfDays: false,
-  preferEarlyFinish: false,
-  professorLocks: [],
-  avoidDays: [],
-  avoidProfessors: [],
-  endBeforeByDay: {},
-  preferredProfessors: [],
-  earliestStart: null,
-  latestEnd: null,
-  startAfterByDay: {},
-  latestEndByDay: {},
-  facultyRanking: {},
-  avoidedFacultyByCourse: {}
-};
+export { defaultConstraints };
 
 const defaultUiPreferences: UiPreferences = {
   theme: "dark",

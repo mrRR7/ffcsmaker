@@ -45,7 +45,7 @@ export function CampusPicker() {
   return (
     <>
       {returning ? (
-        <div className="mt-7 flex flex-wrap items-center gap-3">
+        <div className="mt-7 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
           <FPButton variant="primary" onClick={() => router.push("/planner")}>
             Continue planning · {courseCount} course{courseCount === 1 ? "" : "s"}
             <ArrowRight className="h-3.5 w-3.5" strokeWidth={1.5} />

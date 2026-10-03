@@ -87,7 +87,7 @@ export function FPPasteTab() {
   }
 
   return (
-    <div className="space-y-4 p-6">
+    <div className="space-y-4 p-4 lg:p-6">
       <div>
         <h3 className="font-fp-display text-[17px] font-bold text-fp-text-strong">Paste text</h3>
         <p className="mt-1 text-[length:var(--text-small)] text-fp-text-dim">
