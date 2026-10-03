@@ -13,6 +13,7 @@ import { CompareWeekCard } from "./CompareWeekCard";
 import { computeDiffs } from "./diffs";
 
 const RANK_EYEBROWS = ["Best overall", "Runner-up", "Third pick"];
+const EMPTY: never[] = [];
 
 export default function NewComparePage() {
   const slots = useAppStore((state) => state.slots);
@@ -24,9 +25,10 @@ export default function NewComparePage() {
   const savedSchedulesRaw = useAppStore((state) => state.savedSchedules);
   const generatedSchedulesRaw = useAppStore((state) => state.generatedSchedules);
 
-  const compareScheduleIds = Array.isArray(compareScheduleIdsRaw) ? compareScheduleIdsRaw : [];
-  const savedSchedules = Array.isArray(savedSchedulesRaw) ? savedSchedulesRaw : [];
-  const generatedSchedules = Array.isArray(generatedSchedulesRaw) ? generatedSchedulesRaw : [];
+  // Shared EMPTY fallback: a fresh [] each render would invalidate the memos below.
+  const compareScheduleIds = Array.isArray(compareScheduleIdsRaw) ? compareScheduleIdsRaw : EMPTY;
+  const savedSchedules = Array.isArray(savedSchedulesRaw) ? savedSchedulesRaw : EMPTY;
+  const generatedSchedules = Array.isArray(generatedSchedulesRaw) ? generatedSchedulesRaw : EMPTY;
 
   const allSchedules = useMemo(
     () => getAllSchedules({ generatedSchedules, savedSchedules }),
