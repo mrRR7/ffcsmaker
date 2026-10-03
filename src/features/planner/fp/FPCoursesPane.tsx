@@ -2,11 +2,9 @@
 
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
 import { useAppStore } from "@/store/useAppStore";
-import { useTour } from "@/features/tour/useTour";
 import { cn } from "@/utils/cn";
 import { PLANNER_TABS, PlannerTabId } from "@/features/planner/constants";
 import { FPCreditSummary } from "@/features/planner/fp/FPCreditSummary";
-import { FPVtopRecommendation } from "@/features/planner/fp/FPVtopRecommendation";
 import { FPSearchTab } from "@/features/planner/fp/FPSearchTab";
 import { FPPasteTab } from "@/features/planner/fp/FPPasteTab";
 import { FPImportTab } from "@/features/planner/fp/FPImportTab";
@@ -37,8 +35,6 @@ export function FPCoursesPane({
   const [tab, setTab] = useState<PlannerTabId>("search");
   const courses = useAppStore((state) => state.courses);
   const slots = useAppStore((state) => state.slots);
-  const campus = useAppStore((state) => state.campus);
-  const tour = useTour();
 
   const [railWidth, setRailWidth] = useState(DEFAULT_RAIL_WIDTH);
   const [isDragging, setIsDragging] = useState(false);
@@ -131,13 +127,6 @@ export function FPCoursesPane({
           {tab === "import" ? <FPImportTab /> : null}
           {tab === "manual" ? <FPCourseList showAddForm showList={false} /> : null}
         </div>
-
-        {/* Below the input, not above it: the search box is the first thing
-            a student needs; this is the fallback when the catalog misses. */}
-        {!tour.active ? (
-          <FPVtopRecommendation campus={campus} hasImportedData={courses.length > 0} />
-        ) : null}
-
       </section>
 
       <div

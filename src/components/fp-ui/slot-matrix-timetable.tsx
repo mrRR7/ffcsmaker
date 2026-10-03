@@ -145,7 +145,7 @@ export function FPSlotMatrixTimetable({
           </div>
           <div className="flex gap-2 text-[length:var(--text-micro)] text-fp-text-dim">
             <FPBadge tone="neutral" pill>
-              {schedule.metrics.freeDays} free days
+              {schedule.metrics.halfDays} half day{schedule.metrics.halfDays === 1 ? "" : "s"}
             </FPBadge>
             <FPBadge tone="neutral" pill>
               {schedule.metrics.totalGapSlots} gap slots

@@ -116,7 +116,7 @@ export function SlotMatrixTimetable({
           </div>
           <div className="flex gap-2 text-xs text-muted-foreground">
             <span className="rounded-full border border-border/60 bg-background/50 px-3 py-1 font-medium">
-              {schedule.metrics.freeDays} free days
+              {schedule.metrics.halfDays} half day{schedule.metrics.halfDays === 1 ? "" : "s"}
             </span>
             <span className="rounded-full border border-border/60 bg-background/50 px-3 py-1 font-medium">
               {schedule.metrics.totalGapSlots} gap slots
