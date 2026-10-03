@@ -154,7 +154,7 @@ export function FPImportTab() {
   }, [validRows]);
 
   return (
-    <div className="p-6">
+    <div className="p-4 lg:p-6">
       <FPStepNav
         className="mb-6 rounded-[var(--radius-md)] border border-fp-border-default"
         steps={STEPS.map((s, index) => ({

@@ -41,6 +41,7 @@ import { cn } from "@/utils/cn";
 import { FPButton } from "@/components/fp-ui/button";
 import { FPBadge } from "@/components/fp-ui/badge";
 import { FPLabel } from "@/components/fp-ui/label";
+import { FPTip } from "@/components/fp-ui/tip";
 
 const COURSE_LIST_CAP = 6;
 
@@ -116,7 +117,7 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
   }
 
   return (
-    <div className={cn("space-y-4", showAddForm && "p-6")}>
+    <div className={cn("space-y-4", showAddForm && "p-4 lg:p-6")}>
       {showAddForm ? (
         <div className="rounded-[var(--radius-lg)] border border-fp-border-default bg-fp-bg-surface p-4">
           <FPLabel tone="strong" className="block text-[length:var(--text-small)] normal-case">
@@ -162,6 +163,13 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
               </FPButton>
             ) : null}
           </div>
+
+          {courses.length > 0 ? (
+            <FPTip id="course-cards">
+              Open a course to manage its professors. Drag to set your preference order (used with &ldquo;My list
+              order&rdquo;), the lock forces a professor into every week, and avoid leaves them out.
+            </FPTip>
+          ) : null}
 
           {courses.length === 0 ? (
             <div className="p-8 text-center text-[length:var(--text-small)] text-fp-text-dim">

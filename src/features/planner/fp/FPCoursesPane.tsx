@@ -12,6 +12,7 @@ import { FPPasteTab } from "@/features/planner/fp/FPPasteTab";
 import { FPImportTab } from "@/features/planner/fp/FPImportTab";
 import { FPCourseList } from "@/features/planner/fp/FPCourseList";
 import { FPLiveSlotMatrix } from "@/features/planner/fp/FPLiveSlotMatrix";
+import { FPTip } from "@/components/fp-ui/tip";
 
 const DEFAULT_RAIL_WIDTH = 400;
 const MIN_RAIL_WIDTH = 340;
@@ -168,6 +169,13 @@ export function FPCoursesPane({
         <div className="lg:mt-6 lg:border-t lg:border-fp-border-default lg:pt-6">
           <FPCourseList showAddForm={false} showList />
         </div>
+        {courses.length > 0 ? (
+          <FPTip id="ranking" className="mt-4">
+            Done adding? Press Find my weeks. The dropdown next to it picks what ranks first: Half Days packs classes
+            into mornings or afternoons, Minimize Gaps cuts free periods between classes, Early Finish and Late Start
+            do what they say, and Balanced mixes them.
+          </FPTip>
+        ) : null}
       </aside>
     </div>
   );

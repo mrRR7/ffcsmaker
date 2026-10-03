@@ -73,6 +73,7 @@ export default function NewPlannerPage() {
         value={rankingMode}
         onChange={(event) => setRankingMode(event.target.value as RankingMode)}
         aria-label="Ranking profile"
+        title="How weeks are ordered. Balanced: a bit of everything. Half Days: classes packed into mornings or afternoons. Minimize Gaps: fewest free periods between classes. Early Finish: done early each day. Late Start: later first class."
         className="fp-text rounded-[var(--radius-md)] border border-fp-border-strong bg-transparent px-2.5 py-[7px] text-[length:var(--text-micro)] text-fp-text-body outline-none hover:border-fp-accent"
       >
         {rankingProfiles.map((profile) => (
@@ -111,7 +112,7 @@ export default function NewPlannerPage() {
 
       {showNotice && !tour.active && courseCount === 0 ? (
         // Desktop only: on phone it pushes the search box below the fold.
-        <div className="hidden items-center gap-4 border-b border-fp-border-default px-6 py-[11px] lg:flex" style={{ backgroundColor: "var(--accent-wash)" }}>
+        <div className="hidden items-center gap-4 border-b border-fp-border-default px-4 py-[11px] lg:flex lg:px-6" style={{ backgroundColor: "var(--accent-wash)" }}>
           <FPLabel tone="accent">First time here</FPLabel>
           <span className="text-[length:var(--text-small)] text-fp-text-body">
             Add your courses and tick every professor you&apos;d accept &middot; set anything you&apos;d rather avoid &middot; pick from
@@ -132,13 +133,13 @@ export default function NewPlannerPage() {
       ) : null}
 
       {campus && slots.length === 0 ? (
-        <div className="border-b border-fp-border-default px-6 py-3">
+        <div className="border-b border-fp-border-default px-4 py-3 lg:px-6">
           <FPNote tone="warn">Slot data for this campus is not available yet. Check back soon.</FPNote>
         </div>
       ) : null}
 
       {!isGenerating && accepted > 0 ? (
-        <div className="flex items-center gap-4 border-b border-fp-border-default px-6 py-3">
+        <div className="flex items-center gap-4 border-b border-fp-border-default px-4 py-3 lg:px-6">
           <FPLabel>{accepted} weeks found</FPLabel>
           <Link href="/results">
             <FPButton variant="primary" size="sm">

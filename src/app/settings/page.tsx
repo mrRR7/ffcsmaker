@@ -19,6 +19,7 @@ import { FPPanel } from "@/components/fp-ui/panel";
 import { FPLabel } from "@/components/fp-ui/label";
 import { FPCheckbox } from "@/components/fp-ui/checkbox";
 import { FPNote } from "@/components/fp-ui/note";
+import { resetTips } from "@/components/fp-ui/tip";
 
 export default function NewSettingsPage() {
   const [confirmCampusReset, setConfirmCampusReset] = useState(false);
@@ -74,6 +75,7 @@ export default function NewSettingsPage() {
   function toggleBanner() {
     if (bannerDismissed) {
       localStorage.removeItem("dismissed_preliminary_notice");
+      resetTips();
       setBannerDismissed(false);
       toast.success("Notice banner will be shown on Planner.");
     } else {
@@ -125,7 +127,7 @@ export default function NewSettingsPage() {
             />
             <Row
               label="First-time tips"
-              detail={bannerDismissed ? "Hidden on the Planner" : "Shown on the Planner"}
+              detail={bannerDismissed ? "Hidden" : "Shown on the Planner and Results. Showing them again also brings back any you dismissed."}
               action={bannerDismissed ? "Show" : "Hide"}
               onClick={toggleBanner}
             />
