@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import { X } from "lucide-react";
-import { cn } from "@/utils/cn";
 import { FPLabel } from "@/components/fp-ui/label";
 
 const TIP_PREFIX = "fp_tip_dismissed:";
@@ -30,17 +29,23 @@ export function resetTips() {
 
 /**
  * FPTip — a short, dismissible pointer placed right where a first-timer gets
- * stuck. Hidden until mount (dismissals live in localStorage), once dismissed,
- * or when the user hides all tips in Settings.
+ * stuck. Not rendered once dismissed or when the user hides all tips in
+ * Settings. Visibility is only known after mount (dismissals live in
+ * localStorage), so instead of popping in and shoving content down, it mounts
+ * open and plays the accordion expand as a CSS keyframe (.t-acc-enter in
+ * fp-transitions.css). No JS timing involved, so it can't get stuck hidden.
+ * Dismissing collapses it with the regular .t-acc transition.
  */
 export function FPTip({ id, children, className }: { id: string; children: React.ReactNode; className?: string }) {
-  const [visible, setVisible] = React.useState(false);
+  const [state, setState] = React.useState<"hidden" | "closed" | "open">("hidden");
 
   React.useEffect(() => {
-    setVisible(read(TIPS_HIDDEN_KEY) !== "true" && read(TIP_PREFIX + id) !== "true");
+    if (read(TIPS_HIDDEN_KEY) !== "true" && read(TIP_PREFIX + id) !== "true") setState("open");
   }, [id]);
 
-  if (!visible) return null;
+  if (state === "hidden") return null;
+
+  const open = state === "open";
 
   function dismiss() {
     try {
@@ -48,29 +53,37 @@ export function FPTip({ id, children, className }: { id: string; children: React
     } catch {
       // storage blocked: hide for this visit only
     }
-    setVisible(false);
+    setState("closed");
   }
 
   return (
-    <div
-      className={cn(
-        "flex items-start gap-3 rounded-[var(--radius-md)] border border-fp-border-default px-3.5 py-3 text-[length:var(--text-small)] leading-[1.5] text-fp-text-body",
-        className
-      )}
-      style={{ backgroundColor: "var(--accent-wash)" }}
-    >
-      <FPLabel tone="accent" className="mt-px shrink-0">
-        Tip
-      </FPLabel>
-      <div className="min-w-0 flex-1">{children}</div>
-      <button
-        type="button"
-        onClick={dismiss}
-        aria-label="Dismiss tip"
-        className="-m-1.5 shrink-0 p-1.5 text-fp-text-dim hover:text-fp-text-body"
-      >
-        <X className="h-3.5 w-3.5" strokeWidth={1.5} />
-      </button>
+    <div className="t-acc t-acc-enter" data-open={String(open)} aria-hidden={!open}>
+      <div className="t-acc-panel">
+        <div className="t-acc-panel-inner">
+          {/* className (usually mt-*) sits inside the collapsing panel so the
+              gap animates with the tip instead of appearing instantly. */}
+          <div className={className}>
+            <div
+              className="flex items-start gap-3 rounded-[var(--radius-md)] border border-fp-border-default px-3.5 py-3 text-[length:var(--text-small)] leading-[1.5] text-fp-text-body"
+              style={{ backgroundColor: "var(--accent-wash)" }}
+            >
+              <FPLabel tone="accent" className="mt-px shrink-0">
+                Tip
+              </FPLabel>
+              <div className="min-w-0 flex-1">{children}</div>
+              <button
+                type="button"
+                onClick={dismiss}
+                aria-label="Dismiss tip"
+                tabIndex={open ? undefined : -1}
+                className="-m-1.5 shrink-0 p-1.5 text-fp-text-dim hover:text-fp-text-body"
+              >
+                <X className="h-3.5 w-3.5" strokeWidth={1.5} />
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

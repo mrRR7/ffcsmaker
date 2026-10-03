@@ -167,7 +167,8 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
           {courses.length > 0 ? (
             <FPTip id="course-cards">
               Open a course to manage its professors. Drag to set your preference order (used with &ldquo;My list
-              order&rdquo;), the lock forces a professor into every week, and avoid leaves them out.
+              order&rdquo;), the lock forces a professor into every week, and avoid leaves them out. The CR
+              badge at the top totals your credits; VIT&apos;s usual cap is 27.
             </FPTip>
           ) : null}
 

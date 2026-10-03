@@ -192,6 +192,21 @@
   }
 }
 
+/* Accordion expand as a mount animation (FPTip): the element renders already
+   open and plays the expand once, so becoming visible never depends on a JS
+   frame. `backwards` fill so nothing (e.g. filter) is held afterwards. */
+.t-acc-enter .t-acc-panel {
+  animation: t-acc-enter-rows var(--acc-expand) var(--acc-ease) backwards;
+}
+.t-acc-enter .t-acc-panel-inner {
+  animation: t-acc-enter-fade var(--acc-expand) var(--acc-ease) backwards;
+}
+@keyframes t-acc-enter-rows { from { grid-template-rows: 0fr; } }
+@keyframes t-acc-enter-fade { from { opacity: 0; filter: blur(2px); } }
+@media (prefers-reduced-motion: reduce) {
+  .t-acc-enter .t-acc-panel, .t-acc-enter .t-acc-panel-inner { animation: none; }
+}
+
 /* ── 14 Skeleton reveal — content side, as a mount animation ─────
    The loader and the results page are different trees, so instead of
    stacking both we run the snippet's content transition
