@@ -30,26 +30,20 @@ export async function storeVtopImport(payload: PlannerImportJSON) {
 export async function consumeVtopImport(token: string): Promise<PlannerImportJSON | null> {
   const supabase = createSupabaseAdminClient();
 
+  // One DELETE ... RETURNING: two concurrent requests can't both read the
+  // payload, so the token really is single-use. Expired rows are left for
+  // the nightly pg_cron sweep.
   const { data, error } = await supabase
     .from("vtop_imports")
-    .select("payload_json, expires_at")
+    .delete()
     .eq("id", token)
+    .gt("expires_at", new Date().toISOString())
+    .select("payload_json")
     .maybeSingle();
 
   if (error) {
     throw new Error(error.message);
   }
 
-  if (!data) {
-    return null;
-  }
-
-  if (new Date(data.expires_at).getTime() < Date.now()) {
-    await supabase.from("vtop_imports").delete().eq("id", token);
-    return null;
-  }
-
-  await supabase.from("vtop_imports").delete().eq("id", token);
-
-  return data.payload_json as PlannerImportJSON;
+  return (data?.payload_json as PlannerImportJSON | undefined) ?? null;
 }

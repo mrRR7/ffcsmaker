@@ -19,23 +19,16 @@ export async function GET(request: Request) {
     }
 
     const { data, error } = await query;
-
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      throw error;
     }
 
     return NextResponse.json(
       { semesters: data ?? [] },
-      {
-        headers: {
-          "Cache-Control": "public, s-maxage=300, stale-while-revalidate=3600"
-        }
-      }
+      { headers: { "Cache-Control": "public, s-maxage=60, stale-while-revalidate=300" } }
     );
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Catalog unavailable" },
-      { status: 500 }
-    );
+    console.error("catalog/semesters failed:", error);
+    return NextResponse.json({ error: "Catalog unavailable" }, { status: 500 });
   }
 }

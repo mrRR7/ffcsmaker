@@ -54,9 +54,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ id }, { status: 201 });
   } catch (err) {
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Server error" },
-      { status: 500 }
-    );
+    console.error("share-timetable failed:", err);
+    return NextResponse.json({ error: "Failed to create share link" }, { status: 500 });
   }
 }

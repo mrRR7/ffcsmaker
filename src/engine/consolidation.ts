@@ -46,48 +46,6 @@ export function getTimetableShapeFingerprint(
     .join("|");
 }
 
-export function consolidateSchedulesByShape(
-  schedules: ScoredTimetable[],
-  slots: TimeSlot[]
-): ScoredTimetable[] {
-  const slotMap = indexSlots(slots);
-  const groups = new Map<string, ScoredTimetable[]>();
-
-  for (const schedule of schedules) {
-    const shape = getTimetableShapeFingerprint(schedule, slotMap);
-    if (!groups.has(shape)) {
-      groups.set(shape, []);
-    }
-    groups.get(shape)!.push(schedule);
-  }
-
-  const consolidated: ScoredTimetable[] = [];
-
-  for (const group of groups.values()) {
-    // Pick the highest scoring schedule in the group as representative
-    group.sort((a, b) => b.score - a.score);
-    consolidated.push(group[0]);
-  }
-
-  // Logging
-  const originalCount = schedules.length;
-  const uniqueShapes = groups.size;
-  const removed = originalCount - uniqueShapes;
-  const reduction = originalCount > 0 ? ((removed / originalCount) * 100).toFixed(1) : "0.0";
-
-  console.log(`--- Shape Consolidation Metrics ---`);
-  console.log(`Generated: ${originalCount} schedules`);
-  console.log(`Unique shapes: ${uniqueShapes}`);
-  console.log(`Removed: ${removed} duplicates`);
-  console.log(`Reduction: ${reduction}%`);
-  console.log(`-----------------------------------`);
-
-  // Final sort to ensure the consolidated array is strictly ordered by score
-  consolidated.sort((a, b) => b.score - a.score);
-
-  return consolidated;
-}
-
 export function groupSchedulesByShape(
   schedules: ScoredTimetable[],
   slots: TimeSlot[]

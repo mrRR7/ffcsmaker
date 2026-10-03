@@ -147,11 +147,6 @@ function optionsOverlap(
   const idsA = getOptionSlotIds(optA);
   const idsB = getOptionSlotIds(optB);
 
-  console.log("OPTION A", optA);
-console.log("OPTION B", optB);
-console.log("IDS A", getOptionSlotIds(optA));
-console.log("IDS B", getOptionSlotIds(optB));
-
   for (const idA of idsA) {
     const slotA = slotMap.get(idA);
     if (!slotA) continue;

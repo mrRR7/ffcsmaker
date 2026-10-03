@@ -34,9 +34,7 @@ export async function GET(
 
     return NextResponse.json({ payload, diff });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to load import." },
-      { status: 500 }
-    );
+    console.error("vtop-import consume failed:", error);
+    return NextResponse.json({ error: "Failed to load import." }, { status: 500 });
   }
 }
