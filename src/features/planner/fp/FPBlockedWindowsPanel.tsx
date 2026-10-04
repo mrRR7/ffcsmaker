@@ -146,7 +146,7 @@ export function FPBlockedWindowsPanel() {
                       }}
                       title={covering[0]?.label || undefined}
                       className={cn(
-                        "h-[22px] cursor-pointer rounded-[3px] transition-colors",
+                        "h-[22px] cursor-pointer rounded-[3px] transition-colors lg:h-[28px]",
                         isBusy || inPreview
                           ? "bg-fp-busy"
                           : "bg-fp-bg-inset hover:bg-fp-bg-raised"
