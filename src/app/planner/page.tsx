@@ -51,7 +51,8 @@ export default function NewPlannerPage() {
     <FPButton
       data-tour-id="planner-generate"
       variant={isGenerating ? "secondary" : "primary"}
-      size="sm"
+      size="md"
+      className="whitespace-nowrap"
       onClick={isGenerating ? cancel : runGeneration}
       disabled={!isGenerating && courseCount === 0}
       title={courseCount === 0 ? "Add a course first" : undefined}
@@ -74,7 +75,7 @@ export default function NewPlannerPage() {
         onChange={(event) => setRankingMode(event.target.value as RankingMode)}
         aria-label="Ranking profile"
         title="How weeks are ordered. Balanced: a bit of everything. Half Days: classes packed into mornings or afternoons. Minimize Gaps: fewest free periods between classes. Early Finish: done early each day. Late Start: later first class."
-        className="fp-text rounded-[var(--radius-md)] border border-fp-border-strong bg-transparent px-2.5 py-[7px] text-[length:var(--text-micro)] text-fp-text-body outline-none hover:border-fp-accent"
+        className="fp-text rounded-[var(--radius-md)] border border-fp-border-strong bg-transparent px-3 py-[10px] text-[length:var(--text-small)] text-fp-text-body outline-none hover:border-fp-accent"
       >
         {rankingProfiles.map((profile) => (
           <option key={profile} value={profile}>
@@ -82,7 +83,7 @@ export default function NewPlannerPage() {
           </option>
         ))}
       </select>
-      <label className="fp-text inline-flex cursor-pointer items-center gap-1.5 text-[length:var(--text-micro)] text-fp-text-dim">
+      <label className="fp-text inline-flex cursor-pointer items-center gap-2 whitespace-nowrap text-[length:var(--text-small)] text-fp-text-dim">
         <FPCheckbox checked={usePriorityRanking} onCheckedChange={setUsePriorityRanking} />
         My list order
       </label>
@@ -172,7 +173,7 @@ export default function NewPlannerPage() {
           ) : (
             <FPPreferencesPane
               actions={
-                <div className="hidden items-center gap-2.5 lg:flex">
+                <div className="hidden flex-wrap items-center gap-2.5 lg:flex">
                   {rankingControls}
                   {findWeeksButton}
                 </div>
