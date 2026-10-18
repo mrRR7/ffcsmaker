@@ -25,12 +25,25 @@ export function exportScheduleJson(schedule: ScoredTimetable) {
 }
 
 export async function exportElementPng(node: HTMLElement, filename: string) {
-  const dataUrl = await toPng(node, {
-    pixelRatio: 2,
-    backgroundColor: "#020617",
-    cacheBust: true
-  });
-  downloadUrl(dataUrl, filename);
+  // On phones the grid scrolls sideways inside node. Unclip it for the capture,
+  // or the image holds only the visible columns (and the scrollbars).
+  const clipped = [node, ...node.querySelectorAll<HTMLElement>("*")].filter(
+    (el) => el.scrollWidth > el.clientWidth
+  );
+  const previous = clipped.map((el) => el.style.overflow);
+  clipped.forEach((el) => (el.style.overflow = "visible"));
+  try {
+    const dataUrl = await toPng(node, {
+      pixelRatio: 2,
+      backgroundColor: "#020617",
+      cacheBust: true,
+      width: node.scrollWidth,
+      height: node.scrollHeight
+    });
+    downloadUrl(dataUrl, filename);
+  } finally {
+    clipped.forEach((el, i) => (el.style.overflow = previous[i]));
+  }
 }
 
 function drawTextBox(
