@@ -45,6 +45,10 @@ export default function NewPrivacyPage() {
           stability, and user experience.
         </p>
         <p>
+          We count anonymous actions (like timetables generated) to improve the site. No
+          personal data is stored.
+        </p>
+        <p>
           No personally identifiable academic information, timetable data, credentials, or
           planner selections are collected through analytics.
         </p>

@@ -13,6 +13,7 @@ import {
 } from "@/lib/export/captureShareCard";
 import { useAppStore } from "@/store/useAppStore";
 import { ShareCard, SHARE_CARD_WIDTH, SHARE_CARD_HEIGHT } from "./ShareCard";
+import { track } from "@/lib/track";
 
 const CARD_ID = "share-card-export";
 
@@ -55,6 +56,7 @@ export function ShareCardModal({ open, onClose, schedule, slots }: Props) {
       // Brief delay so the fixed off-screen node is definitely rendered
       await new Promise((resolve) => window.setTimeout(resolve, 400));
       await captureShareCard(CARD_ID, "my-ffcs-timetable");
+      track("share_image_saved");
       toast.success("Share image downloaded.");
     } catch (error) {
       toast.error(
@@ -69,6 +71,7 @@ export function ShareCardModal({ open, onClose, schedule, slots }: Props) {
     setIsCopying(true);
     try {
       await copyShareCardToClipboard(CARD_ID);
+      track("share_image_saved");
       toast.success("Share image copied.");
     } catch {
       toast.error("Copy is not available in this browser. Try download instead.");

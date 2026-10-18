@@ -6,6 +6,7 @@ import "./fp-transitions.css";
 import { FPRoot } from "@/components/fp-ui/fp-root";
 import { cn } from "@/utils/cn";
 import { Analytics } from "@vercel/analytics/react";
+import { SITE_URL } from "@/lib/site";
 
 
 const inter = Inter({
@@ -34,6 +35,7 @@ export const metadata: Metadata = {
     title: "Ultimate FFCS — every clash-free timetable, ranked",
     description: "Generate and rank every valid FFCS timetable. Free for VIT Vellore, Chennai & Bhopal students.",
     siteName: "Ultimate FFCS",
+    url: "/",
     images: [
       {
         url: "/og-image.png",
@@ -55,7 +57,7 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-  metadataBase: new URL('https://ffcsmaker.vercel.app/'),
+  metadataBase: new URL(SITE_URL),
 }
 
 

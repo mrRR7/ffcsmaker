@@ -10,6 +10,7 @@ import { FPLabel } from "@/components/fp-ui/label";
 import { FPNote } from "@/components/fp-ui/note";
 import { getScheduleDayBlocks } from "./scheduleVisuals";
 import { useCountUp } from "@/components/fp-ui/use-count-up";
+import { track } from "@/lib/track";
 
 export function SavedWeekCard({
   saved,
@@ -55,6 +56,7 @@ export function SavedWeekCard({
   }
 
   function copySlots() {
+    track("slot_list_copied");
     navigator.clipboard
       .writeText(slotCodes)
       .then(() => toast.success("Slot codes copied."))

@@ -3,6 +3,7 @@ import { mergeCourseOptions } from "@/features/courses/mergeCourseOptions";
 import { getSlotCatalog } from "@/engine/slotCatalog";
 import { useAppStore } from "@/store/useAppStore";
 import type { PlannerImportJSON } from "./types";
+import { track } from "@/lib/track";
 
 export type { VtopCatalogDiff } from "@/lib/vtopImport/compareCatalog";
 
@@ -61,6 +62,8 @@ export function applyVtopImport(payload: PlannerImportJSON) {
   const slots = state.slots.length > 0 ? state.slots : getSlotCatalog("standard");
   const result = mergeCourseOptions(state.courses, inputs, slots);
   state.setCourses(result.courses);
+  track("course_added", { source: "vtop" });
+  track("vtop_import_used");
 
   return {
     addedCourses: result.addedCourses,

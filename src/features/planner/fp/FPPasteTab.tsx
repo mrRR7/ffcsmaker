@@ -11,6 +11,7 @@ import { useAppStore } from "@/store/useAppStore";
 import { FPButton } from "@/components/fp-ui/button";
 import { FPLabel } from "@/components/fp-ui/label";
 import { FPSlotTable } from "@/components/fp-ui/slot-table";
+import { track } from "@/lib/track";
 
 const PLACEHOLDER = "CS301 - Dr. Sharma - A1+A2 / L1+L2\nCS301 - Dr. Kumar - B1+B2 / L3+L4";
 
@@ -81,6 +82,7 @@ export function FPPasteTab() {
     }
 
     setCourses(result.courses);
+    track("course_added", { source: "paste" });
     setRows([]);
     setRawText("");
     toast.success(`${result.addedOptions} professor options added to planner.`);

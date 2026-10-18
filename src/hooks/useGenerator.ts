@@ -5,6 +5,8 @@ import toast from "react-hot-toast";
 import { GeneratePayload, WorkerDoneMessage, WorkerMessage } from "@/engine/types";
 import { useAppStore } from "@/store/useAppStore";
 import { useRouter } from "next/navigation";
+import { track } from "@/lib/track";
+import { weeksBucket } from "@/lib/usageEvents";
 
 // "Find my weeks" navigates to /results at once; /results shows the generating
 // screen while `generation.running` is true. The worker lives at module scope so
@@ -68,6 +70,7 @@ export function useGenerator() {
       const { setGeneration, setGeneratedSchedules } = useAppStore.getState();
       setGeneration({ running: true, progress: 0, checked: 0, accepted: 0 });
       router.push("/results");
+      track("generate_started", { courses: payload.courses.length });
 
       const startedAt = performance.now();
       const fail = (message: string) => {
@@ -96,6 +99,9 @@ export function useGenerator() {
             setGeneratedSchedules(data.schedules);
             setGeneration({ running: false });
             summarize(data);
+            const weeks = data.schedules.length;
+            track("generate_completed", { weeks: weeksBucket(weeks), ms: Math.round(performance.now() - startedAt) });
+            if (weeks === 0) track("generate_zero", { courses: payload.courses.length });
           };
           landTimer = window.setTimeout(land, Math.max(0, MIN_HOLD_MS - (performance.now() - startedAt)));
           return;

@@ -3,6 +3,7 @@ import { HeroWeekGrid } from "@/features/landing/HeroWeekGrid";
 import { CampusPicker } from "@/features/landing/CampusPicker";
 import { LandingSteps } from "@/features/landing/LandingSteps";
 import { FaqList } from "@/features/landing/FaqList";
+import { SITE_STATS, SITE_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" }
@@ -59,7 +60,7 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
   name: "Ultimate FFCS",
-  url: "https://ffcsmaker.vercel.app/",
+  url: `${SITE_URL}/`,
   description:
     "Generates every clash-free FFCS timetable for VIT Vellore, Chennai and Bhopal students and ranks them by your preferences.",
   applicationCategory: "EducationalApplication",
@@ -80,6 +81,14 @@ export default function LandingPage() {
             </h1>
             <p className="mt-4 max-w-xl text-[length:var(--text-body-size)] leading-[1.5] text-fp-text-body">
               Free, no login, nothing sent to VTOP. Every conflict-free combination of your courses, ranked.
+            </p>
+            <p className="mt-3 flex flex-wrap justify-center gap-x-2 text-[length:var(--text-small)] text-fp-text-dim lg:justify-start">
+              {SITE_STATS.map((stat, i) => (
+                <span key={stat} className="whitespace-nowrap">
+                  {i > 0 ? <span aria-hidden className="mr-2">·</span> : null}
+                  {stat}
+                </span>
+              ))}
             </p>
             <CampusPicker />
           </div>

@@ -14,6 +14,7 @@ import { FPButton } from "@/components/fp-ui/button";
 import { FPLabel } from "@/components/fp-ui/label";
 import { FPCard } from "@/components/fp-ui/card";
 import { SavedWeekCard } from "./SavedWeekCard";
+import { track } from "@/lib/track";
 
 export default function NewSavedPage() {
   const router = useRouter();
@@ -83,6 +84,7 @@ export default function NewSavedPage() {
         score: featured.timetable.score,
         generatedAt: new Date().toISOString()
       });
+      track("share_link_created");
       await navigator.clipboard.writeText(url);
       toast.success("Shared timetable URL copied.");
     } catch {

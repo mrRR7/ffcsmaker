@@ -22,6 +22,7 @@ import {
   slotLabel,
   TimeOfDayFilter
 } from "@/features/planner/fp/FPCourseOptionGroups";
+import { track } from "@/lib/track";
 
 const SEARCH_RESULTS_CAP = 10;
 
@@ -176,6 +177,7 @@ export function FPSearchTab() {
     );
 
     setCourses(result.courses);
+    track("course_added", { source: "catalog" });
     setSelectedOptions((current) => {
       const next = { ...current };
       selected.forEach((option) => delete next[option.id]);

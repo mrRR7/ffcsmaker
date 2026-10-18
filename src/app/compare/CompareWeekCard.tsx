@@ -10,6 +10,7 @@ import { FPMetricRun } from "@/components/fp-ui/metric-run";
 import { FPSlotMatrixTimetable } from "@/components/fp-ui/slot-matrix-timetable";
 import { findFreeDay, getScheduleDayBlocks } from "./scheduleVisuals";
 import { useCountUp } from "@/components/fp-ui/use-count-up";
+import { track } from "@/lib/track";
 
 export function CompareWeekCard({
   schedule,
@@ -110,6 +111,7 @@ export function CompareWeekCard({
           className="self-end"
           onClick={() => {
             saveSchedule(schedule);
+            track("timetable_saved");
             toast.success("Week saved.");
           }}
         >
