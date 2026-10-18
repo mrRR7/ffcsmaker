@@ -27,8 +27,15 @@ export function exportScheduleJson(schedule: ScoredTimetable) {
 export async function exportElementPng(node: HTMLElement, filename: string) {
   // On phones the grid scrolls sideways inside node. Unclip it for the capture,
   // or the image holds only the visible columns (and the scrollbars).
+  // Every clipping box, not only the scroller: its rounded parent clips too once
+  // the scroller stops containing the overflow.
   const clipped = [node, ...node.querySelectorAll<HTMLElement>("*")].filter(
-    (el) => el.scrollWidth > el.clientWidth
+    (el) => getComputedStyle(el).overflowX !== "visible"
+  );
+  // The widest clipped content plus whatever surrounds it inside node.
+  const width = Math.max(
+    node.clientWidth,
+    ...clipped.map((el) => el.scrollWidth + node.clientWidth - el.clientWidth)
   );
   const previous = clipped.map((el) => el.style.overflow);
   clipped.forEach((el) => (el.style.overflow = "visible"));
@@ -37,7 +44,7 @@ export async function exportElementPng(node: HTMLElement, filename: string) {
       pixelRatio: 2,
       backgroundColor: "#020617",
       cacheBust: true,
-      width: node.scrollWidth,
+      width,
       height: node.scrollHeight
     });
     downloadUrl(dataUrl, filename);
