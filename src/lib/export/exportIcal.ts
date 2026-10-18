@@ -49,7 +49,6 @@ export function exportTimetableIcal(
         `DESCRIPTION:${escapeIcal(
           `Professor: ${selection.professorName}\\nSlot: ${slot.label}\\nType: ${slot.kind ?? "class"}`
         )}`,
-        "LOCATION:VIT Vellore",
         `DTSTART;TZID=Asia/Kolkata:${dtstart}`,
         `DTEND;TZID=Asia/Kolkata:${dtend}`,
         `RRULE:FREQ=WEEKLY;BYDAY=${DAY_TO_ICAL[slot.day]};UNTIL=${until}`,
@@ -71,7 +70,7 @@ export function exportTimetableIcal(
   URL.revokeObjectURL(url);
 }
 
-function getFirstOccurrence(fromDate: string, dayName: DayOfWeek) {
+export function getFirstOccurrence(fromDate: string, dayName: DayOfWeek) {
   const days = [
     "Sunday",
     "Monday",
@@ -82,9 +81,11 @@ function getFirstOccurrence(fromDate: string, dayName: DayOfWeek) {
     "Saturday"
   ];
   const targetDay = days.indexOf(dayName);
-  const date = new Date(`${fromDate}T00:00:00+05:30`);
-  while (date.getDay() !== targetDay) {
-    date.setDate(date.getDate() + 1);
+  // Calendar-date arithmetic in UTC: an IST midnight converted with
+  // toISOString() lands on the previous day, so every first class was a day early.
+  const date = new Date(`${fromDate}T00:00:00Z`);
+  while (date.getUTCDay() !== targetDay) {
+    date.setUTCDate(date.getUTCDate() + 1);
   }
   return date.toISOString().slice(0, 10);
 }
