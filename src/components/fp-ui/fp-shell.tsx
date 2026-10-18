@@ -87,13 +87,11 @@ export function FPShell({ children }: { children: React.ReactNode }) {
   // phone tab bar the classic skin had.
   const showBottomNav = pathname !== "/" && !pathname?.startsWith("/admin");
 
-  const bypassCampusGate =
-    pathname === "/" ||
-    pathname?.startsWith("/admin") ||
-    pathname === "/privacy" ||
-    pathname === "/terms" ||
-    pathname === "/disclaimer" ||
-    pathname?.startsWith("/timetable/");
+  // Only the campus-dependent pages wait for a campus. Everything else (landing,
+  // legal, admin, shared links, 404s) renders straight away.
+  const bypassCampusGate = !["/planner", "/results", "/compare", "/saved", "/settings"].some(
+    (route) => pathname === route || pathname?.startsWith(`${route}/`)
+  );
 
   const activeHref = useMemo(() => {
     const match = navItems
