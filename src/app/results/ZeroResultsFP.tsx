@@ -14,7 +14,9 @@ import { analyzeZeroResultCause, ConflictFinding } from "@/engine/conflictAnalyz
 function suggestionFor(finding: ConflictFinding): string {
   switch (finding.type) {
     case "course_always_conflicts":
-      return `Add another professor option for ${finding.courseCodeA} or ${finding.courseCodeB}`;
+      return finding.fromRules
+        ? "Loosen or clear your time rules"
+        : `Add another professor option for ${finding.courseCodeA} or ${finding.courseCodeB}`;
     case "constraint_eliminates_course":
       return `Loosen "${finding.constraintLabel}" or add more options for ${finding.courseCodeA}`;
     case "course_no_eligible_options":
@@ -90,13 +92,14 @@ export function ZeroResultsFP() {
   }
 
   const topIsConstraint = topFinding?.type === "constraint_eliminates_course" && !!topFinding.constraintLabel;
+  const topFromRules = Boolean(topFinding?.fromRules);
 
   return (
     <div className="grid grid-cols-1 gap-8 pb-16 lg:grid-cols-[minmax(0,1fr)_340px]">
       <div className="space-y-6">
         <div>
           <h1 className="font-fp-display text-[28px] font-bold text-fp-text-strong sm:text-[length:var(--text-display)]">
-            {topFinding?.type === "course_always_conflicts"
+            {topFinding?.type === "course_always_conflicts" && !topFromRules
               ? "Two of your courses can't fit together."
               : findings.length > 0
                 ? "No week survives all of your rules."
@@ -128,7 +131,11 @@ export function ZeroResultsFP() {
                 <FPButton
                   variant="primary"
                   onClick={() =>
-                    topIsConstraint ? dropAndRegenerate(topFinding.constraintLabel!) : router.push("/planner")
+                    topIsConstraint
+                      ? dropAndRegenerate(topFinding.constraintLabel!)
+                      : topFromRules
+                        ? relaxAndRegenerate()
+                        : router.push("/planner")
                   }
                   disabled={isGenerating}
                   className="shrink-0"
@@ -138,7 +145,9 @@ export function ZeroResultsFP() {
                     ? `Regenerating · ${Math.round(progress)}%`
                     : topIsConstraint
                       ? `Drop "${topFinding.constraintLabel}" · regenerate`
-                      : "Add professor options"}
+                      : topFromRules
+                        ? "Clear rules · regenerate"
+                        : "Add professor options"}
                 </FPButton>
               ) : null}
             </div>
