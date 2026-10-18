@@ -40,7 +40,8 @@ export function WinterBanner() {
               href={`https://www.instagram.com/${INSTAGRAM_HANDLE}/`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-fp-text-strong underline underline-offset-[3px] hover:text-fp-accent"
+              // ! beats .fp-root a { text-decoration: none }; without it the link is colour-only.
+              className="text-fp-text-strong !underline underline-offset-[3px] hover:text-fp-accent"
             >
               @{INSTAGRAM_HANDLE}
             </a>{" "}
