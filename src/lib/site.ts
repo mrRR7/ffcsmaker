@@ -7,7 +7,7 @@ export const SITE_URL = "https://www.ultimateffcs.in";
 export const SITE_STATS = ["8,000+ visitors", "55,000+ page views", "Fall FFCS 2026"];
 
 // Empty hides the Instagram link everywhere. Set to the handle (no @) once the account exists.
-export const INSTAGRAM_HANDLE = "";
+export const INSTAGRAM_HANDLE = "ultimate.ffcs";
 
 // Winter banner: on unless NEXT_PUBLIC_WINTER_BANNER is "off". Flip the env var
 // in Vercel and redeploy to hide it; no code change needed.
