@@ -20,7 +20,7 @@ import { FPSlotMatrixTimetable } from "@/components/fp-ui/slot-matrix-timetable"
 import { useCountUp } from "@/components/fp-ui/use-count-up";
 import { BlockDetailPanel } from "@/features/results/BlockDetailPanel";
 import { IcalExportDialog } from "@/features/results/IcalExportDialog";
-import { buildMatrixCells, buildCourseSummaryRows, MatrixCell } from "@/features/results/timetableMatrix";
+import { buildMatrixCells, buildCourseSummaryRows, buildVtopSlotList, MatrixCell } from "@/features/results/timetableMatrix";
 import { ScoredTimetable, DayOfWeek } from "@/engine/types";
 import { exportElementPng, exportScheduleJson, exportTimetablePdf } from "@/utils/export";
 import { createSharedTimetableUrl } from "@/utils/share";
@@ -48,12 +48,6 @@ function formatRelativeTime(ms: number | null): string {
   const deltaHr = Math.round(deltaMin / 60);
   if (deltaHr < 24) return `${deltaHr}h ago`;
   return `${Math.round(deltaHr / 24)}d ago`;
-}
-
-function buildSlotListText(schedule: ScoredTimetable): string {
-  return schedule.selections
-    .map((selection) => `${selection.courseCode} — ${selection.displaySlots.join(", ")}`)
-    .join("\n");
 }
 
 function ResultsContent() {
@@ -362,7 +356,7 @@ function ResultsContent() {
     // Counted on the click, not the clipboard result: some browsers reject the write.
     track("slot_list_copied");
     navigator.clipboard
-      .writeText(buildSlotListText(schedule))
+      .writeText(buildVtopSlotList(schedule, slots))
       .then(() => toast.success("Slot list copied."))
       .catch(() => toast.error("Could not copy slot list."));
   }
@@ -372,7 +366,7 @@ function ResultsContent() {
     track("timetable_saved");
     track("slot_list_copied");
     navigator.clipboard
-      .writeText(buildSlotListText(schedule))
+      .writeText(buildVtopSlotList(schedule, slots))
       .then(() => toast.success("Saved, and slot codes copied — paste into VTOP."))
       .catch(() => toast.success("Saved to your weeks."));
   }

@@ -21,6 +21,8 @@ export interface ConflictFinding {
   courseCodeA: string;
   courseCodeB?: string;
   constraintLabel?: string;
+  /** The pair only clashes because rules removed its other options. */
+  fromRules?: boolean;
   description: string;
   severity: "error";
 }
@@ -119,11 +121,18 @@ export function analyzeZeroResultCause(
         const detail = overlap
           ? ` on ${overlap.day} ${overlap.time}`
           : "";
+        // e.g. "No 8 AM" drops every B1 option, leaving both courses on B2.
+        const fromRules = !courseA.options.every((optA) =>
+          courseB.options.every((optB) => optionsOverlap(optA, optB, slotMap))
+        );
         findings.push({
           type: "course_always_conflicts",
           courseCodeA: courseA.courseCode,
           courseCodeB: courseB.courseCode,
-          description: `${courseA.courseCode} and ${courseB.courseCode} always clash${detail} — every professor option overlaps.`,
+          fromRules,
+          description: fromRules
+            ? `${courseA.courseCode} and ${courseB.courseCode} clash${detail} only because your time rules removed their other slots.`
+            : `${courseA.courseCode} and ${courseB.courseCode} always clash${detail} — every professor option overlaps.`,
           severity: "error",
         });
       }

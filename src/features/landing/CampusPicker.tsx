@@ -36,7 +36,19 @@ export function CampusPicker() {
     hasHydrated && isMobile === false && !tour.active && !tourPromptDismissed && !hasSeenTour();
 
   function pickCampus(next: Campus) {
-    setCampus(next);
+    // setCampus wipes the plan, so keep it for the same campus and ask before
+    // switching away from one with courses (the header switcher asks too).
+    if (next !== campus) {
+      if (
+        courseCount > 0 &&
+        !window.confirm(
+          `Switch to ${CAMPUS_LABELS[next]}? This clears your current course list and generated timetables. Saved timetables stay.`
+        )
+      ) {
+        return;
+      }
+      setCampus(next);
+    }
     router.push("/planner");
   }
 
