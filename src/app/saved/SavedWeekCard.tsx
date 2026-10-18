@@ -9,6 +9,7 @@ import { FPButton } from "@/components/fp-ui/button";
 import { FPLabel } from "@/components/fp-ui/label";
 import { FPNote } from "@/components/fp-ui/note";
 import { getScheduleDayBlocks } from "./scheduleVisuals";
+import { buildVtopSlotList } from "@/features/results/timetableMatrix";
 import { useCountUp } from "@/components/fp-ui/use-count-up";
 import { track } from "@/lib/track";
 
@@ -43,7 +44,7 @@ export function SavedWeekCard({
   const { days, blocksByDay } = getScheduleDayBlocks(schedule, slots, courses);
   const totalCredits = schedule.selections.reduce((sum, selection) => sum + selection.credits, 0);
   const freeDayCount = blocksByDay.filter((blocks) => blocks.length === 0).length;
-  const slotCodes = schedule.selections.map((selection) => selection.displaySlots.join("+")).join(" · ");
+  const slotCodes = buildVtopSlotList(schedule, slots);
 
   function commitRename() {
     setEditing(false);

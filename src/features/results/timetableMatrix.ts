@@ -202,6 +202,18 @@ function formatSlotGroups(slotIds: string[], slotMap: Map<string, TimeSlot>) {
   });
 }
 
+/** One line per course as VTOP asks for it: code, slot (B1+TB1, L25+L26), professor. */
+export function buildVtopSlotList(schedule: ScoredTimetable, slots: TimeSlot[]) {
+  const slotMap = new Map(slots.map((slot) => [slot.id, slot]));
+  return schedule.selections
+    .map((selection) => {
+      const ids = [...selection.theorySlotIds, ...selection.labSlotIds, ...selection.combinedSlotIds];
+      const labels = new Set(ids.flatMap((id) => slotMap.get(id)?.label.split(/\s*\+\s*/) ?? []));
+      return `${selection.courseCode} — ${[...labels].join("+")} — ${selection.professorName}`;
+    })
+    .join("\n");
+}
+
 export function buildCourseSummaryRows(
   schedule: ScoredTimetable,
   slots: TimeSlot[],
