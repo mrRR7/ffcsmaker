@@ -66,15 +66,15 @@ export function SavedWeekCard({
 
   return (
     <article
-      className="grid items-center gap-5 rounded-[var(--radius-lg)] border p-[18px]"
+      // Stacked on phones: three columns left the middle one a word wide.
+      className="grid grid-cols-1 items-center gap-5 rounded-[var(--radius-lg)] border p-[18px] sm:grid-cols-[132px_minmax(0,1fr)_auto]"
       style={{
-        gridTemplateColumns: "132px minmax(0,1fr) auto",
         borderColor: saved.favorite ? "var(--border-accent)" : "var(--border-default)",
         backgroundColor: saved.favorite ? "var(--accent-wash)" : "var(--bg-surface)"
       }}
     >
       <div
-        className="grid gap-[2px] rounded-[4px] bg-fp-bg-inset p-2"
+        className="grid w-[132px] gap-[2px] rounded-[4px] bg-fp-bg-inset p-2"
         style={{ gridTemplateColumns: `repeat(${days.length}, minmax(0, 1fr))` }}
       >
         {days.map((day, index) => (
@@ -161,7 +161,7 @@ export function SavedWeekCard({
         ) : null}
       </div>
 
-      <div className="flex flex-col items-end gap-2.5">
+      <div className="flex flex-wrap items-center gap-2.5 sm:flex-col sm:items-end">
         <span
           className="font-fp-mono text-[length:var(--text-title)]"
           style={{ color: saved.favorite ? "var(--accent)" : "var(--text-strong)" }}
