@@ -5,8 +5,34 @@ import { LandingSteps } from "@/features/landing/LandingSteps";
 import { FaqList } from "@/features/landing/FaqList";
 import { SITE_STATS, SITE_URL } from "@/lib/site";
 
+// openGraph/twitter replace the layout's objects wholesale, so the unchanged
+// description, image and url are repeated here alongside the new titles.
 export const metadata: Metadata = {
-  alternates: { canonical: "/" }
+  title: { absolute: "VIT FFCS Planner & Timetable Generator | Ultimate FFCS" },
+  description:
+    "Free VIT FFCS planner for Chennai, Vellore and Bhopal. Pick your courses and professors, and get every clash-free timetable ranked in seconds.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "Ultimate FFCS · VIT FFCS Planner",
+    description: "Generate and rank every valid FFCS timetable. Free for VIT Vellore, Chennai & Bhopal students.",
+    siteName: "Ultimate FFCS",
+    url: "/",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Ultimate FFCS timetable generator for VIT students"
+      }
+    ],
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ultimate FFCS · VIT FFCS Planner",
+    description: "Generate and rank every valid FFCS timetable. Free for VIT Vellore, Chennai & Bhopal students.",
+    images: ["/og-image.png"]
+  }
 };
 
 const faqs = [
@@ -80,7 +106,7 @@ export default function LandingPage() {
               Your FFCS timetable, built in about a minute.
             </h1>
             <p className="mt-4 max-w-xl text-[length:var(--text-body-size)] leading-[1.5] text-fp-text-body">
-              Free, no login, nothing sent to VTOP. Every conflict-free combination of your courses, ranked.
+              The free FFCS planner for VIT. No login, nothing sent to VTOP. Every clash-free combination of your courses, ranked.
             </p>
             <p className="mt-3 flex flex-wrap justify-center gap-x-2 text-[length:var(--text-small)] text-fp-text-dim lg:justify-start">
               {SITE_STATS.map((stat, i) => (
