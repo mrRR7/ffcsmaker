@@ -17,6 +17,7 @@ import { FPBadge } from "@/components/fp-ui/badge";
 import { FPNote } from "@/components/fp-ui/note";
 import { FPStepNav } from "@/components/fp-ui/step-nav";
 import { FPSlotTable } from "@/components/fp-ui/slot-table";
+import { track } from "@/lib/track";
 
 type WizardStep = "upload" | "detect" | "review" | "confirm";
 
@@ -84,6 +85,7 @@ export function FPImportTab() {
     try {
       const { updatedCourses, locks } = transformToCourses(validRows, courses, slots, null);
       setCourses(updatedCourses);
+      track("course_added", { source: "file" });
       if (locks.length > 0) {
         setConstraint("professorLocks", Array.from(new Set([...constraints.professorLocks, ...locks])));
       }

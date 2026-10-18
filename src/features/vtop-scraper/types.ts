@@ -27,7 +27,7 @@ export interface PlannerImportJSON {
 }
 
 export const VTOP_IMPORT_PARAM = "vtopImport";
-export const DEFAULT_PLANNER_URL = "https://ffcsmaker.vercel.app/planner";
+export const DEFAULT_PLANNER_URL = "https://www.ultimateffcs.in/planner";
 
 export const VTOP_URLS = {
   vellore: "https://vtop.vit.ac.in/vtop/",

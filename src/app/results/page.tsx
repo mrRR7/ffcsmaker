@@ -29,6 +29,7 @@ import { cn } from "@/utils/cn";
 import { ZeroResultsFP } from "./ZeroResultsFP";
 import { GeneratingFP } from "./GeneratingFP";
 import { buildShapeThumbnail, freeDayNames, shortDay } from "./resultsVisuals";
+import { track } from "@/lib/track";
 
 type SortMode = "score" | "lowGaps" | "earlyFinish";
 
@@ -308,6 +309,7 @@ function ResultsContent() {
         generatedAt: new Date().toISOString()
       });
       setShareUrl(url);
+      track("share_link_created");
       // Clipboard can reject after the network await (user activation
       // expired); the link stays on screen either way, so this is best-effort.
       navigator.clipboard.writeText(url).then(
@@ -352,10 +354,13 @@ function ResultsContent() {
 
   function saveActive(schedule: ScoredTimetable) {
     saveSchedule(schedule);
+    track("timetable_saved");
     toast.success(isSaved ? "Saved timetable updated." : "Timetable saved locally.");
   }
 
   function copySlotList(schedule: ScoredTimetable) {
+    // Counted on the click, not the clipboard result: some browsers reject the write.
+    track("slot_list_copied");
     navigator.clipboard
       .writeText(buildSlotListText(schedule))
       .then(() => toast.success("Slot list copied."))
@@ -364,6 +369,8 @@ function ResultsContent() {
 
   function registerWeek(schedule: ScoredTimetable) {
     saveSchedule(schedule);
+    track("timetable_saved");
+    track("slot_list_copied");
     navigator.clipboard
       .writeText(buildSlotListText(schedule))
       .then(() => toast.success("Saved, and slot codes copied — paste into VTOP."))

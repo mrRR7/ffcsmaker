@@ -15,6 +15,7 @@ import {
   CircleHelp,
   GalleryVerticalEnd,
   Home,
+  Instagram,
   Layers3,
   Moon,
   Settings,
@@ -32,6 +33,8 @@ import { FPButton } from "@/components/fp-ui/button";
 import { FPBadge } from "@/components/fp-ui/badge";
 import { FPLabel } from "@/components/fp-ui/label";
 import { FPCard } from "@/components/fp-ui/card";
+import { WinterBanner } from "@/features/landing/WinterBanner";
+import { INSTAGRAM_HANDLE } from "@/lib/site";
 
 // Same concept-to-icon mapping the classic app already uses for its own nav
 // (AppShell.tsx's navItems) — one icon vocabulary across both skins.
@@ -265,6 +268,8 @@ export function FPShell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
+      {pathname === "/" || pathname?.startsWith("/planner") ? <WinterBanner /> : null}
+
       <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-8 pb-16 sm:px-6 lg:px-8">
         <AnimatePresence mode="wait" initial={false} custom={direction}>
           <motion.div
@@ -290,6 +295,16 @@ export function FPShell({ children }: { children: React.ReactNode }) {
         >
           Built by mrRR7
         </a>
+        {INSTAGRAM_HANDLE ? (
+          <a
+            href={`https://www.instagram.com/${INSTAGRAM_HANDLE}/`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="fp-text inline-flex items-center gap-1.5 text-[length:var(--text-small)] text-fp-text-dim hover:text-fp-text-body"
+          >
+            <Instagram className="h-3.5 w-3.5" strokeWidth={1.5} />@{INSTAGRAM_HANDLE}
+          </a>
+        ) : null}
         <div className="ml-auto flex gap-5 text-[length:var(--text-small)] text-fp-text-dim">
           <Link href="/privacy" className="hover:text-fp-text-body">
             Privacy

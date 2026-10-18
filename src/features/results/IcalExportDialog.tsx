@@ -9,6 +9,7 @@ import { Input, Label } from "@/components/ui/form";
 import { ScoredTimetable, TimeSlot } from "@/engine/types";
 import { exportTimetableIcal } from "@/lib/export/exportIcal";
 import { DBSemester } from "@/types/db";
+import { track } from "@/lib/track";
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -63,6 +64,7 @@ export function IcalExportDialog({
 
   function download() {
     exportTimetableIcal(schedule, slots, startDate, endDate, timetableName);
+    track("ical_exported");
     toast.success("Calendar file downloaded.");
     setIsOpen(false);
   }

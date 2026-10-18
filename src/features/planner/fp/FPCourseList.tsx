@@ -42,6 +42,7 @@ import { FPButton } from "@/components/fp-ui/button";
 import { FPBadge } from "@/components/fp-ui/badge";
 import { FPLabel } from "@/components/fp-ui/label";
 import { FPTip } from "@/components/fp-ui/tip";
+import { track } from "@/lib/track";
 
 const COURSE_LIST_CAP = 6;
 
@@ -111,6 +112,7 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
       return;
     }
     addCourse({ courseCode: courseCode.trim().toUpperCase(), courseName: courseName.trim(), credits: parsedCredits });
+    track("course_added", { source: "manual" });
     setCourseCode("");
     setCourseName("");
     setCredits("");
