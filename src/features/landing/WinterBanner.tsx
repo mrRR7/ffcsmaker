@@ -34,12 +34,14 @@ export function WinterBanner() {
         Winter catalog goes live the day VIT releases it. Showing Fall data for now.
         {INSTAGRAM_HANDLE ? (
           <>
-            {" "}Follow{" "}
+            {" "}
+            Follow{" "}
             <a
               href={`https://www.instagram.com/${INSTAGRAM_HANDLE}/`}
               target="_blank"
               rel="noopener noreferrer"
-              className="font-medium text-fp-text-strong underline underline-offset-2"
+              // ! beats .fp-root a { text-decoration: none }; without it the link is colour-only.
+              className="text-fp-text-strong !underline underline-offset-[3px] hover:text-fp-accent"
             >
               @{INSTAGRAM_HANDLE}
             </a>{" "}

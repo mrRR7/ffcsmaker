@@ -731,7 +731,30 @@ export const useAppStore = create<UniTimeStore>()(
     {
       name: "unitime-pro-state",
       version: 5,
-      storage: createJSONStorage(() => localStorage),
+      // A big result set can pass localStorage's quota (Safari's is about half of
+      // Chrome's). zustand would then throw out of every store update, so retry
+      // without the regenerable results and never throw: courses and saved
+      // weeks still persist.
+      storage: createJSONStorage(() => {
+        const local = window.localStorage;
+        return {
+          getItem: (name) => local.getItem(name),
+          removeItem: (name) => local.removeItem(name),
+          setItem: (name, value) => {
+            try {
+              local.setItem(name, value);
+            } catch {
+              try {
+                const parsed = JSON.parse(value);
+                parsed.state = { ...parsed.state, generatedSchedules: [], generatedAt: null };
+                local.setItem(name, JSON.stringify(parsed));
+              } catch {
+                // Storage full or blocked: this tab keeps working from memory.
+              }
+            }
+          }
+        };
+      }),
       partialize: (state) => {
         const generationIsRecent =
           state.generatedAt !== null && Date.now() - state.generatedAt < GENERATION_TTL_MS;
@@ -747,7 +770,8 @@ export const useAppStore = create<UniTimeStore>()(
           slotVariant: state.slotVariant,
           generatedAt: generationIsRecent ? state.generatedAt : null,
           generatedSchedules: generationIsRecent ? state.generatedSchedules : [],
-          generatedShapeGroups: generationIsRecent ? state.generatedShapeGroups : [],
+          // generatedShapeGroups isn't stored: it's rebuilt from generatedSchedules on load,
+          // and storing both doubled the size.
           activeShapeId: generationIsRecent ? state.activeShapeId : null,
           activeVariantId: generationIsRecent ? state.activeVariantId : null,
           compareScheduleIds: generationIsRecent ? state.compareScheduleIds : []

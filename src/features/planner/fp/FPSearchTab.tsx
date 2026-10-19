@@ -25,6 +25,8 @@ import {
 import { track } from "@/lib/track";
 
 const SEARCH_RESULTS_CAP = 10;
+// fetch() rejects with "Failed to fetch" offline; say what that means instead.
+const CATALOG_ERROR = "Couldn't load the course catalog. Check your connection and reload. Paste, File and Manual still work.";
 
 type SemesterResponse = {
   semesters: DBSemester[];
@@ -40,6 +42,7 @@ export function FPSearchTab() {
   const [query, setQuery] = useState("");
   const [semesterId, setSemesterId] = useState("");
   const [semesters, setSemesters] = useState<DBSemester[]>([]);
+  const [semestersLoaded, setSemestersLoaded] = useState(false);
   const [allCourses, setAllCourses] = useState<DBCourse[]>([]);
   const [expandedCourseId, setExpandedCourseId] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, boolean>>({});
@@ -68,22 +71,25 @@ export function FPSearchTab() {
     let cancelled = false;
 
     async function loadSemesters() {
+      setSemestersLoaded(false);
       try {
         const response = await fetch(`/api/catalog/semesters?campus=${campus}`);
         const json = (await response.json()) as SemesterResponse;
         if (cancelled) {
           return;
         }
+        setSemestersLoaded(true);
         if (!response.ok) {
-          setCatalogError(json.error ?? "Catalog unavailable.");
+          setCatalogError(CATALOG_ERROR);
           return;
         }
         setSemesters(json.semesters ?? []);
         const active = json.semesters?.find((semester) => semester.is_active);
         setSemesterId(active?.id || json.semesters?.[0]?.id || "");
-      } catch (error) {
+      } catch {
         if (!cancelled) {
-          setCatalogError(error instanceof Error ? error.message : "Catalog unavailable.");
+          setSemestersLoaded(true);
+          setCatalogError(CATALOG_ERROR);
         }
       }
     }
@@ -114,9 +120,9 @@ export function FPSearchTab() {
       .then((entry) => {
         if (!cancelled) setAllCourses(entry.courses);
       })
-      .catch((error) => {
+      .catch(() => {
         if (cancelled) return;
-        setCatalogError(error instanceof Error ? error.message : "Catalog search failed.");
+        setCatalogError(CATALOG_ERROR);
         setAllCourses([]);
       })
       .finally(() => {
@@ -244,12 +250,13 @@ export function FPSearchTab() {
           />
         </div>
         <select
+          aria-label="Semester"
           value={semesterId}
           onChange={(event) => setSemesterId(event.target.value)}
           className="fp-text rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-3 py-[11px] text-[length:var(--text-micro)] text-fp-text-dim focus:border-[var(--border-selected)] focus:outline-none"
         >
           {semesters.length === 0 ? (
-            <option value="">No semester</option>
+            <option value="">{semestersLoaded ? "No semester" : "Loading…"}</option>
           ) : (
             semesters.map((semester) => (
               <option key={semester.id} value={semester.id}>
@@ -270,7 +277,9 @@ export function FPSearchTab() {
             activeSemester.is_active ? "Active catalog" : "Selected catalog"
           ]}
         />
-      ) : (
+      ) : !semestersLoaded ? (
+        <FPNote>Loading the course catalog…</FPNote>
+      ) : catalogError ? null : (
         <FPNote>Catalog not available for this semester. Use paste, file import, or manual entry.</FPNote>
       )}
 
@@ -323,9 +332,11 @@ export function FPSearchTab() {
           ))}
         </div>
       ) : courses.length === 0 ? (
-        <div className="p-8 text-center text-[length:var(--text-small)] text-fp-text-dim">
-          No courses found for &quot;{query}&quot;. Try paste text, file import, or manual entry.
-        </div>
+        catalogError ? null : (
+          <div className="p-8 text-center text-[length:var(--text-small)] text-fp-text-dim">
+            No courses found for &quot;{query}&quot;. Try paste text, file import, or manual entry.
+          </div>
+        )
       ) : (
         <div className="space-y-3">
           {(showAllResults ? courses : courses.slice(0, SEARCH_RESULTS_CAP)).map((course) => {

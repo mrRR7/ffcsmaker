@@ -8,7 +8,7 @@ import { cn } from "@/utils/cn";
  * Plain text, no default border on secondary. primary/secondary/ghost,
  * sm/md sizes, hover = raise a value step or brighten accent, never opacity.
  */
-const fpButtonVariants = cva(
+export const fpButtonVariants = cva(
   "fp-text inline-flex items-center gap-2 rounded-[var(--radius-md)] border border-transparent transition-[background-color,border-color,color,transform,outline-offset] duration-[var(--dur-fast)] ease-[var(--ease-standard)] active:scale-[0.98] disabled:cursor-not-allowed disabled:border-fp-border-default disabled:bg-fp-bg-inset disabled:text-fp-text-dim disabled:opacity-60 disabled:active:scale-100",
   {
     variants: {

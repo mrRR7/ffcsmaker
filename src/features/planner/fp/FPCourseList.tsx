@@ -125,7 +125,8 @@ export function FPCourseList({ showAddForm, showList = true }: { showAddForm: bo
           <FPLabel tone="strong" className="block text-[length:var(--text-small)] normal-case">
             Add a course manually
           </FPLabel>
-          <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_2fr_100px_auto]">
+          {/* Two columns in the narrow desktop pane: four put Credits and Add under the grid. */}
+          <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_2fr_100px_auto] lg:grid-cols-2">
             <input
               value={courseCode}
               onChange={(event) => setCourseCode(event.target.value)}

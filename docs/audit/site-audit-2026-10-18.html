@@ -1,0 +1,254 @@
+<title>Mock FFCS Site Audit</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column for the narrative, full-width scrollers for the tables. */
+:root {
+  --bg: #f6f7f5;
+  --surface: #ffffff;
+  --ink: #17201b;
+  --muted: #4d5a53;
+  --rule: #d9dfdb;
+  --accent: #1d6b47;
+  --p0: #b42318; --p0-bg: #fde8e6;
+  --p1: #8a5a00; --p1-bg: #fdf1d8;
+  --p2: #2f5a86; --p2-bg: #e3edf7;
+  --p3: #55605a; --p3-bg: #eceeed;
+  --ok: #1d6b47; --ok-bg: #e2f2e9;
+  --font-body: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111613; --surface: #181e1a; --ink: #e7ece9; --muted: #a3b0a8; --rule: #2c3530; --accent: #5cc392;
+    --p0: #ff8a80; --p0-bg: #3a1d1b; --p1: #f3c063; --p1-bg: #372c14; --p2: #8fb8e8; --p2-bg: #1b2a3a; --p3: #b4bdb8; --p3-bg: #262d29;
+    --ok: #6fd3a2; --ok-bg: #173126; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111613; --surface: #181e1a; --ink: #e7ece9; --muted: #a3b0a8; --rule: #2c3530; --accent: #5cc392;
+  --p0: #ff8a80; --p0-bg: #3a1d1b; --p1: #f3c063; --p1-bg: #372c14; --p2: #8fb8e8; --p2-bg: #1b2a3a; --p3: #b4bdb8; --p3-bg: #262d29;
+  --ok: #6fd3a2; --ok-bg: #173126; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--ink); font: 15px/1.55 var(--font-body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 32px 64px;
+}
+main { max-width: 1180px; margin: 0 auto; display: grid; gap: 40px; }
+.prose { max-width: 70ch; }
+h1, h2, h3 { text-wrap: balance; margin: 0; line-height: 1.2; }
+h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 21px; font-weight: 700; }
+h3 { font-size: 16px; font-weight: 600; }
+p { margin: 0; }
+section { display: grid; gap: 14px; }
+.eyebrow { font: 500 12px/1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); }
+.meta { color: var(--muted); font-size: 14px; }
+code, .mono { font-family: var(--font-mono); font-size: 0.88em; }
+a { color: var(--accent); }
+.slot { font-family: var(--font-mono); font-size: 13px; padding: 1px 6px; border: 1px solid var(--rule); border-radius: 4px; background: var(--surface); white-space: nowrap; }
+.counts { display: flex; flex-wrap: wrap; gap: 10px; }
+.count { display: grid; gap: 2px; padding: 12px 14px; min-width: 120px; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; }
+.count b { font-size: 22px; font-variant-numeric: tabular-nums; }
+.count span { font-size: 13px; color: var(--muted); }
+ul.plain { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.pill { display: inline-block; font: 600 12px/1.6 var(--font-mono); padding: 0 7px; border-radius: 999px; white-space: nowrap; }
+.P0 { color: var(--p0); background: var(--p0-bg); }
+.P1 { color: var(--p1); background: var(--p1-bg); }
+.P2 { color: var(--p2); background: var(--p2-bg); }
+.P3 { color: var(--p3); background: var(--p3-bg); }
+.fixed { color: var(--ok); background: var(--ok-bg); }
+.open { color: var(--muted); background: var(--p3-bg); }
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.filters button {
+  font: 500 13px/1 var(--font-body); color: var(--ink); background: var(--surface); border: 1px solid var(--rule);
+  border-radius: 999px; padding: 8px 12px; cursor: pointer; min-height: 36px;
+}
+.filters button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
+.filters button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.scroller { overflow-x: auto; border: 1px solid var(--rule); border-radius: 6px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+th, td { text-align: left; vertical-align: top; padding: 9px 10px; border-bottom: 1px solid var(--rule); }
+th { font: 600 12px/1.3 var(--font-mono); letter-spacing: 0.03em; color: var(--muted); background: var(--bg); position: sticky; top: 0; }
+tr:last-child td { border-bottom: 0; }
+td.n { font-variant-numeric: tabular-nums; color: var(--muted); }
+.issues td:nth-child(5), .issues td:nth-child(6) { min-width: 220px; }
+.issues td:nth-child(7) { min-width: 200px; }
+.issues td:nth-child(3) { min-width: 120px; }
+.issues td:nth-child(8) { min-width: 120px; }
+.num { font-variant-numeric: tabular-nums; }
+.lh td, .lh th { white-space: nowrap; }
+.note { border-left: 3px solid var(--accent); padding: 4px 0 4px 12px; color: var(--muted); }
+@media (max-width: 600px) { h1 { font-size: 25px; } body { padding-block: 20px 48px; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main>
+  <header class="prose" style="display:grid;gap:10px">
+    <p class="eyebrow">Ultimate FFCS · mock FFCS week</p>
+    <h1>Full site audit and P0/P1 sweep</h1>
+    <p class="meta">Audited production (<span class="mono">www.ultimateffcs.in</span>, PR #19 live) on 18 Oct 2026, phone first at 375×812, then 1440 wide, light and dark. Fixes are on branch <span class="mono">fix/audit-sweep</span> (15 commits on <span class="mono">origin/main</span>), tested locally and <strong>not pushed or deployed</strong>.</p>
+  </header>
+
+  <section>
+    <div class="counts">
+      <div class="count"><b>3</b><span>P0, all fixed</span></div>
+      <div class="count"><b>10</b><span>P1 fixed</span></div>
+      <div class="count"><b>1</b><span>P1 needs a data change</span></div>
+      <div class="count"><b>22</b><span>P2 reported</span></div>
+      <div class="count"><b>7</b><span>P3 reported</span></div>
+    </div>
+    <div class="prose" style="display:grid;gap:10px">
+      <p>The worst problem was in the generator itself. With the audit's own course set (BCSE204L/P, BCSE209L/P, BCSE206L), the search stopped at 500 professor permutations of the first week it found. It showed 12 of the 54 possible weeks, called a 49.1 week "Best overall" when a 52.8 week existed, and only BCSE204L/P could be swapped. That is fixed, with a test that fails on the old code.</p>
+      <p>Two more P0s could lose a student's work. On the homepage, tapping your own campus card wiped the whole plan. And the saved state was large enough to hit Safari's storage limit with a bigger course list, after which every action quietly stopped saving.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>For you to do</h2>
+    <ul class="plain prose">
+      <li>Review and push <span class="mono">fix/audit-sweep</span>, then check the Vercel preview on a real phone before merging. It conflicts with your uncommitted guided-flow work in <span class="mono">fp-shell.tsx</span> and <span class="mono">useAppStore.ts</span>.</li>
+      <li>Remove the stale Chennai semester row <span class="mono">Fall Semester 26-27</span> (inactive, 67 courses) from <span class="mono">semesters</span> in Supabase. I didn't touch production data.</li>
+      <li>Confirm <span class="mono">@ultimate.ffcs</span> is the right Instagram account. The banner and footer now link to it.</li>
+      <li>Re-run Lighthouse on the preview deployment for comparable "after" scores.</li>
+    </ul>
+  </section>
+
+  <section id="issues">
+    <h2>Issues, by severity</h2>
+    <div class="filters" role="group" aria-label="Filter by severity">
+      <button type="button" data-filter="all" aria-pressed="true">All</button>
+      <button type="button" data-filter="P0" aria-pressed="false">P0</button>
+      <button type="button" data-filter="P1" aria-pressed="false">P1</button>
+      <button type="button" data-filter="P2" aria-pressed="false">P2</button>
+      <button type="button" data-filter="P3" aria-pressed="false">P3</button>
+    </div>
+    <div class="scroller">
+      <table class="issues">
+        <thead><tr><th>#</th><th>Severity</th><th>Page / step</th><th>Device &amp; theme</th><th>What happens</th><th>Expected</th><th>Fix (one line)</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr data-sev="P0"><td class="n">1</td><td><span class="pill P0">P0</span></td><td>Find my weeks → Results</td><td>All</td><td>Search stops after 500 professor permutations of the first layout. Audit set: 12 of 54 weeks shown, "Best overall" 49.1 vs real best 52.8, Swap only on BCSE204L/P. With 10 courses, best was 39 vs 51.8.</td><td>Every clash-free layout found and ranked; every course swappable on the best weeks.</td><td>Search over slot groups (same-slot options), then spend the cap on one-professor swaps, best layouts first.</td><td><span class="pill fixed">fixed</span> <span class="mono">12b380f</span></td></tr>
+          <tr data-sev="P0"><td class="n">2</td><td><span class="pill P0">P0</span></td><td>Home, returning visitor</td><td>All</td><td>Tapping any campus card, including the one marked "Your campus", wipes courses, results and preferences with no prompt. Reproduced: 10 courses → 0.</td><td>Own campus continues to the planner; another campus asks first.</td><td>Same campus just navigates; switching confirms first, like the header.</td><td><span class="pill fixed">fixed</span> <span class="mono">bfa6ee5</span></td></tr>
+          <tr data-sev="P0"><td class="n">3</td><td><span class="pill P0">P0</span></td><td>Results, Save, any change</td><td>Phone (Safari's quota is lowest), bigger plans</td><td>Each result is stored twice: 2.3M characters for 5 courses, 4.0M for 10. Past the quota, the store throws on every update, so results never land and Save stops persisting.</td><td>Results always show; courses and saved weeks always persist.</td><td>Stop storing the rebuilt shape groups; on a quota error, retry without results and never throw.</td><td><span class="pill fixed">fixed</span> <span class="mono">ea81607</span></td></tr>
+          <tr data-sev="P1"><td class="n">4</td><td><span class="pill P1">P1</span></td><td>Export → Calendar</td><td>All (IST)</td><td>Each class's first event lands a day early (Tuesday class starts Mon 19 Oct). Every event also says <span class="mono">LOCATION:VIT Vellore</span>, even for Chennai.</td><td>First class on its own weekday; no wrong location.</td><td>Walk the dates in UTC; drop the location line.</td><td><span class="pill fixed">fixed</span> <span class="mono">d8d309a</span></td></tr>
+          <tr data-sev="P1"><td class="n">5</td><td><span class="pill P1">P1</span></td><td>Results / Saved → Copy slot list</td><td>All</td><td>Copied <span class="mono">BCSE206L — TB1 10:45-11:35, B1 08:00-08:50, …</span> with no professor. Saved copied slot times with no course codes.</td><td><span class="slot">BCSE206L — B1+TB1 — VIJAYARAJ J</span></td><td>One VTOP-form line per course, shared by both pages.</td><td><span class="pill fixed">fixed</span> <span class="mono">e0d23f6</span></td></tr>
+          <tr data-sev="P1"><td class="n">6</td><td><span class="pill P1">P1</span></td><td>Results, zero weeks</td><td>All</td><td>With "No 8 AM": "Two of your courses can't fit together … Add professor options". The real cause is the rule removing every <span class="slot">B1</span> option.</td><td>Names the rule and offers to clear it.</td><td>Analyzer flags clashes the rules created; panel offers "Clear rules · regenerate".</td><td><span class="pill fixed">fixed</span> <span class="mono">35acfc7</span></td></tr>
+          <tr data-sev="P1"><td class="n">7</td><td><span class="pill P1">P1</span></td><td>Planner, first load</td><td>Phone, dark</td><td>Shows "No semester" and "Catalog not available for this semester" for a second or two before the catalog appears.</td><td>A loading state.</td><td>Loading note until semesters arrive.</td><td><span class="pill fixed">fixed</span> <span class="mono">a5b11bf</span></td></tr>
+          <tr data-sev="P1"><td class="n">8</td><td><span class="pill P1">P1</span></td><td>Planner search, offline</td><td>All</td><td>Raw "Failed to fetch" plus "No courses found for 'BCSE'", which reads as the course not existing.</td><td>Says the connection failed and what still works.</td><td>Plain error; no "no courses found" on errors.</td><td><span class="pill fixed">fixed</span> <span class="mono">a5b11bf</span></td></tr>
+          <tr data-sev="P1"><td class="n">9</td><td><span class="pill P1">P1</span></td><td>Export → PNG</td><td>Phone</td><td>Image held only the first two periods, with scrollbars baked in.</td><td>The whole week.</td><td>Unclip scroll boxes during capture; size from the scroller.</td><td><span class="pill fixed">fixed</span> <span class="mono">a2b811e</span> <span class="mono">e5c06bd</span></td></tr>
+          <tr data-sev="P1"><td class="n">10</td><td><span class="pill P1">P1</span></td><td>Saved</td><td>Phone</td><td>Fixed three-column card leaves the middle column one word wide; slot codes overflow.</td><td>Readable card.</td><td>Stack below the sm breakpoint.</td><td><span class="pill fixed">fixed</span> <span class="mono">80ef0a8</span></td></tr>
+          <tr data-sev="P1"><td class="n">11</td><td><span class="pill P1">P1</span></td><td>Planner → Manual</td><td>Desktop 1440</td><td>Credits and Add render under the timetable grid and can't be clicked.</td><td>All fields usable.</td><td>Two columns in the narrow desktop pane.</td><td><span class="pill fixed">fixed</span> <span class="mono">a7650ad</span></td></tr>
+          <tr data-sev="P1"><td class="n">12</td><td><span class="pill P1">P1</span></td><td>Any unknown URL</td><td>All</td><td>Unstyled Next.js 404. First-time visitors got the campus picker instead.</td><td>Styled 404 with a way back to the planner.</td><td>Add <span class="mono">not-found.tsx</span>; gate only the campus pages.</td><td><span class="pill fixed">fixed</span> <span class="mono">a7edc8c</span> <span class="mono">383ba49</span></td></tr>
+          <tr data-sev="P1"><td class="n">13</td><td><span class="pill P1">P1</span></td><td>Winter banner, footer</td><td>All</td><td>Banner says "Follow @ultimateffcs", not the project account; the Instagram link was switched off.</td><td><span class="mono">@ultimate.ffcs</span>, linked, underlined.</td><td>Banner and footer read one setting.</td><td><span class="pill fixed">fixed</span> <span class="mono">6352756</span> <span class="mono">4492c2d</span></td></tr>
+          <tr data-sev="P1"><td class="n">14</td><td><span class="pill P1">P1</span></td><td>Planner semester dropdown</td><td>All, Chennai</td><td>Two Fall entries: "Fall Semester 2026-27 (active)" (443 courses) and "Fall Semester 26-27" (67 courses, no BCSE204L or BCSE209L). Picking the second shows a partial old catalog.</td><td>One Fall entry.</td><td>Delete or retire the stale row in Supabase <span class="mono">semesters</span>.</td><td><span class="pill open">needs you</span> data</td></tr>
+          <tr data-sev="P2"><td class="n">15</td><td><span class="pill P2">P2</span></td><td>Results</td><td>Phone</td><td>Other weeks ("Shapes") sit after the full professor-combo list, about four screens down on a 5,300px page.</td><td>Week switcher near the top.</td><td>Move shapes above combos on phones, or collapse combos.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">16</td><td><span class="pill P2">P2</span></td><td>All pages</td><td>Light</td><td>Secondary text (<span class="mono">--text-dim</span>) measures 4.05–4.39:1 on light surfaces.</td><td>4.5:1 or better.</td><td>Darken the light-theme dim token.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">17</td><td><span class="pill P2">P2</span></td><td>Timetable grid</td><td>Both</td><td>Indigo course colour <span class="mono">#6366f1</span> with near-black text is 4.33:1 (Lighthouse colour-contrast).</td><td>4.5:1 or better.</td><td>Lighten that palette entry.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">18</td><td><span class="pill P2">P2</span></td><td>All pages</td><td>All</td><td><span class="mono">.fp-root a { text-decoration: none }</span> beats Tailwind's <span class="mono">underline</span>, so every link meant to be underlined ("Show lab professors", "Take a 60-second tour", "Redo") isn't.</td><td>Underlines show.</td><td>Use <span class="mono">:where(.fp-root) a</span> in fp-tokens.css.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">19</td><td><span class="pill P2">P2</span></td><td>Header, results, footer</td><td>Phone</td><td>Tap targets under 44px: theme toggle 40×30, banner close 24×24, footer links 20px tall, Save/Share/Export 27px, "Compare 2" 70×17.</td><td>44×44 or larger.</td><td>Padding on those controls.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">20</td><td><span class="pill P2">P2</span></td><td>Grid, Settings, Paste, Manual, Compare</td><td>All</td><td>Controls without names: empty grid-cell buttons, Settings checkboxes, the paste box and manual inputs (placeholder only), Compare's "Add a week" select.</td><td>Every control has a label.</td><td><span class="mono">aria-label</span> or a visible label.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">21</td><td><span class="pill P2">P2</span></td><td>Header campus switch</td><td>Desktop</td><td>Confirm box has no dialog role, Esc doesn't close it, and the campus menu stays open behind it.</td><td>Esc closes; announced as a dialog.</td><td><span class="mono">role="dialog"</span>, Esc handler, close menu.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">22</td><td><span class="pill P2">P2</span></td><td>Results, Compare</td><td>All</td><td>"12 weeks · 500 professor options" and Compare's "2 of 501 weeks selected" count different things with the same words.</td><td>"Weeks" for layouts, "combos" for professor sets.</td><td>Rename the counts.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">23</td><td><span class="pill P2">P2</span></td><td>Results header</td><td>All</td><td>"0 clash", unexplained "18 gaps", "Shape 3". Sorted by Fewest gaps, the first card is still "Best overall" and the rail still says "Best first".</td><td>Plurals right; labels follow the sort.</td><td>Copy fixes.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">24</td><td><span class="pill P2">P2</span></td><td>API</td><td>—</td><td><span class="mono">POST /api/share-timetable</span> with malformed JSON returns 500; catalog routes with an unknown campus return 200 and nothing.</td><td>400.</td><td><span class="mono">req.json().catch(() =&gt; null)</span>; validate campus.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">25</td><td><span class="pill P2">P2</span></td><td>Planner search results</td><td>Phone</td><td>"3 credits · 35 professors" truncates to "3 credits · …".</td><td>Professor count visible.</td><td>Let the line wrap.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">26</td><td><span class="pill P2">P2</span></td><td>Shared timetable link</td><td>Phone</td><td>Course cards cut the name and hide the professor; the score/credits row is clipped at the right.</td><td>Professor visible on each course.</td><td>Wrap instead of truncate.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">27</td><td><span class="pill P2">P2</span></td><td>Home → Bhopal</td><td>All</td><td>Card says "Ready" but Bhopal has no semesters, so search always says "Catalog not available".</td><td>Card matches what works.</td><td>Upload the catalog, or label it "Paste or manual".</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">28</td><td><span class="pill P2">P2</span></td><td>Planner → File, Manual</td><td>All</td><td>Broken XLSX: "Failed to parse file." Garbage CSV: "File is empty or could not be read." Credits −4: "Course code, name, and credits are required."</td><td>Says what to do next.</td><td>Point to the template, or Paste; say credits must be 1–8.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">29</td><td><span class="pill P2">P2</span></td><td>Preferences → Busy times</td><td>Chennai, Vellore</td><td>Grid includes Saturday though the catalog is Mon–Fri.</td><td>Campus days only.</td><td>Use the campus's slot days.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">30</td><td><span class="pill P2">P2</span></td><td>Home step 02</td><td>All</td><td>Promises "one free weekday"; there's no such control, only dragging a whole day in Busy times.</td><td>Copy matches the planner.</td><td>Reword, or add the control later.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">31</td><td><span class="pill P2">P2</span></td><td>Settings</td><td>All</td><td>"Refreshes every 10 minutes"; the catalog cache lasts 5.</td><td>Matches the code.</td><td>Say 5 minutes.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">32</td><td><span class="pill P2">P2</span></td><td>Export PDF, PNG</td><td>All</td><td>PDF title shows the raw id ("Schedule 3iOvB38f…"); file names too.</td><td>Readable title and file name.</td><td>Use the week name.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">33</td><td><span class="pill P2">P2</span></td><td>Export PNG</td><td>Light, phone</td><td>Background is always dark; on phones the card fill covers only the first columns.</td><td>Matches the theme; even fill.</td><td>Read the background token.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">34</td><td><span class="pill P2">P2</span></td><td><span class="mono">/</span>, <span class="mono">/planner</span></td><td>Phone</td><td>Lighthouse mobile performance 79 and 73. Seven TTF fonts preloaded (about 440 KB over the wire on <span class="mono">/</span>); LCP 5.3s and 6.3s; planner CLS 0.12.</td><td>80 or better.</td><td>WOFF2 Latin subsets; drop unused weights.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">35</td><td><span class="pill P2">P2</span></td><td>Planner load</td><td>All</td><td>Semesters fetched twice; the catalog fetched once without a semester before the real request.</td><td>One of each.</td><td>Share one loader.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P2"><td class="n">36</td><td><span class="pill P2">P2</span></td><td>Results → Swap</td><td>All</td><td>After fix #1, swaps go to the best weeks first; low-ranked weeks may offer only one professor per course, and swapping a second course can undo the first swap.</td><td>Any professor pair reachable.</td><td>Build the swapped week on demand.</td><td><span class="pill open">follow-up</span></td></tr>
+          <tr data-sev="P3"><td class="n">37</td><td><span class="pill P3">P3</span></td><td>Results, Compare, Saved, Settings</td><td>—</td><td>Meta description is the homepage's (pages are noindex).</td><td>Page-specific.</td><td>Per-page metadata.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P3"><td class="n">38</td><td><span class="pill P3">P3</span></td><td>All pages</td><td>—</td><td>Theme defaults to dark whatever the OS setting.</td><td>Follows the OS until chosen.</td><td>Default to system.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P3"><td class="n">39</td><td><span class="pill P3">P3</span></td><td>Home vs campus picker</td><td>—</td><td>VIT AP is "Coming soon" on Home and "Not yet" in the picker.</td><td>Same words.</td><td>Pick one.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P3"><td class="n">40</td><td><span class="pill P3">P3</span></td><td>Results, zero weeks</td><td>—</td><td>"Clear rules · regenerate" and "Clear all rules · regenerate" sit side by side; "198,450 raw combinations by hand" adds little.</td><td>One action.</td><td>Drop the duplicate.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P3"><td class="n">41</td><td><span class="pill P3">P3</span></td><td>Usage events</td><td>—</td><td><span class="mono">generate_completed.weeks</span> buckets professor combos, so it's nearly always "50+".</td><td>Counts weeks.</td><td>Bucket shape count.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P3"><td class="n">42</td><td><span class="pill P3">P3</span></td><td>Results</td><td>—</td><td>Two layouts with identical occupied times merge into one week; swapping BCSE209L between <span class="slot">B1</span> and <span class="slot">B2</span> professors can also move BCSE206L.</td><td>Expected or flagged.</td><td>Note it in the Swap list.</td><td><span class="pill open">open</span></td></tr>
+          <tr data-sev="P3"><td class="n">43</td><td><span class="pill P3">P3</span></td><td>Footer → Disclaimer</td><td>—</td><td>Redirects to Terms.</td><td>Its own page, or no link.</td><td>Point the link at Terms.</td><td><span class="pill open">open</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Checked and fine</h2>
+    <ul class="plain prose">
+      <li>No console errors or failed requests on any production page; no sideways page scroll at 375px; one H1 per page; titles and descriptions correct on public pages.</li>
+      <li>Old <span class="mono">ffcsmaker.vercel.app</span> links 308-redirect to the same path and query on <span class="mono">www.ultimateffcs.in</span>. Canonical, <span class="mono">og:url</span>, <span class="mono">og:image</span> (1200×630, 26 KB), sitemap and robots all use the new domain.</li>
+      <li>Credit counter correct (11 then 22 credits); the "add the lab too?" prompt works; every result had 0 clashes and only real slots; share links reproduce the same timetable.</li>
+      <li><span class="mono">/admin</span> redirects to login without a session; admin stats render server-side behind the same check; <span class="mono">/api/admin/courses/bulk</span> returns 401. <span class="mono">/api/events</span> returns 400 for bad input and 413 for oversized bodies.</li>
+      <li>No <span class="mono">service_role</span>, <span class="mono">SUPABASE_SERVICE_ROLE_KEY</span> or <span class="mono">ADMIN_SECRET</span> in any of production's 34 JS bundles or the local build.</li>
+      <li>Clearing storage mid-session recovers to the campus picker; garbage paste shows per-row reasons and renders <span class="mono">&lt;script&gt;</span> as text; reduced motion is honoured (<span class="mono">MotionConfig reducedMotion="user"</span> plus CSS media queries); keyboard focus rings are visible.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Lighthouse, mobile</h2>
+    <div class="scroller">
+      <table class="lh">
+        <thead><tr><th>Run</th><th>Page</th><th>Performance</th><th>Accessibility</th><th>Best practices</th><th>SEO</th><th>LCP</th><th>CLS</th></tr></thead>
+        <tbody>
+          <tr><td>Before · production</td><td class="mono">/</td><td class="num">79</td><td class="num">96</td><td class="num">100</td><td class="num">100</td><td class="num">5.3 s</td><td class="num">0</td></tr>
+          <tr><td>Before · production</td><td class="mono">/planner</td><td class="num">73</td><td class="num">100</td><td class="num">100</td><td class="num">100</td><td class="num">6.3 s</td><td class="num">0.12</td></tr>
+          <tr><td>After · local build</td><td class="mono">/</td><td class="num">70–76</td><td class="num">96</td><td class="num">96</td><td class="num">100</td><td class="num">4.8 s</td><td class="num">0.004</td></tr>
+          <tr><td>After · local build</td><td class="mono">/planner</td><td class="num">66</td><td class="num">96*</td><td class="num">96</td><td class="num">100</td><td class="num">6.3 s</td><td class="num">0.12</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note prose">The "after" runs used <span class="mono">next start</span> on this machine, with no CDN or compression, so its performance numbers can't be compared with production. Best practices is 96 only because Vercel Analytics 404s off Vercel. *The planner run came before the banner-link underline fix (<span class="mono">4492c2d</span>), which cleared the only accessibility failure there; the same fix took <span class="mono">/</span> from 91 back to 96. None of the fixes target performance.</p>
+  </section>
+
+  <section>
+    <h2>Couldn't test, and why</h2>
+    <ul class="plain prose">
+      <li><strong>Real phone and iOS Safari:</strong> no device here. The storage-quota fix was checked by forcing a quota in Chrome: no errors, results shown, saves persisted.</li>
+      <li><strong>Slow 4G run and Cancel mid-run:</strong> the browser pane can't throttle the network, and generation finishes in about 2s, too fast to cancel by hand. Lighthouse's simulated slow 4G stands in for the slow run.</li>
+      <li><strong>Google Calendar import and WhatsApp preview:</strong> both would act on your accounts. I checked the .ics contents (every event on its own weekday) and the OG tags and image instead.</li>
+      <li><strong>Stored usage-event rows:</strong> a read-only query on the production database was blocked by the permission system. The code only stores an allowlisted name, campus and props (no IP or id columns). Blocking <span class="mono">/api/events</span> wasn't tested live; <span class="mono">track()</span> is fire-and-forget inside try/catch.</li>
+      <li><strong>Admin dashboard signed in:</strong> entering the admin password is off-limits for me. Only the logged-out protection was checked.</li>
+      <li><strong>Catalog vs VTOP spot-check:</strong> no VTOP access.</li>
+      <li><strong>Every page in both themes at both widths:</strong> partial. All pages at 375 dark; Home and Planner at 1440 light and dark; light-mode contrast measured on the planner.</li>
+      <li><strong>Returning-visitor run with a saved plan</strong> was done; the slow-connection run (third pass) was not.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Top 3 UX fixes after mock FFCS</h2>
+    <ol class="prose" style="margin:0;padding-left:20px;display:grid;gap:8px">
+      <li><strong>Put the week switcher first on phones.</strong> Today a student sees one week, then up to 94 professor combos, and only then the other weeks. Put the weeks in a horizontal strip under the header and fold the combos into a "Professors for this week" section.</li>
+      <li><strong>Let Swap build any combination.</strong> Build the swapped week on demand instead of picking from precomputed variants, so any pair of professors is reachable. Then rename "shapes / combos / professor options" to two words students already use: weeks and professors.</li>
+      <li><strong>Show what a rule costs before Find my weeks.</strong> A live line under each preference ("No 8 AM removes all 9 BCSE209L options in B1") and a real free-day picker would catch the zero-results surprise in the planner, where it's cheap to fix.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Side effects of this audit</h2>
+    <ul class="plain prose">
+      <li>Testing on production created one share link (<span class="mono">/timetable/7wKY6VdP07</span>) and roughly 20 usage events on 18 Oct. They fall before <span class="mono">FFCS_WINDOW_START</span> (19 Oct), so window totals are clean, but they show in the 7-day view. Local runs had events off.</li>
+      <li>At the start I cleared the in-app browser's saved state for <span class="mono">ultimateffcs.in</span> (one existing planner entry) to test as a first-time visitor, and it wasn't backed up. Only that browser pane is affected, not your own Chrome.</li>
+      <li>Your main checkout and its uncommitted guided-flow work were not touched. The work happened in <span class="mono">.claude/worktrees/audit-sweep</span>.</li>
+    </ul>
+  </section>
+</main>
+
+<script>
+(() => {
+  const buttons = document.querySelectorAll(".filters button");
+  const rows = document.querySelectorAll(".issues tbody tr");
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const filter = button.dataset.filter;
+      buttons.forEach((b) => b.setAttribute("aria-pressed", String(b === button)));
+      rows.forEach((row) => { row.hidden = filter !== "all" && row.dataset.sev !== filter; });
+    });
+  });
+})();
+</script>
