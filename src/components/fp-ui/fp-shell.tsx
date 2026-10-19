@@ -35,6 +35,7 @@ import { FPLabel } from "@/components/fp-ui/label";
 import { FPCard } from "@/components/fp-ui/card";
 import { WinterBanner } from "@/features/landing/WinterBanner";
 import { INSTAGRAM_HANDLE } from "@/lib/site";
+import { CAMPUS_PAGE_IDS } from "@/features/campus/campusPages";
 
 // Same concept-to-icon mapping the classic app already uses for its own nav
 // (AppShell.tsx's navItems) — one icon vocabulary across both skins.
@@ -143,9 +144,13 @@ export function FPShell({ children }: { children: React.ReactNode }) {
   const mainContent = bypassCampusGate ? (
     children
   ) : !hasHydrated ? (
-    <div
-      className="mx-auto mt-20 h-32 max-w-lg animate-pulse rounded-[var(--radius-lg)] border border-fp-border-default bg-fp-bg-surface"
-    />
+    pathname === "/planner" ? (
+      <FPPlannerIntro />
+    ) : (
+      <div
+        className="mx-auto mt-20 h-32 max-w-lg animate-pulse rounded-[var(--radius-lg)] border border-fp-border-default bg-fp-bg-surface"
+      />
+    )
   ) : !campus ? (
     <FPCampusGate onPick={setCampus} />
   ) : (
@@ -303,14 +308,19 @@ export function FPShell({ children }: { children: React.ReactNode }) {
             <Instagram className="h-3.5 w-3.5" strokeWidth={1.5} />@{INSTAGRAM_HANDLE}
           </a>
         ) : null}
-        <div className="ml-auto flex gap-5 text-[length:var(--text-small)] text-fp-text-dim">
+        <div className="ml-auto flex flex-wrap gap-x-5 gap-y-2 text-[length:var(--text-small)] text-fp-text-dim">
+          {CAMPUS_PAGE_IDS.map((id) => (
+            <Link key={id} href={`/${id}`} className="hover:text-fp-text-body">
+              {CAMPUS_LABELS[id].replace("VIT ", "")} slots
+            </Link>
+          ))}
           <Link href="/privacy" className="hover:text-fp-text-body">
             Privacy
           </Link>
           <Link href="/terms" className="hover:text-fp-text-body">
             Terms
           </Link>
-          <Link href="/disclaimer" className="hover:text-fp-text-body">
+          <Link href="/terms#disclaimer" className="hover:text-fp-text-body">
             Disclaimer
           </Link>
         </div>
@@ -377,6 +387,34 @@ export function FPShell({ children }: { children: React.ReactNode }) {
           </FPCard>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+function FPPlannerIntro() {
+  return (
+    <div className="flex min-h-[calc(100vh-14rem)] items-center justify-center py-8">
+      <div className="w-full max-w-2xl text-center">
+        <FPLabel tone="accent" variant="eyebrow">FFCS Planner</FPLabel>
+        <h1 className="mt-3 font-fp-display text-[length:var(--text-display)] font-bold tracking-[-0.01em] text-fp-text-strong">
+          FFCS planner for VIT Vellore, Chennai &amp; Bhopal
+        </h1>
+        <p className="mx-auto mt-3 max-w-xl text-[length:var(--text-body-size)] leading-[1.5] text-fp-text-dim">
+          Add your courses, tick every professor you&apos;d take, and get every clash-free timetable ranked. Free, no login.
+          Loading your saved courses…
+        </p>
+        <p className="mt-5 text-[length:var(--text-small)] text-fp-text-dim">
+          Slot timings:{" "}
+          {CAMPUS_PAGE_IDS.map((id, index) => (
+            <span key={id}>
+              {index > 0 ? " · " : null}
+              <Link href={`/${id}`} className="underline underline-offset-[3px] hover:text-fp-text-body">
+                {CAMPUS_LABELS[id]}
+              </Link>
+            </span>
+          ))}
+        </p>
+      </div>
     </div>
   );
 }

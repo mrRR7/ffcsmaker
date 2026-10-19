@@ -1,6 +1,6 @@
 "use client";
 
-import localFont from "next/font/local";
+import { IBM_Plex_Mono, IBM_Plex_Sans, Space_Grotesk } from "next/font/google";
 import { cn } from "@/utils/cn";
 import { useEffect } from "react";
 import { MotionConfig } from "framer-motion";
@@ -11,30 +11,23 @@ import { TourProvider } from "@/features/tour/TourProvider";
 import { TourSpotlight } from "@/features/tour/TourSpotlight";
 import { TourCard } from "@/features/tour/TourCard";
 
-const spaceGrotesk = localFont({
-  src: [
-    { path: "../../../public/fonts/fp/SpaceGrotesk-Medium.ttf", weight: "500", style: "normal" },
-    { path: "../../../public/fonts/fp/SpaceGrotesk-Bold.ttf", weight: "700", style: "normal" }
-  ],
+const spaceGrotesk = Space_Grotesk({
+  subsets: ["latin"],
+  weight: ["500", "700"],
   variable: "--fp-font-display",
   display: "swap"
 });
 
-const ibmPlexSans = localFont({
-  src: [
-    { path: "../../../public/fonts/fp/IBMPlexSans-Regular.ttf", weight: "400", style: "normal" },
-    { path: "../../../public/fonts/fp/IBMPlexSans-Medium.ttf", weight: "500", style: "normal" },
-    { path: "../../../public/fonts/fp/IBMPlexSans-SemiBold.ttf", weight: "600", style: "normal" }
-  ],
+const ibmPlexSans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
   variable: "--fp-font-body",
   display: "swap"
 });
 
-const ibmPlexMono = localFont({
-  src: [
-    { path: "../../../public/fonts/fp/IBMPlexMono-Regular.ttf", weight: "400", style: "normal" },
-    { path: "../../../public/fonts/fp/IBMPlexMono-Medium.ttf", weight: "500", style: "normal" }
-  ],
+const ibmPlexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
   variable: "--fp-font-mono",
   display: "swap"
 });

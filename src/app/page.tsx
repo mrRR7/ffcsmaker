@@ -1,4 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { CAMPUS_LABELS } from "@/engine/types";
+import { CAMPUS_PAGE_IDS } from "@/features/campus/campusPages";
 import { HeroWeekGrid } from "@/features/landing/HeroWeekGrid";
 import { CampusPicker } from "@/features/landing/CampusPicker";
 import { LandingSteps } from "@/features/landing/LandingSteps";
@@ -10,7 +13,7 @@ import { SITE_STATS, SITE_URL } from "@/lib/site";
 export const metadata: Metadata = {
   title: { absolute: "VIT FFCS Planner & Timetable Generator | Ultimate FFCS" },
   description:
-    "Free VIT FFCS planner for Chennai, Vellore and Bhopal. Pick your courses and professors, and get every clash-free timetable ranked in seconds.",
+    "Free VIT FFCS planner for Chennai, Vellore and Bhopal. Pick your courses and professors, and get every clash-free timetable ranked in seconds. No login.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Ultimate FFCS · VIT FFCS Planner",
@@ -132,6 +135,17 @@ export default function LandingPage() {
           FFCS questions
         </h2>
         <FaqList faqs={faqs} />
+        <p className="mt-6 text-[length:var(--text-small)] text-fp-text-dim">
+          Slot timings by campus:{" "}
+          {CAMPUS_PAGE_IDS.map((id, index) => (
+            <span key={id}>
+              {index > 0 ? " · " : null}
+              <Link href={`/${id}`} className="text-fp-text-body underline underline-offset-[3px] hover:text-fp-accent">
+                {CAMPUS_LABELS[id]}
+              </Link>
+            </span>
+          ))}
+        </p>
       </section>
     </div>
   );

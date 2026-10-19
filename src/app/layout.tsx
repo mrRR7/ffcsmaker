@@ -53,10 +53,6 @@ export const metadata: Metadata = {
     images: ["/og-image.png"],
   },
   manifest: "/site.webmanifest",
-  robots: {
-    index: true,
-    follow: true,
-  },
   metadataBase: new URL(SITE_URL),
 }
 

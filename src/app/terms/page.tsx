@@ -51,7 +51,7 @@ export default function NewTermsPage() {
         </ul>
       </FPLegalSection>
 
-      <FPLegalSection title="No Guarantees">
+      <FPLegalSection id="disclaimer" title="No Guarantees">
         <p>The application is provided on an &ldquo;as-is&rdquo; basis without guarantees of:</p>
         <ul className="list-disc space-y-1 pl-5">
           <li>timetable accuracy</li>
@@ -204,9 +204,9 @@ function FPLegalPage({
   );
 }
 
-function FPLegalSection({ title, children }: { title: string; children: ReactNode }) {
+function FPLegalSection({ id, title, children }: { id?: string; title: string; children: ReactNode }) {
   return (
-    <section className="space-y-3 border-t border-fp-border-default pt-8 first:border-t-0 first:pt-0">
+    <section id={id} className="scroll-mt-24 space-y-3 border-t border-fp-border-default pt-8 first:border-t-0 first:pt-0">
       <h2 className="font-fp-display text-[17px] font-bold tracking-[-0.01em] text-fp-text-strong sm:text-[length:var(--text-h)]">
         {title}
       </h2>

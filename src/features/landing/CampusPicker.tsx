@@ -14,6 +14,7 @@ import { BRAND_PALETTE } from "@/lib/coursePalette";
 import { useTour } from "@/features/tour/useTour";
 import { hasSeenTour } from "@/features/tour/tourStorage";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { usePickCampus } from "@/features/landing/usePickCampus";
 
 const campusCards: Array<{ campus: Campus; active: boolean; detail: string; swatch: string }> = [
   { campus: "chennai", active: true, detail: "Mon–Fri slot catalog", swatch: BRAND_PALETTE[0] },
@@ -25,7 +26,6 @@ const campusCards: Array<{ campus: Campus; active: boolean; detail: string; swat
 export function CampusPicker() {
   const router = useRouter();
   const campus = useAppStore((state) => state.campus);
-  const setCampus = useAppStore((state) => state.setCampus);
   const hasHydrated = useAppStore((state) => state.hasHydrated);
   const courseCount = useAppStore((state) => state.courses.length);
   const tour = useTour();
@@ -35,22 +35,7 @@ export function CampusPicker() {
   const showTourPrompt =
     hasHydrated && isMobile === false && !tour.active && !tourPromptDismissed && !hasSeenTour();
 
-  function pickCampus(next: Campus) {
-    // setCampus wipes the plan, so keep it for the same campus and ask before
-    // switching away from one with courses (the header switcher asks too).
-    if (next !== campus) {
-      if (
-        courseCount > 0 &&
-        !window.confirm(
-          `Switch to ${CAMPUS_LABELS[next]}? This clears your current course list and generated timetables. Saved timetables stay.`
-        )
-      ) {
-        return;
-      }
-      setCampus(next);
-    }
-    router.push("/planner");
-  }
+  const pickCampus = usePickCampus();
 
   const returning = hasHydrated && campus && courseCount > 0;
 
