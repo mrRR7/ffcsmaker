@@ -199,6 +199,7 @@ export function FPImportTab() {
           </FPNote>
           <div className="overflow-x-auto">
             <FPSlotTable
+              label="Imported course options"
               columns={[
                 { key: "code", header: "Code", render: (row: ParsedImportRow) => row.courseCode || "N/A" },
                 { key: "prof", header: "Professor", render: (row: ParsedImportRow) => row.professorName || "N/A" },

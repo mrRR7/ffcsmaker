@@ -17,14 +17,25 @@ export interface FPSlotTableProps<T> {
   rowKey: (row: T, index: number) => string;
   className?: string;
   footer?: React.ReactNode;
+  /** Names the scroll region for keyboard / screen-reader users. */
+  label?: string;
 }
 
 export const FP_EMPTY_CELL = "—";
 
-export function FPSlotTable<T>({ columns, rows, rowKey, className, footer }: FPSlotTableProps<T>) {
+export function FPSlotTable<T>({ columns, rows, rowKey, className, footer, label = "Table" }: FPSlotTableProps<T>) {
   const gridTemplateColumns = `repeat(${columns.length}, minmax(0, 1fr))`;
   return (
-    <div className={cn("overflow-hidden rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface", className)}>
+    // Scrolls sideways on narrow screens instead of clipping: at 320px five 1fr
+    // columns were ~40px each and controls (the Swap select) were cut off.
+    // Focusable so keyboard users can scroll it even when it holds no controls.
+    <div
+      role="region"
+      aria-label={label}
+      tabIndex={0}
+      className={cn("overflow-x-auto rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface", className)}
+    >
+      <div className="min-w-[36rem]">
       <div
         className="fp-text grid gap-4 border-b border-fp-border-default px-4 py-[11px] text-[length:var(--text-micro)] text-fp-text-dim"
         style={{ gridTemplateColumns }}
@@ -51,6 +62,7 @@ export function FPSlotTable<T>({ columns, rows, rowKey, className, footer }: FPS
           ))}
         </div>
       ))}
+      </div>
       {footer}
     </div>
   );

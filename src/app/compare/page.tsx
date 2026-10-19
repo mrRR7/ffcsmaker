@@ -112,6 +112,7 @@ export default function NewComparePage() {
           </div>
           <div className="ml-auto flex flex-wrap items-center gap-2">
             <select
+              aria-label="Add a week to compare"
               value=""
               onChange={(event) => {
                 if (event.target.value) addCompareSchedule(event.target.value);

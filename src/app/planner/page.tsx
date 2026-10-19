@@ -103,7 +103,7 @@ export default function NewPlannerPage() {
           {
             number: "02",
             label: "Preferences",
-            suffix: <span className="opacity-60">(optional)</span>,
+            suffix: <span className="text-fp-text-dim">(optional)</span>,
             status: tab === "preferences" ? "active" : "upcoming",
             onClick: () => setTab("preferences"),
             "data-tour-id": "planner-preferences"
@@ -125,7 +125,7 @@ export default function NewPlannerPage() {
               localStorage.setItem("dismissed_preliminary_notice", "true");
               setShowNotice(false);
             }}
-            className="fp-text -m-2 ml-auto flex shrink-0 items-center gap-1 p-2 text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-text-body"
+            className="fp-text -m-2 ml-auto flex shrink-0 items-center gap-1 p-2 text-[length:var(--text-micro)] text-fp-text-body hover:text-fp-text-strong"
           >
             Got it
             <X className="h-3 w-3" strokeWidth={1.5} />

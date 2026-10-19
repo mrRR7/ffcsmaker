@@ -17,7 +17,7 @@ export interface FPBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 const toneMap = {
   neutral: "text-fp-text-dim",
-  accent: "text-fp-accent",
+  accent: "text-fp-text-accent",
   warn: "text-fp-warn",
   danger: "text-fp-danger"
 } as const;

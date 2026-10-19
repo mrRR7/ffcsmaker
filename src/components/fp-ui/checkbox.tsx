@@ -14,6 +14,24 @@ export interface FPCheckboxProps
   onCheckedChange?: (checked: boolean) => void;
 }
 
+/** Visual-only tick box for rows that ARE the checkbox (role="checkbox" on the
+ * row). Not focusable and hidden from assistive tech, so the row isn't a
+ * control nested inside another control. */
+export function FPCheckboxIndicator({ checked }: { checked: boolean }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn(
+        "flex h-5 w-5 flex-none items-center justify-center rounded-[var(--radius-sm)] border leading-none transition-colors",
+        checked ? "border-fp-accent text-fp-accent" : "border-fp-border-strong"
+      )}
+      style={checked ? { backgroundColor: "var(--accent-wash-strong)" } : undefined}
+    >
+      {checked ? <Check className="h-3.5 w-3.5" strokeWidth={2} /> : null}
+    </span>
+  );
+}
+
 export const FPCheckbox = React.forwardRef<HTMLButtonElement, FPCheckboxProps>(
   ({ className, checked, onCheckedChange, disabled, ...props }, ref) => (
     <button
