@@ -358,8 +358,9 @@ function CourseCard({
           type="button"
           onClick={() => onToggleCollapse(course.id)}
           aria-expanded={!collapsed}
+          aria-label={collapsed ? "Expand course" : "Collapse course"}
           title={collapsed ? "Expand course" : "Collapse course"}
-          className="shrink-0 text-fp-text-dim hover:text-fp-text-body"
+          className="-m-1 shrink-0 p-1 text-fp-text-dim hover:text-fp-text-body"
         >
           <ChevronDown className={cn("h-4 w-4 transition-transform", collapsed ? "-rotate-90" : "rotate-0")} />
         </button>

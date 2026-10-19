@@ -15,7 +15,7 @@ export interface FPLabelProps extends React.HTMLAttributes<HTMLSpanElement> {
 
 const toneMap = {
   dim: "text-fp-text-dim",
-  accent: "text-fp-accent",
+  accent: "text-fp-text-accent", // text-safe green; --accent is a fill and fails on accent-wash in light mode
   strong: "text-fp-text-strong",
   warn: "text-fp-warn"
 } as const;

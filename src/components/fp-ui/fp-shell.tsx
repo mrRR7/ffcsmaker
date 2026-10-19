@@ -101,6 +101,37 @@ export function FPShell({ children }: { children: React.ReactNode }) {
   }, [pathname]);
 
   const prevRouteIndexRef = useRef(routeIndex(pathname));
+
+  // After a route change, or a campus pick (which swaps the gate for the
+  // planner), move focus to the new page's heading — otherwise it falls to
+  // <body> and keyboard / screen-reader users lose their place. Skips the first
+  // load — including the store restoring a saved campus during hydration — and
+  // never pulls focus out of something the page already focused.
+  const lastFocusKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!hasHydrated) return;
+    const key = `${pathname}|${campus ?? ""}`;
+    const previous = lastFocusKeyRef.current;
+    lastFocusKeyRef.current = key;
+    if (previous === null || previous === key) return;
+    // Poll until the *new* route's content has mounted (the old one exits
+    // first, and a slow route can take a while), then focus its heading.
+    const startedAt = Date.now();
+    const timer = window.setInterval(() => {
+      const main = document.getElementById("main");
+      const route = main?.querySelector<HTMLElement>(`[data-route="${CSS.escape(pathname ?? "")}"]`);
+      const heading = route?.querySelector<HTMLElement>("h1") ?? route?.querySelector<HTMLElement>("h2");
+      const timedOut = Date.now() - startedAt > 2000;
+      if (!heading && !timedOut) return;
+      window.clearInterval(timer);
+      if (!main) return;
+      if (main.contains(document.activeElement) && document.activeElement !== main) return;
+      const target = heading ?? main;
+      if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+      target.focus({ preventScroll: true });
+    }, 100);
+    return () => window.clearInterval(timer);
+  }, [pathname, campus, hasHydrated]);
   const direction = useMemo(() => {
     const nextIndex = routeIndex(pathname);
     const dir = nextIndex >= prevRouteIndexRef.current ? 1 : -1;
@@ -154,6 +185,12 @@ export function FPShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className={cn("flex min-h-screen flex-col bg-fp-bg-page text-fp-text-body", showBottomNav && "pb-[calc(64px+env(safe-area-inset-bottom))] lg:pb-0")}>
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-50 focus:rounded-[var(--radius-md)] focus:bg-fp-bg-surface focus:px-4 focus:py-2 focus:text-[length:var(--text-small)] focus:text-fp-text-strong"
+      >
+        Skip to content
+      </a>
       <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-fp-border-default bg-fp-bg-surface px-4 py-3 sm:gap-5 sm:px-6">
         <Link href="/" aria-label="Ultimate FFCS" className="flex select-none items-center">
           <Image src="/logo.svg" alt="Ultimate FFCS" width={1101} height={256} priority className="h-7 w-auto dark:hidden sm:h-8" />
@@ -268,10 +305,11 @@ export function FPShell({ children }: { children: React.ReactNode }) {
 
       {pathname === "/" || pathname?.startsWith("/planner") ? <WinterBanner /> : null}
 
-      <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-8 pb-16 sm:px-6 lg:px-8">
+      <main id="main" tabIndex={-1} className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-8 pb-16 sm:px-6 lg:px-8">
         <AnimatePresence mode="wait" initial={false} custom={direction}>
           <motion.div
             key={pathname}
+            data-route={pathname}
             custom={direction}
             variants={routeSlide}
             initial="initial"

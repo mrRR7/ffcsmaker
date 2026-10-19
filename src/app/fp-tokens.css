@@ -8,7 +8,7 @@
   --ground: #0b0e11;
   --surface: #141a1f;
   --ink: #e6edea;
-  --muted: #7e8b90;
+  --muted: #909da2; /* was #7e8b90: 4.09:1 on --surface-selected, 3.74 on accent washes */
   --accent: #3fa96b;
   --rule: #2a343b;
 
@@ -40,7 +40,7 @@
   --text-body: var(--ink);
   --text-strong: #f2f7f4;
   --text-dim: var(--muted);
-  --text-accent: var(--accent);
+  --text-accent: #5cc489; /* text-only green: --accent (#3fa96b) was 3.8:1 on accent washes */
   --text-on-accent: var(--accent-ink);
   --border-default: var(--rule);
   --border-strong: #3a464e;
@@ -130,7 +130,7 @@
   --ground: #efede7;
   --surface: #faf9f5;
   --ink: #161b1d;
-  --muted: #666f72;
+  --muted: #5a6266; /* was #666f72: 4.05:1 on --bg-inset; now 4.90 */
   --accent: #25794a;
   --rule: #c9c2b3;
 
@@ -146,6 +146,7 @@
   --accent-ink: #faf9f5;
 
   --warn: #8a5d0a;
+  --danger: #b4522a; /* #d8663a was 3.57:1 on light surfaces; this is 5.02 */
   --warn-wash: rgba(138, 93, 10, 0.12);
 
   --bg-page: #efede7;
@@ -155,7 +156,7 @@
 
   --text-body: #161b1d;
   --text-strong: #0b0e11;
-  --text-dim: #666f72;
+  --text-dim: #5a6266;
   --text-accent: #1a5c37;
   --text-on-accent: #faf9f5;
 
@@ -250,6 +251,16 @@
 }
 
 .fp-root *:focus-visible {
-  outline: none;
+  /* Transparent outline is what forced-colors / High Contrast mode paints;
+     box-shadows are dropped there, which left focus invisible. */
+  outline: 2px solid transparent;
+  outline-offset: 2px;
   box-shadow: var(--ring-focus);
+}
+/* Programmatic focus targets (page headings after navigation, <main>) aren't
+   controls — don't draw a ring around them. */
+.fp-root [tabindex="-1"]:focus,
+.fp-root [tabindex="-1"]:focus-visible {
+  outline: none;
+  box-shadow: none;
 }

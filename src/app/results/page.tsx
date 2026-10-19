@@ -604,10 +604,10 @@ function ResultsContent() {
                       {activeShapeIndex === 0 ? "Best overall" : `Shape ${activeShapeIndex + 1}`}
                     </h1>
                     <span
-                      className="rounded-[var(--radius-sm)] px-3 py-1.5 font-fp-mono text-[17px] text-fp-accent sm:text-[length:var(--text-h)]"
+                      className="rounded-[var(--radius-sm)] px-3 py-1.5 font-fp-mono text-[17px] text-fp-text-accent sm:text-[length:var(--text-h)]"
                       style={{ backgroundColor: "var(--accent-wash-strong)" }}
                     >
-                      <span className="mr-1.5 text-[length:var(--text-micro)] uppercase tracking-[.14em] text-fp-text-dim">
+                      <span className="mr-1.5 text-[length:var(--text-micro)] uppercase tracking-[.14em] text-fp-text-body">
                         score
                       </span>
                       {Math.round(displayedScore)}
@@ -646,6 +646,8 @@ function ResultsContent() {
                     <FPButton
                       variant="secondary"
                       size="sm"
+                      aria-expanded={exportMenuOpen}
+                      aria-controls="results-export-menu"
                       onClick={() => setExportMenuOpen((value) => !value)}
                     >
                       Export
@@ -658,6 +660,7 @@ function ResultsContent() {
                         initial="initial"
                         animate="animate"
                         exit="exit"
+                        id="results-export-menu"
                         style={{ transformOrigin: "top right" }}
                         className="absolute right-0 z-20 mt-1.5 w-44 rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface p-1"
                       >
@@ -772,6 +775,7 @@ function ResultsContent() {
                       />
                     </div>
                     <FPSlotTable
+                      label="Professors and slots for this week"
                       columns={[
                         {
                           key: "course",
@@ -859,13 +863,13 @@ function ResultsContent() {
                             const options = swapOptionsFor(row.courseId);
                             if (!selection || options.length < 2) return null;
                             return (
-                              <label className="fp-text inline-flex items-center gap-1.5 text-[length:var(--text-micro)] text-fp-text-dim">
+                              <label className="fp-text inline-flex flex-col items-end gap-1 text-[length:var(--text-micro)] text-fp-text-dim sm:flex-row sm:items-center sm:gap-1.5">
                                 Swap
                                 <select
                                   aria-label={`Swap professor for ${row.courseCode}`}
                                   value={selection.optionId}
                                   onChange={(e) => swapProfessorTo(row.courseId, e.target.value)}
-                                  className="max-w-[160px] cursor-pointer rounded-[var(--radius-sm)] bg-fp-bg-inset px-1.5 py-1 text-fp-text-body outline-none"
+                                  className="max-w-[9rem] cursor-pointer sm:max-w-[160px] rounded-[var(--radius-sm)] bg-fp-bg-inset px-1.5 py-1 text-fp-text-body outline-none"
                                 >
                                   {options.map((o) => (
                                     <option key={o.id} value={o.id}>
@@ -949,6 +953,7 @@ function ResultsContent() {
                       />
                     </div>
                     <FPSlotTable
+                      label="Professors and slots for this week"
                       columns={[
                         {
                           key: "course",

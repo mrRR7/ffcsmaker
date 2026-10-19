@@ -311,16 +311,12 @@ function CheckRow({
   label: string;
 }) {
   return (
-    <div className="flex items-center gap-3">
+    // One <label> so the text names the checkbox (and is one click target),
+    // instead of an unnamed checkbox next to a separate text button.
+    <label className="flex cursor-pointer items-center gap-3 text-[length:var(--text-small)] text-fp-text-body">
       <FPCheckbox checked={checked} onCheckedChange={onToggle} />
-      <button
-        type="button"
-        onClick={onToggle}
-        className="text-left text-[length:var(--text-small)] text-fp-text-body"
-      >
-        {label}
-      </button>
-    </div>
+      {label}
+    </label>
   );
 }
 
