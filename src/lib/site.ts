@@ -13,6 +13,14 @@ export const INSTAGRAM_HANDLE = "ultimate.ffcs";
 // in Vercel and redeploy to hide it; no code change needed.
 export const SHOW_WINTER_BANNER = process.env.NEXT_PUBLIC_WINTER_BANNER !== "off";
 
+// Donations. Empty UPI ID hides the banner and the QR/pay section everywhere,
+// so nothing goes public until it is set. QR image lives in public/.
+export const DONATE_UPI_ID = "";
+export const DONATE_PAYEE_NAME = "Ultimate FFCS";
+export const DONATE_QR_SRC = "/donate-upi-qr.png";
+// Donate banner: on unless NEXT_PUBLIC_DONATE_BANNER is "off", and only once a UPI ID is set.
+export const SHOW_DONATE_BANNER = DONATE_UPI_ID !== "" && process.env.NEXT_PUBLIC_DONATE_BANNER !== "off";
+
 // Usage events: on unless NEXT_PUBLIC_USAGE_EVENTS is "off" (rollback switch).
 export const USAGE_EVENTS_ENABLED = process.env.NEXT_PUBLIC_USAGE_EVENTS !== "off";
 

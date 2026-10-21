@@ -14,7 +14,9 @@ export const USAGE_EVENTS = {
   share_image_saved: {},
   ical_exported: {},
   timetable_saved: {},
-  vtop_import_used: {}
+  vtop_import_used: {},
+  donate_banner_clicked: {},
+  support_page_viewed: {}
 } as const satisfies Record<string, Record<string, PropSpec>>;
 
 export type UsageEventName = keyof typeof USAGE_EVENTS;

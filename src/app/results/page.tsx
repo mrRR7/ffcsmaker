@@ -30,6 +30,7 @@ import { ZeroResultsFP } from "./ZeroResultsFP";
 import { GeneratingFP } from "./GeneratingFP";
 import { buildShapeThumbnail, freeDayNames, shortDay } from "./resultsVisuals";
 import { track } from "@/lib/track";
+import { DonateBanner } from "@/features/landing/DonateBanner";
 
 type SortMode = "score" | "lowGaps" | "earlyFinish";
 
@@ -486,6 +487,8 @@ function ResultsContent() {
           ]}
         />
       </nav>
+
+      <DonateBanner />
 
       {resultsAreStale ? (
         <div className="border-b border-fp-border-default px-4 py-3 sm:px-6">

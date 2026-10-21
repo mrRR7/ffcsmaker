@@ -10,5 +10,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...CAMPUS_PAGE_IDS.map((campus) => ({ url: `${SITE_URL}/${campus}`, changeFrequency: 'monthly' as const, priority: 0.8 })),
     { url: `${SITE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.2 },
     { url: `${SITE_URL}/terms`, changeFrequency: 'yearly', priority: 0.2 },
+    { url: `${SITE_URL}/support`, changeFrequency: 'yearly', priority: 0.2 },
   ]
 }

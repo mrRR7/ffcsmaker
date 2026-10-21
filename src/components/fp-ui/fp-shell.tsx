@@ -358,6 +358,9 @@ export function FPShell({ children }: { children: React.ReactNode }) {
           <Link href="/terms" className="hover:text-fp-text-body">
             Terms
           </Link>
+          <Link href="/support" className="hover:text-fp-text-body">
+            Support
+          </Link>
           <Link href="/terms#disclaimer" className="hover:text-fp-text-body">
             Disclaimer
           </Link>
