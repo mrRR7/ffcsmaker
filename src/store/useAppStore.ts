@@ -28,7 +28,7 @@ import { getSlotCatalog, getSlotDays } from "@/engine/slotCatalog";
 import { defaultConstraints } from "@/engine/defaults";
 import { groupSchedulesByShape } from "@/engine/consolidation";
 import { mapLegacyRankingMode } from "@/engine/ranking";
-import { colorForIndex } from "@/lib/coursePalette";
+import { colorForIndex, COURSE_PALETTE, LEGACY_INDIGO } from "@/lib/coursePalette";
 
 const GENERATION_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -837,6 +837,10 @@ export const useAppStore = create<UniTimeStore>()(
       },
       onRehydrateStorage: () => (state) => {
         if (state) {
+          // Version-free remap (no persist bump) of the old low-contrast indigo.
+          state.courses = state.courses.map((course) =>
+            course.color?.toLowerCase() === LEGACY_INDIGO ? { ...course, color: COURSE_PALETTE[1] } : course
+          );
           state.slots = state.campus
             ? getSlotCatalog(CAMPUS_SLOT_VARIANT[state.campus])
             : defaultSlots;

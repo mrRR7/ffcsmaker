@@ -136,6 +136,7 @@ export function FPPasteTab() {
       ) : (
         <div className="overflow-x-auto">
           <FPSlotTable
+            label="Parsed course options"
             columns={[
               { key: "code", header: "Course", render: (row: ParsedImportRow) => <span className="font-fp-mono text-fp-text-strong">{row.courseCode || "Unknown"}</span> },
               { key: "prof", header: "Professor", render: (row: ParsedImportRow) => row.professorName || "Unknown" },

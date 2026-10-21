@@ -12,7 +12,7 @@ import { FPButton } from "@/components/fp-ui/button";
 import { FPLabel } from "@/components/fp-ui/label";
 import { FPBadge } from "@/components/fp-ui/badge";
 import { FPNote } from "@/components/fp-ui/note";
-import { FPCheckbox } from "@/components/fp-ui/checkbox";
+import { FPCheckboxIndicator } from "@/components/fp-ui/checkbox";
 import { FPMetricRun } from "@/components/fp-ui/metric-run";
 import { FPTip } from "@/components/fp-ui/tip";
 import {
@@ -204,7 +204,9 @@ export function FPSearchTab() {
     return (
       <div
         key={option.id}
-        role="button"
+        role="checkbox"
+        aria-checked={selected}
+        aria-label={`${option.professor_name}, ${slotLabel(option.theory_slots)} · ${slotLabel(option.lab_slots)}`}
         tabIndex={0}
         onClick={() => toggleOption(option.id)}
         onKeyDown={(event) => {
@@ -219,7 +221,7 @@ export function FPSearchTab() {
         )}
         style={selected ? { backgroundColor: "var(--accent-wash)" } : undefined}
       >
-        <FPCheckbox checked={selected} />
+        <FPCheckboxIndicator checked={selected} />
         <span className="min-w-0 flex-1">
           <span className={cn("flex flex-wrap items-center gap-2 text-[length:var(--text-small)]", selected ? "text-fp-text-strong" : "text-fp-text-body")}>
             {option.professor_name}
@@ -361,6 +363,7 @@ export function FPSearchTab() {
               >
                 <button
                   type="button"
+                  aria-expanded={expanded}
                   onClick={() => setExpandedCourseId(expanded ? null : course.id)}
                   className="flex w-full items-center gap-3 border-b border-fp-border-default px-4 py-[14px] text-left"
                 >

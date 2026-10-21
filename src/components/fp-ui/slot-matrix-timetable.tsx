@@ -84,41 +84,93 @@ export function FPSlotMatrixTimetable({
     if (cell.slotLabel === "Lunch") return null;
     if (!cell.occupied && !cell.slotLabel) return null;
     if (cell.occupied) {
+      // No opacity on the secondary lines: it pushed them under 4.5:1 on the
+      // course colour. Hierarchy comes from size/weight instead.
       return (
         <div className="flex h-full flex-col items-center justify-center gap-[2px] font-fp-mono">
-          <span className="fp-label text-[9px] opacity-75">{cell.slotLabel}</span>
+          <span className="fp-label text-[9px] font-normal">{cell.slotLabel}</span>
           <span className="text-[length:var(--text-micro)] font-bold leading-tight tracking-tight">{cell.courseCode}</span>
-          <span className="line-clamp-1 text-[9px] font-medium leading-tight opacity-85">
+          <span className="line-clamp-1 text-[9px] font-medium leading-tight">
             {cell.professorName}
           </span>
         </div>
       );
     }
-    return <span className="font-fp-mono text-[10px] text-fp-text-dim/60">{cell.slotLabel || "—"}</span>;
+    return <span className="font-fp-mono text-[10px] text-fp-text-dim">{cell.slotLabel || "—"}</span>;
+  }
+
+  /** What a screen reader hears for a booked cell — the grid's visual row/column
+   * headers are multi-row and rowspanned, so spell the context out. */
+  function cellLabel(cell: MatrixCell) {
+    const when = `${cell.day}, ${cell.track === "LAB" ? "lab" : "theory"} ${cell.startTime}–${cell.endTime}`;
+    const what = [cell.courseCode, cell.courseName].filter(Boolean).join(" ");
+    return `${when}: ${what}${cell.professorName ? `, ${cell.professorName}` : ""}${cell.slotLabel ? `, slot ${cell.slotLabel}` : ""}`;
   }
 
   function renderCell(cell: MatrixCell, key: string) {
     const isLunch = cell.slotLabel === "Lunch";
     const isActive = activeCellId === cell.id;
     const isMatched = Boolean(highlightCourseCode && cell.courseCode === highlightCourseCode);
+    // De-emphasised (another course is spotlit): a neutral tile with a colour
+    // edge instead of 40% opacity, which took the text down to ~2:1.
+    const isDimmed = Boolean(!isMatched && highlightCourseCode && cell.occupied);
+    const blockStyle = isDimmed
+      ? { background: "var(--bg-inset)", color: "var(--text-dim)", boxShadow: `inset 3px 0 0 ${cell.color}` }
+      : { background: cell.color, color: readableTextColor(cell.color) };
+
+    // Only booked cells are controls: empty/lunch cells used to be buttons with
+    // no name, giving keyboard users ~120 tab stops through the grid.
+    if (isLunch || !cell.occupied) {
+      return (
+        <td key={key} className={cn("border border-fp-border-default p-0 align-top", isLunch && "bg-fp-bg-inset")}>
+          <div
+            className={cn(
+              "flex min-h-[52px] w-full items-center justify-center px-1 py-1 text-center",
+              !isLunch && "bg-fp-bg-inset text-fp-text-dim"
+            )}
+          >
+            {renderCellContent(cell)}
+          </div>
+        </td>
+      );
+    }
+
+    // Read-only grids (Compare) have no click handler: keep booked cells out of
+    // the tab order, but still give screen readers the full context.
+    if (!onCellClick) {
+      return (
+        <td key={key} className="border border-fp-border-default p-0 align-top">
+          <div
+            className="min-h-[52px] w-full px-1 py-1 text-center transition-[background-color,color,box-shadow] duration-[var(--duration-fast)] ease-[var(--ease-smooth-out)]"
+            style={blockStyle}
+          >
+            <span className="sr-only">{cellLabel(cell)}</span>
+            <div aria-hidden="true">{renderCellContent(cell)}</div>
+          </div>
+        </td>
+      );
+    }
 
     return (
-      <td key={key} className={cn("border border-fp-border-default p-0 align-top", isLunch && "bg-fp-bg-inset")}>
+      <td key={key} className="border border-fp-border-default p-0 align-top">
         <button
           type="button"
-          disabled={isLunch}
+          aria-label={cellLabel(cell)}
+          aria-haspopup="dialog"
           onClick={(event) => onCellClick?.(cell, event.currentTarget.getBoundingClientRect())}
           className={cn(
             // opacity too, so the swap spotlight dims the other courses instead of snapping.
-            "min-h-[52px] w-full px-1 py-1 text-center transition-[background-color,color,opacity] duration-[var(--duration-fast)] ease-[var(--ease-smooth-out)] focus-visible:outline-none",
-            isLunch ? "cursor-default" : cell.occupied ? "hover:z-10 hover:brightness-110" : "bg-fp-bg-inset text-fp-text-dim hover:bg-fp-bg-raised",
+            "min-h-[52px] w-full px-1 py-1 text-center transition-[background-color,color,box-shadow] duration-[var(--duration-fast)] ease-[var(--ease-smooth-out)]",
+            // Cells carry inline box-shadows (spotlight, colour edge) that would
+            // override the global box-shadow focus ring — use an outline here.
+            "focus-visible:!outline-[var(--text-strong)] focus-visible:-outline-offset-2",
+            "hover:z-10 hover:brightness-110",
             isActive && "ring-2 ring-inset",
-            isMatched && "ring-1 ring-inset opacity-100",
-            !isMatched && highlightCourseCode && cell.occupied && "opacity-40"
+            isMatched && "ring-1 ring-inset"
           )}
           style={{
-            ...(isActive || isMatched ? { boxShadow: `inset 0 0 0 2px var(--accent)` } : null),
-            ...(!isLunch && cell.occupied ? { background: cell.color, color: readableTextColor(cell.color) } : null)
+            ...blockStyle,
+            ...(isActive || isMatched ? { boxShadow: `inset 0 0 0 2px var(--accent)` } : null)
           }}
         >
           {renderCellContent(cell)}
@@ -160,6 +212,10 @@ export function FPSlotMatrixTimetable({
       <div className="p-4">
         <div className="overflow-x-auto rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-page">
           <table className="w-full min-w-[1080px] table-fixed border-collapse text-center">
+            <caption className="sr-only">
+              Weekly timetable. Each day has a theory row and a lab row; columns are class periods.
+              {onCellClick ? " Booked periods are buttons that open the slot details." : ""}
+            </caption>
             <colgroup>
               <col className="w-12" />
               <col className="w-14" />
@@ -219,7 +275,9 @@ export function FPSlotMatrixTimetable({
                 if (isBhopal) {
                   return (
                     <tr key={day}>
-                      <td className={dayLabelClass}>{day.slice(0, 3)}</td>
+                      <th scope="row" className={dayLabelClass}>
+                        <abbr title={day} className="no-underline">{day.slice(0, 3)}</abbr>
+                      </th>
                       <td className={trackLabelClass}>TH</td>
                       {(matrix.theory[dayIndex] ?? []).map((cell, i) => renderCell(cell, `t-${i}`))}
                     </tr>
@@ -229,9 +287,9 @@ export function FPSlotMatrixTimetable({
                 return (
                   <Fragment key={day}>
                     <tr>
-                      <td rowSpan={2} className={dayLabelClass}>
-                        {day.slice(0, 3)}
-                      </td>
+                      <th scope="rowgroup" rowSpan={2} className={dayLabelClass}>
+                        <abbr title={day} className="no-underline">{day.slice(0, 3)}</abbr>
+                      </th>
                       <td className={trackLabelClass}>TH</td>
                       {(matrix.theory[dayIndex] ?? []).map((cell, i) => renderCell(cell, `t-${i}`))}
                     </tr>

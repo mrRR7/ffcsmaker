@@ -189,7 +189,12 @@ export function FPLiveSlotMatrix({
         </div>
       ) : (
         <>
-          <div className="relative mt-3.5 overflow-x-auto rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-page">
+          <div
+            role="region"
+            aria-label="Week preview"
+            tabIndex={0}
+            className="relative mt-3.5 overflow-x-auto rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-page"
+          >
             {/* Same matrix empty or full, so adding the first course doesn't swap layouts. */}
             {!hasCourses ? (
               <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">

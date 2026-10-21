@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { popover, popoverDrawer } from "@/utils/motion";
 import { X } from "lucide-react";
@@ -56,6 +56,44 @@ export function BlockDetailPanel({
     };
   }, [block, courses, schedule]);
 
+  const desktopRef = useRef<HTMLDivElement>(null);
+  const mobileRef = useRef<HTMLDivElement>(null);
+  const openerRef = useRef<HTMLElement | null>(null);
+
+  // Close (button or Escape) hands focus back to the cell that opened the panel.
+  const close = () => {
+    onClose();
+    openerRef.current?.focus();
+    openerRef.current = null;
+  };
+
+  // Opening from a cell moves focus into the panel (it renders at the end of
+  // the DOM, so Tab would otherwise walk the rest of the grid first). The
+  // results page already returns focus to the cell when it closes.
+  useEffect(() => {
+    if (!block || mode !== "selected") return;
+    if (!openerRef.current && document.activeElement instanceof HTMLElement) {
+      openerRef.current = document.activeElement;
+    }
+    const timer = window.setTimeout(() => {
+      // getClientRects, not offsetParent: both panels are position:fixed, which
+      // always reports a null offsetParent. The CSS-hidden one has no boxes.
+      const visible = [desktopRef.current, mobileRef.current].find((el) => el && el.getClientRects().length > 0);
+      visible?.querySelector<HTMLElement>("[data-panel-close]")?.focus();
+    }, 30);
+    return () => window.clearTimeout(timer);
+  }, [block, mode]);
+
+  useEffect(() => {
+    if (!block) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+    // `close` only reads refs + the latest onClose, so it is safe to omit.
+  }, [block, onClose]);
+
   const isMobile = typeof window !== "undefined" && window.innerWidth < 768;
   const panelWidth = 360;
   const desktopLeft = anchorRect
@@ -63,7 +101,7 @@ export function BlockDetailPanel({
     : 12;
   const desktopTop = anchorRect ? Math.max(12, anchorRect.bottom + 12) : 12;
 
-  const renderSharedHeader = () => {
+  const renderSharedHeader = (titleId: string) => {
     if (!block || !details) return null;
     return (
       <div className="space-y-1">
@@ -73,7 +111,7 @@ export function BlockDetailPanel({
             {mode === "preview" ? "Hover preview" : "Selected slot"}
           </p>
         </div>
-        <CardTitle className="text-base">
+        <CardTitle id={titleId} className="text-base">
           {details.empty ? `${block.day} ${block.track}` : details.selection?.courseName}
         </CardTitle>
       </div>
@@ -86,6 +124,9 @@ export function BlockDetailPanel({
         <>
           <motion.div
             key="desktop-panel"
+            ref={desktopRef}
+            role="dialog"
+            aria-labelledby="block-panel-title-desktop"
             variants={popover}
             initial="initial"
             animate="animate"
@@ -99,8 +140,8 @@ export function BlockDetailPanel({
           >
             <Card className="overflow-hidden border-border/70 bg-card/95 shadow-2xl shadow-black/10 backdrop-blur">
         <CardHeader className="flex flex-row items-start justify-between gap-3 border-b border-border/60 pb-3">
-          {renderSharedHeader()}
-          <Button type="button" variant="ghost" size="icon" onClick={onClose}>
+          {renderSharedHeader("block-panel-title-desktop")}
+          <Button type="button" variant="ghost" size="icon" onClick={close} aria-label="Close slot details" data-panel-close>
             <X className="h-4 w-4" />
           </Button>
         </CardHeader>
@@ -165,6 +206,9 @@ export function BlockDetailPanel({
 
           <motion.div
             key="mobile-panel"
+            ref={mobileRef}
+            role="dialog"
+            aria-labelledby="block-panel-title-mobile"
             variants={popoverDrawer}
             initial="initial"
             animate="animate"
@@ -173,8 +217,8 @@ export function BlockDetailPanel({
           >
             <Card className="overflow-hidden border-border/70 bg-card/95 shadow-2xl shadow-black/20 backdrop-blur">
         <CardHeader className="flex flex-row items-start justify-between gap-3 border-b border-border/60 pb-3">
-          {renderSharedHeader()}
-          <Button type="button" variant="ghost" size="icon" onClick={onClose}>
+          {renderSharedHeader("block-panel-title-mobile")}
+          <Button type="button" variant="ghost" size="icon" onClick={close} aria-label="Close slot details" data-panel-close>
             <X className="h-4 w-4" />
           </Button>
         </CardHeader>

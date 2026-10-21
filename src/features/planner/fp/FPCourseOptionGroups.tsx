@@ -122,13 +122,14 @@ export function FPTimeOfDayToggle({
   ];
 
   return (
-    <div className="flex gap-1.5">
+    <div className="flex gap-1.5" role="group" aria-label="Time of day">
       {options.map((option) => {
         const active = value === option.id;
         return (
           <button
             key={option.id}
             type="button"
+            aria-pressed={active}
             onClick={() => onChange(option.id)}
             className={cn(
               "fp-text rounded-[var(--radius-sm)] border px-2.5 py-1 text-[length:var(--text-micro)] transition-colors",
@@ -167,7 +168,7 @@ export function FPSlotOptionChip({
       )}
       style={hasTicked && !expanded ? { backgroundColor: "var(--accent-wash)" } : undefined}
     >
-      <button type="button" onClick={onToggle} className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left">
+      <button type="button" onClick={onToggle} aria-expanded={expanded} className="flex w-full items-center gap-2.5 px-3 py-2.5 text-left">
         <span className="font-fp-mono text-[length:var(--text-small)] text-fp-text-strong">{theoryLabel}</span>
         <FPLabel tone={hasTicked ? "accent" : "dim"}>
           {count} prof{count === 1 ? "" : "s"}
