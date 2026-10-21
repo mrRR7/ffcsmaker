@@ -1,10 +1,5 @@
 import { TimeSlot } from '@/engine/types';
 
-export function normalizeSlotString(slots: string | undefined): string[] {
-  if (!slots) return [];
-  return slots.split(',').map(s => s.trim().toUpperCase()).filter(Boolean);
-}
-
 export function resolveLabSlotIds(rawSlots: string | undefined, slots: TimeSlot[]): string[] {
   if (!rawSlots) return [];
   

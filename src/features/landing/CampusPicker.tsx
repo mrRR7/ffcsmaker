@@ -20,7 +20,7 @@ const campusCards: Array<{ campus: Campus; active: boolean; detail: string; swat
   { campus: "chennai", active: true, detail: "Mon–Fri slot catalog", swatch: BRAND_PALETTE[0] },
   { campus: "vellore", active: true, detail: "Mon–Fri slot catalog", swatch: BRAND_PALETTE[1] },
   { campus: "bhopal", active: true, detail: "Bhopal slot catalog", swatch: BRAND_PALETTE[2] },
-  { campus: "ap", active: false, detail: "AP slot catalog in progress", swatch: BRAND_PALETTE[3] }
+  { campus: "ap", active: true, detail: "Tue–Sat slot catalog", swatch: BRAND_PALETTE[3] }
 ];
 
 export function CampusPicker() {

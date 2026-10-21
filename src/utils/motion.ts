@@ -34,13 +34,6 @@ export const navPillSpring = {
   mass: 0.5,
 };
 
-// Global page transition (for template.tsx)
-export const pageFade: Variants = {
-  initial: { opacity: 0, y: 4 },
-  animate: { opacity: 1, y: 0, transition: TRANSITION_TWEEN },
-  exit: { opacity: 0, y: -4, transition: { ...TRANSITION_TWEEN, duration: 0.1 } },
-};
-
 // Container for staggering children: --duration-stagger per item, capped so
 // the whole cascade stays under ~300ms (pass the item count as `custom`).
 // Exits never stagger — dismissal should feel instant.
@@ -103,14 +96,4 @@ export const popoverDrawer: Variants = {
   initial: { opacity: 0, y: 20 },
   animate: { opacity: 1, y: 0, transition: { duration: DUR.slow, ease: EASE_SMOOTH_OUT } },
   exit: { opacity: 0, y: 20, transition: { duration: DUR.medium, ease: EASE_SMOOTH_OUT } },
-};
-
-// Removed layout-shifting hovers. Just subtle opacity or static.
-export const subtleHover = {
-  transition: { duration: 0.1, ease: "easeOut" },
-};
-
-export const subtleTap = {
-  scale: 0.99,
-  transition: { duration: 0.05 },
 };

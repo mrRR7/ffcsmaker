@@ -23,18 +23,6 @@ export function formatMinutes(minutes: number): string {
   return `${String(hours).padStart(2, "0")}:${String(mins).padStart(2, "0")}`;
 }
 
-export function formatDuration(hours: number): string {
-  if (!Number.isFinite(hours) || hours <= 0) {
-    return "0h";
-  }
-  const whole = Math.floor(hours);
-  const minutes = Math.round((hours - whole) * 60);
-  if (whole === 0) {
-    return `${minutes}m`;
-  }
-  return minutes > 0 ? `${whole}h ${minutes}m` : `${whole}h`;
-}
-
 export function rangesOverlap(
   startA: string,
   endA: string,

@@ -139,24 +139,6 @@ export interface ScoredTimetable {
   scoreBreakdown: Record<string, number>;
 }
 
-export type ShareCardSize = "square" | "story";
-
-export const SHARE_CARD_DIMENSIONS: Record<
-  ShareCardSize,
-  { width: number; height: number }
-> = {
-  square: { width: 1080, height: 1080 },
-  story: { width: 1080, height: 1920 }
-};
-
-export interface ShareCardConfig {
-  size: ShareCardSize;
-  schedule: ScoredTimetable;
-  slots: TimeSlot[];
-  campus: Campus;
-  semesterLabel: string;
-}
-
 export interface TimetableShapeGroup {
   shapeId: string;
   shapeFingerprint: string;

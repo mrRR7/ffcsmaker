@@ -150,7 +150,6 @@ export function getSlotDaysForSlots(slots: TimeSlot[]): readonly DayOfWeek[] {
 }
 
 export const SLOT_CATALOG = STANDARD_SLOTS;
-export const FIXED_SLOTS = STANDARD_SLOTS;
 export { AP_DAYS, BHOPAL_DAYS };
 
 const baseLetters = ["A", "B", "C", "D", "E", "F", "G"] as const;

@@ -65,7 +65,7 @@ const campusOptions: Array<{ campus: Campus; active: boolean; swatch: string }> 
   { campus: "chennai", active: true, swatch: BRAND_PALETTE[0] },
   { campus: "vellore", active: true, swatch: BRAND_PALETTE[1] },
   { campus: "bhopal", active: true, swatch: BRAND_PALETTE[2] },
-  { campus: "ap", active: false, swatch: BRAND_PALETTE[3] }
+  { campus: "ap", active: true, swatch: BRAND_PALETTE[3] }
 ];
 
 export function FPShell({ children }: { children: React.ReactNode }) {
