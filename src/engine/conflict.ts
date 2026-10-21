@@ -211,6 +211,24 @@ export function violatesOptionHardConstraints(
   });
 }
 
+/** Labs are 100-minute blocks with a 10-minute changeover; anything under this counts as back to back. */
+const BACK_TO_BACK_LAB_MINUTES = 15;
+
+export function hasConsecutiveLabs(slotIds: string[], slotMap: Map<string, TimeSlot>): boolean {
+  const byDay = new Map<DayOfWeek, TimeSlot[]>();
+  for (const id of slotIds) {
+    const slot = slotMap.get(id);
+    if (slot?.kind === "lab") byDay.set(slot.day, [...(byDay.get(slot.day) ?? []), slot]);
+  }
+  for (const labs of byDay.values()) {
+    labs.sort((a, b) => parseTime(a.startTime) - parseTime(b.startTime));
+    for (let i = 1; i < labs.length; i += 1) {
+      if (parseTime(labs[i].startTime) - parseTime(labs[i - 1].endTime) < BACK_TO_BACK_LAB_MINUTES) return true;
+    }
+  }
+  return false;
+}
+
 export function classesPerDay(
   slotIds: string[],
   slotMap: Map<string, TimeSlot>

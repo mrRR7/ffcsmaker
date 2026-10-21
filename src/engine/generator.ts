@@ -11,6 +11,7 @@ import {
   buildSelection,
   classesPerDay,
   conflictsWithExisting,
+  hasConsecutiveLabs,
   getOptionSlotIds,
   indexSlots,
   violatesOptionHardConstraints
@@ -187,6 +188,11 @@ export function generateTimetables(
       }
 
       const nextSlotIds = [...selectedSlotIds, ...getOptionSlotIds(option)];
+      if (constraints.noConsecutiveLabs && hasConsecutiveLabs(nextSlotIds, slotMap)) {
+        checked += 1;
+        emitProgress();
+        continue;
+      }
       if (constraints.maxClassesPerDay !== null) {
         const counts = classesPerDay(nextSlotIds, slotMap);
         if (Object.values(counts).some((count) => count > Number(constraints.maxClassesPerDay))) {

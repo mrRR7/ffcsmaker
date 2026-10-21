@@ -77,6 +77,8 @@ export interface Constraints {
   avoidedFacultyByCourse: Record<string, string[]>;
   avoidFirstPeriod: boolean;
   avoidLastPeriod: boolean;
+  /** Hard rule: no two lab blocks on the same day with (almost) no break between. */
+  noConsecutiveLabs: boolean;
   preferredDaysOff: DayOfWeek[];
   maxGapSlots: number | null;
   maxClassesPerDay: number | null;

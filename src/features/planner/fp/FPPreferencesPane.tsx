@@ -108,6 +108,26 @@ export function FPPreferencesPane({ actions }: { actions?: React.ReactNode }) {
           </div>
         </section>
 
+        <section className="mt-6">
+          <FPLabel tone="accent" className="block">
+            Labs
+          </FPLabel>
+          <label className="mt-3 flex cursor-pointer items-start gap-3 rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface p-4">
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={constraints.noConsecutiveLabs}
+              onChange={(event) => setConstraint("noConsecutiveLabs", event.target.checked)}
+            />
+            <span>
+              <span className="block text-[length:var(--text-small)] text-fp-text-strong">No consecutive labs</span>
+              <span className="block text-[length:var(--text-small)] text-fp-text-dim">
+                Leave out weeks with two labs back to back on the same day.
+              </span>
+            </span>
+          </label>
+        </section>
+
         {/* Phone has the sticky bottom bar for these. */}
         <div className="mt-8 hidden flex-col items-start gap-4 border-t border-fp-border-default pt-6 lg:flex">
           {actions}

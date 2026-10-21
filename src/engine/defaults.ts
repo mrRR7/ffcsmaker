@@ -5,6 +5,7 @@ export const defaultConstraints: Constraints = {
   noAfterTime: null,
   avoidFirstPeriod: false,
   avoidLastPeriod: false,
+  noConsecutiveLabs: false,
   preferredDaysOff: [],
   maxGapSlots: null,
   maxClassesPerDay: null,
