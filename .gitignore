@@ -15,6 +15,5 @@ cal
 .claude
 tsconfig.tsbuildinfo
 dev.log
-# Superpowers scratch (SDD ledgers, brainstorm companion sessions)
 .superpowers/
 docs/superpowers/
