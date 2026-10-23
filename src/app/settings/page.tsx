@@ -10,6 +10,7 @@ import { clearAllCache } from "@/lib/catalogCache";
 import { checkStorageCapacity, formatBytes } from "@/lib/storageUtils";
 import { useAppStore } from "@/store/useAppStore";
 import { useTour } from "@/features/tour/useTour";
+import { PROGRAM_PICKER_ENABLED, programLabel } from "@/features/programs/programCatalog";
 import { resetTourSeen } from "@/features/tour/tourStorage";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/utils/cn";
@@ -22,12 +23,14 @@ import { FPNote } from "@/components/fp-ui/note";
 import { resetTips } from "@/components/fp-ui/tip";
 
 export default function NewSettingsPage() {
-  const [confirmCampusReset, setConfirmCampusReset] = useState(false);
+  const [confirmReset, setConfirmReset] = useState<"campus" | "program" | null>(null);
   const [storage, setStorage] = useState(checkStorageCapacity());
 
   const uiPreferences = useAppStore((state) => state.uiPreferences);
   const rankingMode = useAppStore((state) => state.rankingMode);
   const campus = useAppStore((state) => state.campus);
+  const program = useAppStore((state) => state.program);
+  const programChosen = useAppStore((state) => state.programChosen);
   const generatedAt = useAppStore((state) => state.generatedAt);
   const setTheme = useAppStore((state) => state.setTheme);
   const setCompactMode = useAppStore((state) => state.setCompactMode);
@@ -35,6 +38,7 @@ export default function NewSettingsPage() {
   const setRankingMode = useAppStore((state) => state.setRankingMode);
   const setExportPreference = useAppStore((state) => state.setExportPreference);
   const resetCampus = useAppStore((state) => state.resetCampus);
+  const resetProgram = useAppStore((state) => state.resetProgram);
   const setGeneratedSchedules = useAppStore((state) => state.setGeneratedSchedules);
   const resetAll = useAppStore((state) => state.resetAll);
   const tour = useTour();
@@ -61,10 +65,11 @@ export default function NewSettingsPage() {
     toast.success("Generated results cleared.");
   }
 
-  function changeCampus() {
-    resetCampus();
-    setConfirmCampusReset(false);
-    toast.success("Choose your campus again.");
+  function confirmChange() {
+    if (confirmReset === "campus") resetCampus();
+    else resetProgram();
+    toast.success(confirmReset === "campus" ? "Choose your campus again." : "Choose your program again.");
+    setConfirmReset(null);
   }
 
   function replayTour() {
@@ -99,10 +104,19 @@ export default function NewSettingsPage() {
               label="Current campus"
               detail={campus ? CAMPUS_LABELS[campus] : "Not selected"}
               action="Change"
-              onClick={() => setConfirmCampusReset(true)}
+              onClick={() => setConfirmReset("campus")}
             />
+            {/* Hidden until answered: with no tagged programs the picker never asks. */}
+            {PROGRAM_PICKER_ENABLED && campus && programChosen ? (
+              <Row
+                label="Program"
+                detail={program ? programLabel(program) : "Other (all courses)"}
+                action="Change"
+                onClick={() => setConfirmReset("program")}
+              />
+            ) : null}
             <FPNote>
-              Changing campus clears your current course list and generated timetables.
+              Changing campus or program clears your current course list and generated timetables.
             </FPNote>
           </div>
         </FPPanel>
@@ -249,25 +263,25 @@ export default function NewSettingsPage() {
         </FPPanel>
       </div>
 
-      {confirmCampusReset ? (
+      {confirmReset ? (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ backgroundColor: "var(--overlay-scrim)" }}
         >
           <FPCard className="w-full max-w-md" padding="lg">
             <h2 className="font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong">
-              Change campus?
+              {confirmReset === "campus" ? "Change campus?" : "Change program?"}
             </h2>
             <p className="mt-3 text-[length:var(--text-small)] leading-[1.5] text-fp-text-dim">
               This will clear your current course list and generated timetables. Your saved
               timetables will stay.
             </p>
             <div className="mt-5 flex justify-end gap-2.5">
-              <FPButton variant="secondary" size="sm" onClick={() => setConfirmCampusReset(false)}>
+              <FPButton variant="secondary" size="sm" onClick={() => setConfirmReset(null)}>
                 Cancel
               </FPButton>
-              <FPButton variant="primary" size="sm" onClick={changeCampus}>
-                Change campus
+              <FPButton variant="primary" size="sm" onClick={confirmChange}>
+                {confirmReset === "campus" ? "Change campus" : "Change program"}
               </FPButton>
             </div>
           </FPCard>

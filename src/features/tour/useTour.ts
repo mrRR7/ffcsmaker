@@ -10,10 +10,13 @@ export function useTour() {
     visibleStepNumber,
     visibleStepCount,
     isLastStep,
+    sampleLoaded,
+    loadSample,
     start,
     next,
     back,
     skip,
+    finish,
   } = useTourContext();
   return {
     active,
@@ -23,9 +26,12 @@ export function useTour() {
     visibleStepNumber,
     visibleStepCount,
     isLastStep,
+    sampleLoaded,
+    loadSample,
     start,
     next,
     back,
     skip,
+    finish,
   };
 }

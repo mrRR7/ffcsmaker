@@ -24,6 +24,15 @@ test("keeps allowlisted props, drops unknown and invalid ones", () => {
   assert.deepEqual(sanitizeUsageEvent({ name: "generate_started", props: { courses: -3 } })?.props, {});
 });
 
+test("program codes pass, anything that could identify someone doesn't", () => {
+  const program = (value: unknown) => sanitizeUsageEvent({ name: "course_added", props: { program: value } })?.props.program;
+  assert.equal(program("BCE"), "BCE");
+  assert.equal(program("other"), "other");
+  assert.equal(program("bce"), undefined);
+  assert.equal(program("RAKESHR"), undefined);
+  assert.equal(program(42), undefined);
+});
+
 test("buckets week counts", () => {
   assert.deepEqual([0, 1, 10, 11, 50, 51].map(weeksBucket), ["0", "1-10", "1-10", "11-50", "11-50", "50+"]);
 });
