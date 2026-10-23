@@ -121,6 +121,8 @@ export function FPShell({ children }: { children: React.ReactNode }) {
     const previous = lastFocusKeyRef.current;
     lastFocusKeyRef.current = key;
     if (previous === null || previous === key) return;
+    // The tour drives its own route changes and keeps focus in its card.
+    if (tour.active) return;
     // Poll until the *new* route's content has mounted (the old one exits
     // first, and a slow route can take a while), then focus its heading.
     const startedAt = Date.now();
@@ -133,12 +135,13 @@ export function FPShell({ children }: { children: React.ReactNode }) {
       window.clearInterval(timer);
       if (!main) return;
       if (main.contains(document.activeElement) && document.activeElement !== main) return;
+      if (document.activeElement?.closest('[role="dialog"]')) return;
       const target = heading ?? main;
       if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
       target.focus({ preventScroll: true });
     }, 100);
     return () => window.clearInterval(timer);
-  }, [pathname, campus, hasHydrated]);
+  }, [pathname, campus, hasHydrated, tour.active]);
   const direction = useMemo(() => {
     const nextIndex = routeIndex(pathname);
     const dir = nextIndex >= prevRouteIndexRef.current ? 1 : -1;

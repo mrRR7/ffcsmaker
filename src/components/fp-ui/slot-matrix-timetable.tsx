@@ -118,15 +118,20 @@ export function FPSlotMatrixTimetable({
       ? { background: "var(--bg-inset)", color: "var(--text-dim)", boxShadow: `inset 3px 0 0 ${cell.color}` }
       : { background: cell.color, color: readableTextColor(cell.color) };
 
-    // Only booked cells are controls: empty/lunch cells used to be buttons with
-    // no name, giving keyboard users ~120 tab stops through the grid.
+    // Only booked cells are keyboard controls: empty/lunch cells used to be
+    // buttons with no name, giving keyboard users ~120 tab stops. Empty cells
+    // stay clickable by pointer (slot code/time panel); their slot code is
+    // already visible text, so keyboard users lose nothing.
     if (isLunch || !cell.occupied) {
+      const clickable = !isLunch && Boolean(onCellClick);
       return (
         <td key={key} className={cn("border border-fp-border-default p-0 align-top", isLunch && "bg-fp-bg-inset")}>
           <div
+            onClick={clickable ? (event) => onCellClick?.(cell, event.currentTarget.getBoundingClientRect()) : undefined}
             className={cn(
               "flex min-h-[52px] w-full items-center justify-center px-1 py-1 text-center",
-              !isLunch && "bg-fp-bg-inset text-fp-text-dim"
+              !isLunch && "bg-fp-bg-inset text-fp-text-dim",
+              clickable && "cursor-pointer hover:bg-fp-bg-raised"
             )}
           >
             {renderCellContent(cell)}
@@ -159,7 +164,6 @@ export function FPSlotMatrixTimetable({
           aria-haspopup="dialog"
           onClick={(event) => onCellClick?.(cell, event.currentTarget.getBoundingClientRect())}
           className={cn(
-            // opacity too, so the swap spotlight dims the other courses instead of snapping.
             "min-h-[52px] w-full px-1 py-1 text-center transition-[background-color,color,box-shadow] duration-[var(--duration-fast)] ease-[var(--ease-smooth-out)]",
             // Cells carry inline box-shadows (spotlight, colour edge) that would
             // override the global box-shadow focus ring — use an outline here.
@@ -287,7 +291,7 @@ export function FPSlotMatrixTimetable({
                 return (
                   <Fragment key={day}>
                     <tr>
-                      <th scope="rowgroup" rowSpan={2} className={dayLabelClass}>
+                      <th scope="row" rowSpan={2} className={dayLabelClass}>
                         <abbr title={day} className="no-underline">{day.slice(0, 3)}</abbr>
                       </th>
                       <td className={trackLabelClass}>TH</td>
