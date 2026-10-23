@@ -72,6 +72,17 @@ export function TourCard() {
     refs.setReference(targetEl);
   }, [targetEl, refs]);
 
+  // The card unmounts between steps while the next target mounts, which drops
+  // focus to <body>. Put it back on the primary button so keyboard users can
+  // keep pressing Next — but never pull focus from somewhere the user put it.
+  const primaryRef = React.useRef<HTMLButtonElement>(null);
+  const hasCard = Boolean(active && currentStep && targetEl);
+  React.useEffect(() => {
+    if (!hasCard) return;
+    const lost = !document.activeElement || document.activeElement === document.body;
+    if (lost) primaryRef.current?.focus({ preventScroll: true });
+  }, [hasCard, stepIndex]);
+
   if (!active || !currentStep || !targetEl || typeof document === "undefined") return null;
 
   return createPortal(
@@ -123,7 +134,7 @@ export function TourCard() {
           {waitingForCampus ? (
             <span className="fp-text text-[length:var(--text-small)] text-fp-text-dim">Pick one to continue</span>
           ) : (
-            <FPButton variant="primary" size="sm" onClick={next}>
+            <FPButton ref={primaryRef} variant="primary" size="sm" onClick={next}>
               {isLastStep ? "Done" : "Next"}
             </FPButton>
           )}

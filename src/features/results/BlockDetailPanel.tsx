@@ -71,10 +71,18 @@ export function BlockDetailPanel({
   // the DOM, so Tab would otherwise walk the rest of the grid first). The
   // results page already returns focus to the cell when it closes.
   useEffect(() => {
-    if (!block || mode !== "selected") return;
-    if (!openerRef.current && document.activeElement instanceof HTMLElement) {
-      openerRef.current = document.activeElement;
+    // Forget the opener however the panel closed (Escape, X, or the page
+    // clearing the cell on a shape/variant switch), so it can't go stale.
+    if (!block) {
+      openerRef.current = null;
+      return;
     }
+    if (mode !== "selected") return;
+    // Re-record on every open/switch (clicking cell B while A's panel is up),
+    // unless focus is already inside the panel.
+    const active = document.activeElement;
+    const inPanel = [desktopRef.current, mobileRef.current].some((el) => el?.contains(active));
+    if (!inPanel && active instanceof HTMLElement) openerRef.current = active;
     const timer = window.setTimeout(() => {
       // getClientRects, not offsetParent: both panels are position:fixed, which
       // always reports a null offsetParent. The CSS-hidden one has no boxes.
