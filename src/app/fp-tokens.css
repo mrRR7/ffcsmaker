@@ -5,6 +5,9 @@
 
 .fp-root {
   /* base — dark is the system default */
+  /* Native controls (select popups, scrollbars) follow the theme; without it
+     the browser draws <option> lists light while they inherit our light text. */
+  color-scheme: dark;
   --ground: #0b0e11;
   --surface: #141a1f;
   --ink: #e6edea;
@@ -127,6 +130,7 @@
 }
 
 .fp-root.light {
+  color-scheme: light;
   --ground: #efede7;
   --surface: #faf9f5;
   --ink: #161b1d;
@@ -228,6 +232,13 @@
   font-family: var(--font-body);
   font-size: var(--text-body-size);
   line-height: var(--lh-body);
+}
+
+/* Belt and braces for browsers that ignore color-scheme on the popup:
+   many selects are bg-transparent, so give their options a real surface. */
+.fp-root option {
+  background-color: var(--bg-surface);
+  color: var(--text-body);
 }
 
 .fp-root h1,
