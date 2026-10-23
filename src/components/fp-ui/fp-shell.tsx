@@ -438,7 +438,7 @@ function FPPlannerIntro() {
       <div className="w-full max-w-2xl text-center">
         <FPLabel tone="accent" variant="eyebrow">FFCS Planner</FPLabel>
         <h1 className="mt-3 font-fp-display text-[length:var(--text-display)] font-bold tracking-[-0.01em] text-fp-text-strong">
-          FFCS planner for VIT Vellore, Chennai &amp; Bhopal
+          FFCS planner for VIT Vellore, Chennai, Bhopal &amp; AP
         </h1>
         <p className="mx-auto mt-3 max-w-xl text-[length:var(--text-body-size)] leading-[1.5] text-fp-text-dim">
           Add your courses, tick every professor you&apos;d take, and get every clash-free timetable ranked. Free, no login.

@@ -39,9 +39,9 @@ export function slotDaysText(campus: CampusPageId) {
 
 export const campusLabel = (campus: CampusPageId) => CAMPUS_LABELS[campus];
 
-// AP has slot data but no course catalog yet, so its page is a slot chart only.
+// A campus with slot data but no course catalog gets a slot-chart-only page (no planner link).
 // Keep in sync with the `active` flags in CampusPicker and fp-shell's campusOptions.
-export const PLANNER_READY: Record<CampusPageId, boolean> = { vellore: true, chennai: true, bhopal: true, ap: false };
+export const PLANNER_READY: Record<CampusPageId, boolean> = { vellore: true, chennai: true, bhopal: true, ap: true };
 
 // Facts are limited to what the planner's own slot data shows (see src/engine/*SlotCatalog.ts).
 const STANDARD_FACTS = [
@@ -61,9 +61,10 @@ export const CAMPUS_FACTS: Record<CampusPageId, string[]> = {
     "Two courses clash when they share any period, and the planner never puts clashing courses together."
   ],
   ap: [
-    "Theory slots are 50-minute periods starting on the hour, from 08:00 to 19:50.",
+    "Theory slots are 50-minute periods on the hour, 08:00–12:50 and 14:00–18:50, with lunch at 13:00.",
     "Most letter slots like A1 meet twice a week; T-prefixed slots (TA1, TB1, TAA1…) are tutorial periods that meet once a week.",
-    "Labs are registered as a pair, like L23+L24. L1–L30 run before 14:00 and L31–L60 in the afternoon and evening.",
-    "Two courses clash when they share any period."
+    "Some periods carry two slot codes, like G1 and TC1 on Tuesday at 11:00, so courses in those two slots clash.",
+    "Labs are 100-minute blocks registered as a pair, like L23+L24 (the last pair before lunch and of the day is 90 minutes). L1–L30 run in the morning and L31–L60 from 14:00.",
+    "Two courses clash when they share any period, and the planner never puts clashing courses together."
   ]
 };

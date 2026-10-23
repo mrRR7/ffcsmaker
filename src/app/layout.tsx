@@ -24,16 +24,16 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "FFCS Timetable Generator for VIT Vellore, Chennai & Bhopal",
+    default: "VIT FFCS Timetable Generator: Vellore, Chennai, Bhopal & AP",
     template: "%s | Ultimate FFCS"
   },
-  description: "Build a clash-free VIT FFCS timetable in about a minute. Add courses, set preferences, get every valid combination ranked. Free for Vellore, Chennai & Bhopal.",
+  description: "Build a clash-free VIT FFCS timetable in about a minute. Add courses, set preferences, get every valid week ranked. Free for Vellore, Chennai, Bhopal & AP.",
   verification: {
     google: "voAbkQfitUoqZMU3RLOdPWoPdibPcUtZpEWT3_M9DzY",
   },
   openGraph: {
     title: "Ultimate FFCS — every clash-free timetable, ranked",
-    description: "Generate and rank every valid FFCS timetable. Free for VIT Vellore, Chennai & Bhopal students.",
+    description: "Generate and rank every valid FFCS timetable. Free for VIT Vellore, Chennai, Bhopal & AP students.",
     siteName: "Ultimate FFCS",
     url: "/",
     images: [
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "FFCS Timetable Generator for VIT",
-    description: "Generate and rank every valid FFCS timetable. Free for VIT Vellore, Chennai & Bhopal students.",
+    description: "Generate and rank every valid FFCS timetable. Free for VIT Vellore, Chennai, Bhopal & AP students.",
     images: ["/og-image.png"],
   },
   manifest: "/site.webmanifest",

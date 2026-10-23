@@ -13,11 +13,11 @@ import { SITE_STATS, SITE_URL } from "@/lib/site";
 export const metadata: Metadata = {
   title: { absolute: "VIT FFCS Planner & Timetable Generator | Ultimate FFCS" },
   description:
-    "Free VIT FFCS planner for Chennai, Vellore and Bhopal. Pick your courses and professors, and get every clash-free timetable ranked in seconds. No login.",
+    "Free VIT FFCS planner for Chennai, Vellore, Bhopal and AP. Pick your courses and professors, and get every clash-free timetable ranked in seconds. No login.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "Ultimate FFCS · VIT FFCS Planner",
-    description: "Generate and rank every valid FFCS timetable. Free for VIT Vellore, Chennai & Bhopal students.",
+    description: "Generate and rank every valid FFCS timetable. Free for VIT Vellore, Chennai, Bhopal & AP students.",
     siteName: "Ultimate FFCS",
     url: "/",
     images: [
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Ultimate FFCS · VIT FFCS Planner",
-    description: "Generate and rank every valid FFCS timetable. Free for VIT Vellore, Chennai & Bhopal students.",
+    description: "Generate and rank every valid FFCS timetable. Free for VIT Vellore, Chennai, Bhopal & AP students.",
     images: ["/og-image.png"]
   }
 };
@@ -45,7 +45,7 @@ const faqs = [
   },
   {
     q: "Which VIT campuses does it work for?",
-    a: "Vellore, Chennai and Bhopal, each with its own slot catalog. VIT-AP is in progress."
+    a: "Vellore, Chennai, Bhopal and AP, each with its own slot catalog."
   },
   {
     q: "Is it free? Do I need to log in?",
@@ -91,7 +91,7 @@ const jsonLd = {
   name: "Ultimate FFCS",
   url: `${SITE_URL}/`,
   description:
-    "Generates every clash-free FFCS timetable for VIT Vellore, Chennai and Bhopal students and ranks them by your preferences.",
+    "Generates every clash-free FFCS timetable for VIT Vellore, Chennai, Bhopal and AP students and ranks them by your preferences.",
   applicationCategory: "EducationalApplication",
   operatingSystem: "Any",
   offers: { "@type": "Offer", price: 0, priceCurrency: "INR" }
