@@ -10,32 +10,73 @@ import { FPLabel } from "@/components/fp-ui/label";
 
 const SEARCH_THRESHOLD = 8;
 
+// localStorage can throw (private mode, blocked storage); the flag is only a hint.
+function readFlag(key: string) {
+  try {
+    return localStorage.getItem(key) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function writeFlag(key: string, on: boolean) {
+  try {
+    if (on) localStorage.setItem(key, "1");
+    else localStorage.removeItem(key);
+  } catch {
+    // Without storage the next visit just shows the placeholder again.
+  }
+}
+
 /**
  * Second half of the campus gate: one tap to pick a program. It lists only
  * programs with data in the active catalog. With none (nothing tagged yet, or
  * the catalog failed) it steps aside without saving an answer, so the picker
  * still shows once tagged data lands.
+ *
+ * A campus last seen with no programs renders the planner straight away and
+ * re-checks in the background, so the picker never flashes up and vanishes
+ * on every visit. It only takes over if programs have since appeared.
  */
 export function FPProgramPicker({ campus, children }: { campus: Campus; children: React.ReactNode }) {
   const setProgram = useAppStore((state) => state.setProgram);
   const resetCampus = useAppStore((state) => state.resetCampus);
-  const [programs, setPrograms] = useState<string[] | null>(null);
+  const noneKey = `fp-no-programs:${campus}`;
+  const [programs, setPrograms] = useState<string[] | null>(() => (readFlag(noneKey) ? [] : null));
   const [query, setQuery] = useState("");
 
   useEffect(() => {
     let cancelled = false;
     loadCatalog(campus)
-      .then((entry) => !cancelled && setPrograms(catalogPrograms(entry.courses)))
+      .then((entry) => {
+        const list = catalogPrograms(entry.courses);
+        writeFlag(noneKey, list.length === 0);
+        if (!cancelled) setPrograms(list);
+      })
+      // A failed load says nothing about programs: don't remember it.
       .catch(() => !cancelled && setPrograms([]));
     return () => {
       cancelled = true;
     };
-  }, [campus]);
+  }, [campus, noneKey]);
 
   if (programs?.length === 0) return <>{children}</>;
 
+  if (programs === null) {
+    // Neutral placeholder, not the picker: most loads end with no programs.
+    // Keeps the campus tour step's target so the tour waits through it.
+    return (
+      <div
+        data-tour-id="campus-picker"
+        aria-busy="true"
+        aria-label="Loading"
+        className="mx-auto mt-20 h-32 max-w-lg animate-pulse rounded-[var(--radius-lg)] border border-fp-border-default bg-fp-bg-surface"
+      />
+    );
+  }
+
   const needle = query.trim().toLowerCase();
-  const visible = (programs ?? []).filter(
+  const visible = programs.filter(
     (code) => !needle || code.toLowerCase().includes(needle) || programLabel(code).toLowerCase().includes(needle)
   );
   const optionClass =
@@ -53,39 +94,31 @@ export function FPProgramPicker({ campus, children }: { campus: Campus; children
           Your program&apos;s courses and professors show first in search. Every other course is still there.
         </p>
 
-        {programs === null ? (
-          <div className="mt-7 space-y-2.5" aria-busy="true" aria-label="Loading programs">
-            {[0, 1, 2].map((i) => (
-              <div key={i} className="h-[52px] animate-pulse rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface" />
+        <div className="mt-7 space-y-2.5">
+          {programs.length > SEARCH_THRESHOLD ? (
+            <input
+              aria-label="Search programs"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder="Search programs"
+              className="min-h-[44px] w-full rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-[14px] text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-[var(--border-selected)] focus:outline-none"
+            />
+          ) : null}
+          <div className="grid gap-2.5 sm:grid-cols-2">
+            {visible.map((code) => (
+              <button key={code} type="button" onClick={() => setProgram(code)} className={optionClass}>
+                <span className="text-[length:var(--text-small)] font-medium text-fp-text-strong">{programLabel(code)}</span>
+                {programLabel(code) !== code ? (
+                  <span className="font-fp-mono text-[length:var(--text-micro)] text-fp-text-dim">{code}</span>
+                ) : null}
+              </button>
             ))}
           </div>
-        ) : (
-          <div className="mt-7 space-y-2.5">
-            {programs.length > SEARCH_THRESHOLD ? (
-              <input
-                aria-label="Search programs"
-                value={query}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search programs"
-                className="min-h-[44px] w-full rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-[14px] text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-[var(--border-selected)] focus:outline-none"
-              />
-            ) : null}
-            <div className="grid gap-2.5 sm:grid-cols-2">
-              {visible.map((code) => (
-                <button key={code} type="button" onClick={() => setProgram(code)} className={optionClass}>
-                  <span className="text-[length:var(--text-small)] font-medium text-fp-text-strong">{programLabel(code)}</span>
-                  {programLabel(code) !== code ? (
-                    <span className="font-fp-mono text-[length:var(--text-micro)] text-fp-text-dim">{code}</span>
-                  ) : null}
-                </button>
-              ))}
-            </div>
-            <button type="button" onClick={() => setProgram(null)} className={optionClass}>
-              <span className="text-[length:var(--text-small)] text-fp-text-body">Other / my program isn&apos;t listed</span>
-              <ArrowRight className="h-3.5 w-3.5 shrink-0 text-fp-text-dim" strokeWidth={1.5} />
-            </button>
-          </div>
-        )}
+          <button type="button" onClick={() => setProgram(null)} className={optionClass}>
+            <span className="text-[length:var(--text-small)] text-fp-text-body">Other / my program isn&apos;t listed</span>
+            <ArrowRight className="h-3.5 w-3.5 shrink-0 text-fp-text-dim" strokeWidth={1.5} />
+          </button>
+        </div>
 
         <p className="mt-9 text-[length:var(--text-small)] text-fp-text-dim">
           Not at {CAMPUS_LABELS[campus]}?{" "}
