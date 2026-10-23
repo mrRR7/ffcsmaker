@@ -1,5 +1,6 @@
 import type { Placement } from "@floating-ui/react";
 import { useAppStore } from "@/store/useAppStore";
+import { PROGRAM_PICKER_ENABLED } from "@/features/programs/programCatalog";
 
 export interface TourStep {
   id: string;
@@ -17,8 +18,16 @@ export interface TourStep {
  * "STEP X OF Y" count would jump under them. Set by TourProvider.start(). */
 let campusSetAtStart = false;
 export function snapshotTourStart() {
-  campusSetAtStart = !!useAppStore.getState().campus;
+  const { campus, programChosen } = useAppStore.getState();
+  // The program picker is part of the campus step, so "set" means both answered.
+  campusSetAtStart = !!campus && (programChosen || !PROGRAM_PICKER_ENABLED);
 }
+
+/** Results exist, or a search is running and about to land on /results. */
+const hasResults = () => {
+  const { generatedSchedules, generation } = useAppStore.getState();
+  return generatedSchedules.length > 0 || generation.running;
+};
 
 export function isStepVisible(step: TourStep): boolean {
   return step.precondition ? step.precondition() : true;
@@ -37,7 +46,7 @@ export const TOUR_STEPS: TourStep[] = [
     route: "/planner",
     targetId: "campus-picker",
     title: "Pick your campus",
-    body: "Decides which courses and slots you'll see — change it anytime from Settings.",
+    body: "Then your program, if it's asked. Decides which courses and slots you'll see — change it anytime from Settings.",
     // Skip this step once a campus is already chosen — read straight from the
     // Zustand store outside React (`.getState()`), which is why this module
     // stays a plain data file instead of a component.
@@ -84,7 +93,17 @@ export const TOUR_STEPS: TourStep[] = [
     // generated anything yet — otherwise they land on an empty results page
     // and each remaining step polls its full cap against a target that will
     // never mount.
-    precondition: () => useAppStore.getState().generatedSchedules.length > 0,
+    precondition: hasResults,
+  },
+  {
+    id: "results-swap",
+    route: "/results",
+    targetId: "results-swap",
+    title: "Swap a professor",
+    body: "Same week, different professor. Pick one here and the grid updates.",
+    // Not every week has a choice; with nothing to swap the panel doesn't
+    // mount and the poll moves on.
+    precondition: hasResults,
   },
   {
     id: "results-export-share",
@@ -92,7 +111,7 @@ export const TOUR_STEPS: TourStep[] = [
     targetId: "results-export-share",
     title: "Export or share",
     body: "Save it as an image or PDF, or share a link.",
-    precondition: () => useAppStore.getState().generatedSchedules.length > 0,
+    precondition: hasResults,
   },
   {
     id: "results-save-register",
@@ -100,6 +119,6 @@ export const TOUR_STEPS: TourStep[] = [
     targetId: "results-save-register",
     title: "Save it",
     body: "Keep it in Saved, or head off to register it in VTOP.",
-    precondition: () => useAppStore.getState().generatedSchedules.length > 0,
+    precondition: hasResults,
   },
 ];

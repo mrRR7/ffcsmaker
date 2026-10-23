@@ -33,6 +33,8 @@ import { FPButton } from "@/components/fp-ui/button";
 import { FPBadge } from "@/components/fp-ui/badge";
 import { FPLabel } from "@/components/fp-ui/label";
 import { FPCard } from "@/components/fp-ui/card";
+import { FPProgramPicker } from "@/components/fp-ui/fp-program-picker";
+import { PROGRAM_PICKER_ENABLED, programLabel } from "@/features/programs/programCatalog";
 import { WinterBanner } from "@/features/landing/WinterBanner";
 import { INSTAGRAM_HANDLE } from "@/lib/site";
 import { CAMPUS_PAGE_IDS } from "@/features/campus/campusPages";
@@ -73,12 +75,16 @@ export function FPShell({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const importedShareRef = useRef(false);
   const [campusMenuOpen, setCampusMenuOpen] = useState(false);
-  const [pendingCampus, setPendingCampus] = useState<Campus | null>(null);
+  // A campus to switch to, or "program" to pick the program again.
+  const [pendingCampus, setPendingCampus] = useState<Campus | "program" | null>(null);
 
   const theme = useAppStore((state) => state.uiPreferences.theme);
   const setTheme = useAppStore((state) => state.setTheme);
   const campus = useAppStore((state) => state.campus);
   const setCampus = useAppStore((state) => state.setCampus);
+  const program = useAppStore((state) => state.program);
+  const programChosen = useAppStore((state) => state.programChosen);
+  const resetProgram = useAppStore((state) => state.resetProgram);
   const hasHydrated = useAppStore((state) => state.hasHydrated);
   const applySharedState = useAppStore((state) => state.applySharedState);
   const tour = useTour();
@@ -167,7 +173,8 @@ export function FPShell({ children }: { children: React.ReactNode }) {
 
   function confirmCampusSwitch() {
     if (!pendingCampus) return;
-    setCampus(pendingCampus);
+    if (pendingCampus === "program") resetProgram();
+    else setCampus(pendingCampus);
     setPendingCampus(null);
     setCampusMenuOpen(false);
     router.push("/planner");
@@ -187,6 +194,8 @@ export function FPShell({ children }: { children: React.ReactNode }) {
     )
   ) : !campus ? (
     <FPCampusGate onPick={setCampus} />
+  ) : PROGRAM_PICKER_ENABLED && !programChosen ? (
+    <FPProgramPicker campus={campus}>{children}</FPProgramPicker>
   ) : (
     children
   );
@@ -282,6 +291,16 @@ export function FPShell({ children }: { children: React.ReactNode }) {
                         </button>
                       );
                     })}
+                    {PROGRAM_PICKER_ENABLED && programChosen ? (
+                      <button
+                        type="button"
+                        onClick={() => setPendingCampus("program")}
+                        className="mt-1 flex w-full items-center justify-between gap-2 rounded-[var(--radius-sm)] border-t border-fp-border-default px-3 py-2 text-left text-[length:var(--text-small)] text-fp-text-body hover:bg-fp-bg-raised"
+                      >
+                        <span className="min-w-0 truncate">Program: {program ? programLabel(program) : "Other"}</span>
+                        <span className="shrink-0 text-fp-text-dim">Change</span>
+                      </button>
+                    ) : null}
                   </motion.div>
                 ) : null}
               </AnimatePresence>
@@ -415,7 +434,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(5,8,10,0.72)] p-4">
           <FPCard className="w-full max-w-md" padding="lg">
             <h2 className="font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong">
-              Switch to {CAMPUS_LABELS[pendingCampus]}?
+              {pendingCampus === "program" ? "Change program?" : `Switch to ${CAMPUS_LABELS[pendingCampus]}?`}
             </h2>
             <p className="mt-3 text-[length:var(--text-small)] leading-[1.5] text-fp-text-dim">
               This clears your current course list and generated timetables. Saved timetables stay.
@@ -425,7 +444,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
                 Cancel
               </FPButton>
               <FPButton variant="primary" size="sm" onClick={confirmCampusSwitch}>
-                Switch campus
+                {pendingCampus === "program" ? "Change program" : "Switch campus"}
               </FPButton>
             </div>
           </FPCard>

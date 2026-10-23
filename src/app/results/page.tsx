@@ -763,20 +763,74 @@ function ResultsContent() {
 
               {/* Combos */}
               {allVariants.length > 1 ? (
-                <section className="mt-7 border-t border-fp-border-default pt-6">
-                  <div className="overflow-hidden rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface">
-                    <div className="flex items-center justify-between border-b border-fp-border-default px-4 py-3">
-                      <FPLabel tone="strong">
-                        Combo {String(activeVariantIndex + 1).padStart(2, "0")} · who you&apos;d register with
-                      </FPLabel>
-                      <FPMetricRun
-                        items={[
-                          `${activeSchedule.selections.length} courses`,
-                          `${totalCredits} credit${totalCredits === 1 ? "" : "s"}`,
-                          Math.round(activeSchedule.score)
-                        ]}
-                      />
+                <section className="mt-4">
+                  {/* Swap sits right under the grid so a professor change is
+                      visible without scrolling (and on mobile, without passing
+                      the breakdown). */}
+                  <div
+                    data-tour-id="results-swap"
+                    className="overflow-hidden rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface"
+                  >
+                    <div className="border-b border-fp-border-default px-4 py-3">
+                      <FPLabel tone="strong">Swap a professor · same week</FPLabel>
                     </div>
+                    <ul className="divide-y divide-fp-border-default">
+                      {summaryRows.map((row) => {
+                        const selection = activeSchedule.selections.find((s) => s.courseId === row.courseId);
+                        const options = swapOptionsFor(row.courseId);
+                        if (!selection || options.length < 2) return null;
+                        return (
+                          <li key={row.courseId} className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3">
+                            <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: row.color }} />
+                            <span className="font-fp-mono text-[length:var(--text-small)] text-fp-text-strong">
+                              {row.courseCode}
+                            </span>
+                            <select
+                              aria-label={`Swap professor for ${row.courseCode}`}
+                              value={selection.optionId}
+                              onChange={(e) => swapProfessorTo(row.courseId, e.target.value)}
+                              className="min-h-[44px] w-full cursor-pointer rounded-[var(--radius-sm)] bg-fp-bg-inset px-3 text-[length:var(--text-small)] text-fp-text-body sm:ml-auto sm:w-[220px]"
+                            >
+                              {options.map((o) => (
+                                <option key={o.id} value={o.id}>
+                                  {o.name}
+                                </option>
+                              ))}
+                            </select>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-fp-border-default bg-fp-bg-inset px-4 py-3">
+                      <span className="text-[12px] text-fp-text-dim">
+                        Slot codes are what you type into VTOP on registration day.
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => copySlotList(activeSchedule)}
+                        className="fp-text min-h-[44px] text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-accent"
+                      >
+                        Copy slot list
+                      </button>
+                    </div>
+                  </div>
+
+                  <details className="group mt-4 overflow-hidden rounded-[var(--radius-md)] border border-fp-border-default bg-fp-bg-surface">
+                    <summary className="flex min-h-[44px] cursor-pointer list-none flex-wrap items-center justify-between gap-2 px-4 py-3 group-open:border-b group-open:border-fp-border-default [&::-webkit-details-marker]:hidden">
+                      <FPLabel tone="strong">
+                        Details · Combo {String(activeVariantIndex + 1).padStart(2, "0")} · who you&apos;d register with
+                      </FPLabel>
+                      <span className="flex items-center gap-3">
+                        <FPMetricRun
+                          items={[
+                            `${activeSchedule.selections.length} courses`,
+                            `${totalCredits} credit${totalCredits === 1 ? "" : "s"}`,
+                            Math.round(activeSchedule.score)
+                          ]}
+                        />
+                        <ChevronDown className="h-4 w-4 text-fp-text-dim transition-transform group-open:rotate-180" />
+                      </span>
+                    </summary>
                     <FPSlotTable
                       label="Professors and slots for this week"
                       columns={[
@@ -854,55 +908,12 @@ function ResultsContent() {
                               </div>
                             );
                           }
-                        },
-                        {
-                          key: "swap",
-                          header: "",
-                          align: "right",
-                          render: (row) => {
-                            const selection = activeSchedule.selections.find(
-                              (s) => s.courseId === row.courseId
-                            );
-                            const options = swapOptionsFor(row.courseId);
-                            if (!selection || options.length < 2) return null;
-                            return (
-                              <label className="fp-text inline-flex flex-col items-end gap-1 text-[length:var(--text-micro)] text-fp-text-dim sm:flex-row sm:items-center sm:gap-1.5">
-                                Swap
-                                <select
-                                  aria-label={`Swap professor for ${row.courseCode}`}
-                                  value={selection.optionId}
-                                  onChange={(e) => swapProfessorTo(row.courseId, e.target.value)}
-                                  className="max-w-[9rem] cursor-pointer sm:max-w-[160px] rounded-[var(--radius-sm)] bg-fp-bg-inset px-1.5 py-1 text-fp-text-body outline-none"
-                                >
-                                  {options.map((o) => (
-                                    <option key={o.id} value={o.id}>
-                                      {o.name}
-                                    </option>
-                                  ))}
-                                </select>
-                              </label>
-                            );
-                          }
                         }
                       ]}
                       rows={summaryRows}
                       rowKey={(row) => row.courseId}
-                      footer={
-                        <div className="flex flex-wrap items-center justify-between gap-2 bg-fp-bg-inset px-4 py-3">
-                          <span className="text-[12px] text-fp-text-dim">
-                            Slot codes are what you type into VTOP on registration day.
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => copySlotList(activeSchedule)}
-                            className="fp-text text-[length:var(--text-micro)] text-fp-text-dim hover:text-fp-accent"
-                          >
-                            Copy slot list
-                          </button>
-                        </div>
-                      }
                     />
-                  </div>
+                  </details>
                   <div className="mt-6 flex flex-wrap items-baseline gap-3">
                     <h2 className="font-fp-display text-[17px] font-bold text-fp-text-strong sm:text-[length:var(--text-h)]">
                       Same layout, different professors

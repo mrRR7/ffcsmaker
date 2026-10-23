@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { ChevronDown } from "lucide-react";
 import { DBCourse, DBCourseOption, DBSemester } from "@/types/db";
@@ -23,6 +23,7 @@ import {
   TimeOfDayFilter
 } from "@/features/planner/fp/FPCourseOptionGroups";
 import { track } from "@/lib/track";
+import { PROGRAM_PICKER_ENABLED, scopeCatalog } from "@/features/programs/programCatalog";
 
 const SEARCH_RESULTS_CAP = 10;
 // fetch() rejects with "Failed to fetch" offline; say what that means instead.
@@ -58,6 +59,9 @@ export function FPSearchTab() {
   const slots = useAppStore((state) => state.slots);
   const campus = useAppStore((state) => state.campus) ?? "chennai";
   const setCourses = useAppStore((state) => state.setCourses);
+  const storedProgram = useAppStore((state) => state.program);
+  const programChosen = useAppStore((state) => state.programChosen);
+  const program = PROGRAM_PICKER_ENABLED ? storedProgram : null;
 
   const activeSemester = useMemo(() => {
     return (
@@ -134,17 +138,20 @@ export function FPSearchTab() {
     };
   }, [semesterId, campus]);
 
-  const courses = useMemo(() => {
+  // Every course is searchable; the program only orders them ("Your program"
+  // first) and narrows a matching course to its own program's options.
+  const { courses, mineCount } = useMemo(() => {
     const needle = query.trim().toLowerCase();
     if (needle.length < 2) {
-      return [];
+      return { courses: [], mineCount: 0 };
     }
-    return allCourses.filter(
+    const matches = allCourses.filter(
       (course) =>
         course.course_code.toLowerCase().startsWith(needle) ||
         course.course_name.toLowerCase().includes(needle)
     );
-  }, [allCourses, query]);
+    return scopeCatalog(matches, program);
+  }, [allCourses, query, program]);
 
   function toggleOption(optionId: string) {
     setSelectedOptions((current) => ({ ...current, [optionId]: !current[optionId] }));
@@ -183,7 +190,7 @@ export function FPSearchTab() {
     );
 
     setCourses(result.courses);
-    track("course_added", { source: "catalog" });
+    track("course_added", PROGRAM_PICKER_ENABLED ? { source: "catalog", program: program ?? "other" } : { source: "catalog" });
     setSelectedOptions((current) => {
       const next = { ...current };
       selected.forEach((option) => delete next[option.id]);
@@ -341,7 +348,10 @@ export function FPSearchTab() {
         )
       ) : (
         <div className="space-y-3">
-          {(showAllResults ? courses : courses.slice(0, SEARCH_RESULTS_CAP)).map((course) => {
+          {PROGRAM_PICKER_ENABLED && programChosen && !program ? (
+            <FPNote>Showing all courses. Your program isn&apos;t tagged yet.</FPNote>
+          ) : null}
+          {(showAllResults ? courses : courses.slice(0, SEARCH_RESULTS_CAP)).map((course, index) => {
             const expanded = expandedCourseId === course.id;
             const tickedCount = course.course_options.filter((option) => selectedOptions[option.id]).length;
             const timeFilter = timeFilterByCourse[course.id] ?? "all";
@@ -353,9 +363,12 @@ export function FPSearchTab() {
             const inPlan = coursesInPlanner.find((c) => c.courseCode === course.course_code);
             const inPlanCount = inPlan?.options.length ?? 0;
             const visibleOptions = visibleGroups.flatMap((group) => group.options);
+            const groupLabel =
+              index === 0 && mineCount > 0 ? "Your program" : program && index === mineCount ? "All courses" : null;
             return (
+              <Fragment key={course.id}>
+              {groupLabel ? <FPLabel className="block pt-1">{groupLabel}</FPLabel> : null}
               <div
-                key={course.id}
                 className={cn(
                   "overflow-hidden rounded-[var(--radius-md)] border bg-fp-bg-surface",
                   tickedCount > 0 ? "border-fp-border-accent" : "border-fp-border-default"
@@ -458,6 +471,7 @@ export function FPSearchTab() {
                   </div>
                 ) : null}
               </div>
+              </Fragment>
             );
           })}
           {!showAllResults && courses.length > SEARCH_RESULTS_CAP ? (

@@ -9,6 +9,8 @@ import { FPLabel } from "@/components/fp-ui/label";
 import { useTour } from "./useTour";
 import { TOUR_STEPS, isStepVisible } from "./tourSteps";
 import { useAppStore } from "@/store/useAppStore";
+import { usePlannerGeneration } from "@/features/planner/usePlannerGeneration";
+import { SAMPLE_COURSE_CODES } from "./sampleCourses";
 
 /** Every fp-* CSS variable/class is scoped under `.fp-root` (see fp-tokens.css) —
  * portaling to `document.body` directly would escape that scope and render
@@ -30,13 +32,36 @@ function getTourPortalRoot(): Element {
  * component.
  */
 export function TourCard() {
-  const { active, currentStep, stepIndex, visibleStepNumber, visibleStepCount, isLastStep, back, next, skip } =
-    useTour();
+  const {
+    active,
+    currentStep,
+    stepIndex,
+    visibleStepNumber,
+    visibleStepCount,
+    isLastStep,
+    sampleLoaded,
+    loadSample,
+    back,
+    next,
+    skip,
+    finish
+  } = useTour();
   const [targetEl, setTargetEl] = React.useState<Element | null>(null);
+  const [loadingSample, setLoadingSample] = React.useState(false);
+  const { runGeneration } = usePlannerGeneration();
 
   const targetId = currentStep?.targetId;
   const campus = useAppStore((s) => s.campus);
-  const waitingForCampus = !!currentStep?.waitsForCampus && !campus;
+  const planIsEmpty = useAppStore((s) => s.courses.length === 0);
+  // The program picker reuses the campus step's target, so keep waiting while
+  // either gate is on screen; the planner mounting is what ends the wait.
+  const waitingForCampus = !!currentStep?.waitsForCampus && (!campus || targetEl !== null);
+  const offerSample =
+    currentStep?.id === "planner-add-courses" && planIsEmpty && !!campus && !!SAMPLE_COURSE_CODES[campus]?.length;
+  const runsSample = sampleLoaded && currentStep?.id === "planner-generate";
+  // Before a search the results steps don't count yet, so the generate step
+  // reads as "last"; it still has to run the search first.
+  const endsSample = sampleLoaded && isLastStep && !runsSample;
 
   // Picking a campus IS the action this step asks for — advance on it instead
   // of making the user also hit Next.
@@ -123,23 +148,60 @@ export function TourCard() {
         ))}
       </div>
 
-      <div className="mt-4 flex items-center justify-between">
-        <FPButton variant="ghost" size="sm" onClick={skip}>
-          Skip tour
+      {offerSample ? (
+        <FPButton
+          variant="secondary"
+          className="mt-4 min-h-[44px] w-full"
+          loading={loadingSample}
+          onClick={() => {
+            setLoadingSample(true);
+            loadSample().finally(() => setLoadingSample(false));
+          }}
+        >
+          Try it with sample courses
         </FPButton>
-        <div className="flex items-center gap-2">
-          <FPButton variant="secondary" size="sm" onClick={back} disabled={stepIndex === 0}>
-            Back
+      ) : null}
+
+      {endsSample ? (
+        <div className="mt-4 flex flex-col gap-2">
+          <FPButton ref={primaryRef} variant="primary" className="min-h-[44px] w-full" onClick={() => finish()}>
+            Clear and start my own
           </FPButton>
-          {waitingForCampus ? (
-            <span className="fp-text text-[length:var(--text-small)] text-fp-text-dim">Pick one to continue</span>
-          ) : (
-            <FPButton ref={primaryRef} variant="primary" size="sm" onClick={next}>
-              {isLastStep ? "Done" : "Next"}
-            </FPButton>
-          )}
+          <FPButton variant="secondary" className="min-h-[44px] w-full" onClick={() => finish({ keep: true })}>
+            Keep these courses
+          </FPButton>
         </div>
-      </div>
+      ) : (
+        <div className="mt-4 flex items-center justify-between">
+          <FPButton variant="ghost" size="sm" onClick={skip}>
+            Skip tour
+          </FPButton>
+          <div className="flex items-center gap-2">
+            <FPButton variant="secondary" size="sm" onClick={back} disabled={stepIndex === 0}>
+              Back
+            </FPButton>
+            {waitingForCampus ? (
+              <span className="fp-text text-[length:var(--text-small)] text-fp-text-dim">Pick one to continue</span>
+            ) : runsSample ? (
+              <FPButton
+                ref={primaryRef}
+                variant="primary"
+                size="sm"
+                onClick={() => {
+                  runGeneration();
+                  next();
+                }}
+              >
+                Find my weeks
+              </FPButton>
+            ) : (
+              <FPButton ref={primaryRef} variant="primary" size="sm" onClick={next}>
+                {isLastStep ? "Done" : "Next"}
+              </FPButton>
+            )}
+          </div>
+        </div>
+      )}
     </div>,
     getTourPortalRoot()
   );

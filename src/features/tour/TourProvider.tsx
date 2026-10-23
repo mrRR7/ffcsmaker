@@ -2,8 +2,11 @@
 
 import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
+import toast from "react-hot-toast";
+import { useAppStore } from "@/store/useAppStore";
 import { TOUR_STEPS, isStepVisible, snapshotTourStart, type TourStep } from "./tourSteps";
 import { markTourSeen } from "./tourStorage";
+import { buildSampleCourses } from "./sampleCourses";
 
 const POLL_TICK_MS = 100;
 const POLL_CAP_MS = 2000;
@@ -24,11 +27,15 @@ interface TourContextValue extends TourState {
   /** True when there's no further step with a passing precondition — i.e.
    * this is the last one the user will actually see. */
   isLastStep: boolean;
+  /** The tour loaded sample courses into an empty plan; ending clears them unless kept. */
+  sampleLoaded: boolean;
+  /** Loads sample courses into an empty plan, then moves on. Never touches a plan that has courses. */
+  loadSample: () => Promise<void>;
   start: () => void;
   next: () => void;
   back: () => void;
   skip: () => void;
-  finish: () => void;
+  finish: (options?: { keep?: boolean }) => void;
   resync: () => void;
 }
 
@@ -76,11 +83,26 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     pollCleanupRef.current = null;
   }, []);
 
-  const endTour = React.useCallback(() => {
-    cancelPoll();
-    setState((s) => ({ ...s, active: false }));
-    markTourSeen();
-  }, [cancelPoll]);
+  // Ids of courses the tour added. Clearing them is the default way out.
+  const [sampleIds, setSampleIds] = React.useState<string[] | null>(null);
+  const sampleIdsRef = React.useRef(sampleIds);
+  sampleIdsRef.current = sampleIds;
+
+  const endTour = React.useCallback(
+    (keep = false) => {
+      cancelPoll();
+      setState((s) => ({ ...s, active: false }));
+      markTourSeen();
+      const ids = sampleIdsRef.current;
+      setSampleIds(null);
+      if (!ids || keep) return;
+      // deleteCourse also clears the generated weeks built from the sample.
+      const { deleteCourse } = useAppStore.getState();
+      ids.forEach((id) => deleteCourse(id));
+      if (pathnameRef.current !== "/planner") router.push("/planner");
+    },
+    [cancelPoll, router]
+  );
 
   /** Navigate to `index`, waiting (poll, 2s cap) for its target to mount before
    * treating it as positioned. On timeout, moves on rather than getting stuck —
@@ -103,8 +125,14 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
       setState({ active: true, stepIndex: resolvedIndex });
 
       cancelPoll();
-      const startedAt = Date.now();
+      let startedAt = Date.now();
       const intervalId = window.setInterval(() => {
+        // The generating screen holds /results for up to ~8s; don't count
+        // that against the cap or the results steps get skipped.
+        if (useAppStore.getState().generation.running) {
+          startedAt = Date.now();
+          return;
+        }
         if (isTargetVisible(step.targetId)) {
           cancelPoll();
           document
@@ -163,6 +191,8 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     // reverting stepIndex or ending the tour before the poll ever gets a
     // chance.
     if (pollCleanupRef.current) return;
+    // Mid-search there is no target to find; the results land shortly.
+    if (useAppStore.getState().generation.running) return;
 
     const current = TOUR_STEPS[stateRef.current.stepIndex];
     if (current && isTargetVisible(current.targetId)) return;
@@ -179,6 +209,21 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     }
     endTour();
   }, [endTour]);
+
+  const loadSample = React.useCallback(async () => {
+    const { campus, program, slots, courses } = useAppStore.getState();
+    if (!campus || courses.length > 0) return;
+    try {
+      const sample = await buildSampleCourses(campus, program, slots);
+      // Re-check after the fetch: the sample must never overwrite a plan.
+      if (sample.length === 0 || useAppStore.getState().courses.length > 0) return;
+      useAppStore.getState().setCourses(sample);
+      setSampleIds(sample.map((course) => course.id));
+      goTo(stateRef.current.stepIndex + 1, "forward");
+    } catch {
+      toast.error("Couldn't load the sample courses. Add your own instead.");
+    }
+  }, [goTo]);
 
   React.useEffect(() => cancelPoll, [cancelPoll]);
 
@@ -213,11 +258,13 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
       visibleStepNumber,
       visibleStepCount,
       isLastStep,
+      sampleLoaded: sampleIds !== null,
+      loadSample,
       start,
       next,
       back,
-      skip: endTour,
-      finish: endTour,
+      skip: () => endTour(),
+      finish: (options?: { keep?: boolean }) => endTour(options?.keep),
       resync,
     }),
     [
@@ -227,6 +274,8 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
       visibleStepNumber,
       visibleStepCount,
       isLastStep,
+      sampleIds,
+      loadSample,
       start,
       next,
       back,

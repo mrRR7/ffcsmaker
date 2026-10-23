@@ -88,6 +88,9 @@ export interface UniTimeStore {
   constraints: Constraints;
   campus: Campus | null;
   program: Program | null;
+  /** True once the program step is answered ("Other" is a null program). No
+   * persist bump: older stored state merges in as false, so the picker shows once. */
+  programChosen: boolean;
   slotVariant: SlotVariant;
   generatedSchedules: ScoredTimetable[];
   generatedShapeGroups: TimetableShapeGroup[];
@@ -105,7 +108,10 @@ export interface UniTimeStore {
   getActiveDays: () => readonly DayOfWeek[];
   setHasHydrated: (value: boolean) => void;
   setCampus: (campus: Campus) => void;
+  /** Answers the program step. Keeps the current plan. */
   setProgram: (program: Program | null) => void;
+  /** Clears the program and the plan so the program step shows again. */
+  resetProgram: () => void;
   resetCampus: () => void;
   setRankingMode: (mode: RankingMode) => void;
   setTheme: (theme: UiPreferences["theme"]) => void;
@@ -176,6 +182,7 @@ export const useAppStore = create<UniTimeStore>()(
       constraints: defaultConstraints,
       campus: null,
       program: null,
+      programChosen: false,
       slotVariant: "standard",
       generatedSchedules: [],
       generatedShapeGroups: [],
@@ -208,17 +215,22 @@ export const useAppStore = create<UniTimeStore>()(
             activeVariantId: null,
             compareScheduleIds: [],
             constraints: defaultConstraints,
-            program: null
+            program: null,
+            programChosen: false
           };
         }),
-      setProgram: (program) =>
+      setProgram: (program) => set({ program, programChosen: true }),
+      resetProgram: () =>
         set({
-          program,
+          program: null,
+          programChosen: false,
           courses: [],
           generatedSchedules: [],
+          generatedShapeGroups: [],
+          generatedAt: null,
           activeShapeId: null,
           activeVariantId: null,
-          generatedAt: null,
+          compareScheduleIds: []
         }),
       resetCampus: () =>
         set((state) => {
@@ -228,6 +240,7 @@ export const useAppStore = create<UniTimeStore>()(
           return {
             campus: null,
             program: null,
+            programChosen: false,
             slotVariant: "standard",
             slots: getSlotCatalog("standard"),
             courses: [],
@@ -716,6 +729,7 @@ export const useAppStore = create<UniTimeStore>()(
           constraints: defaultConstraints,
           campus: null,
           program: null,
+          programChosen: false,
           slotVariant: "standard",
           generatedSchedules: [],
           generatedShapeGroups: [],
@@ -767,6 +781,7 @@ export const useAppStore = create<UniTimeStore>()(
           uiPreferences: state.uiPreferences,
           campus: state.campus,
           program: state.program,
+          programChosen: state.programChosen,
           slotVariant: state.slotVariant,
           generatedAt: generationIsRecent ? state.generatedAt : null,
           generatedSchedules: generationIsRecent ? state.generatedSchedules : [],

@@ -2,10 +2,11 @@
 // Each prop is either a fixed set of strings or a non-negative integer.
 // Nothing here may identify a person: no ids, names, course codes or free text.
 
-type PropSpec = readonly string[] | "int";
+// "code": a short uppercase program code (BCE) or "other".
+type PropSpec = readonly string[] | "int" | "code";
 
 export const USAGE_EVENTS = {
-  course_added: { source: ["catalog", "paste", "file", "manual", "vtop"] },
+  course_added: { source: ["catalog", "paste", "file", "manual", "vtop"], program: "code" },
   generate_started: { courses: "int" },
   generate_completed: { weeks: ["0", "1-10", "11-50", "50+"], ms: "int" },
   generate_zero: { courses: "int" },
@@ -45,6 +46,10 @@ export function sanitizeUsageEvent(input: unknown) {
     if (allowed === "int") {
       if (typeof value === "number" && Number.isFinite(value) && value >= 0) {
         clean[key] = Math.min(Math.round(value), MAX_INT);
+      }
+    } else if (allowed === "code") {
+      if (typeof value === "string" && (value === "other" || /^[A-Z]{2,5}$/.test(value))) {
+        clean[key] = value;
       }
     } else if (typeof value === "string" && allowed.includes(value)) {
       clean[key] = value;
