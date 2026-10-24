@@ -14,8 +14,9 @@ export const INSTAGRAM_HANDLE = "ultimate.ffcs";
 export const SHOW_WINTER_BANNER = process.env.NEXT_PUBLIC_WINTER_BANNER !== "off";
 
 // Donations. Empty UPI ID hides the banner and the QR/pay section everywhere,
-// so nothing goes public until it is set. QR image lives in public/.
-export const DONATE_UPI_ID = "";
+// so nothing goes public until it is set. QR image lives in public/ and is
+// skipped on /support until that file exists.
+export const DONATE_UPI_ID: string = "rakeshrajanikanth@okicici";
 export const DONATE_PAYEE_NAME = "Ultimate FFCS";
 export const DONATE_QR_SRC = "/donate-upi-qr.png";
 // Donate banner: on unless NEXT_PUBLIC_DONATE_BANNER is "off", and only once a UPI ID is set.
