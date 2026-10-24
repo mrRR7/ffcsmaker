@@ -7,7 +7,30 @@ export const PROGRAM_PICKER_ENABLED = process.env.NEXT_PUBLIC_PROGRAM_PICKER !==
 // Friendly names for program codes. A code missing here shows as itself, so a
 // newly uploaded program never breaks the list.
 export const PROGRAM_NAMES: Record<string, string> = {
-  BCE: "B.Tech CSE (Core)"
+  BCE: "B.Tech CSE",
+  BPS: "B.Tech CSE (CPS)",
+  BYB: "B.Tech CSE (Cyber Security)",
+  BYC: "B.Tech CSE (Cyber Security, Deakin 2+2)",
+  BDS: "B.Tech CSE (Data Science)",
+  BAI: "B.Tech CSE (AI & ML)",
+  BRS: "B.Tech CSE (AI & Robotics)",
+  BAD: "B.Tech CSE (AI & DS)",
+  BQC: "B.Tech CSE (Quantum Computing)",
+  BEE: "B.Tech EEE",
+  BEL: "B.Tech ECSE",
+  BEC: "B.Tech ECE",
+  BLC: "B.Tech ECM",
+  BVL: "B.Tech Electronics (VLSI)",
+  BME: "B.Tech Mechanical",
+  BMV: "B.Tech Mechanical (EV)",
+  BMH: "B.Tech Mechatronics & Automation",
+  BCL: "B.Tech Civil",
+  BCT: "B.Tech Civil (L&T)",
+  BBT: "B.Tech Biotechnology",
+  BFT: "B.Tech Fashion Technology",
+  MID: "Int. M.Tech CSE (Data Science)",
+  MIA: "Int. M.Tech (Business Analytics)",
+  MIS: "Int. M.Tech Software Engineering"
 };
 
 export function programLabel(code: string) {
