@@ -11,15 +11,27 @@ import {
   rangesOverlap,
   formatMinutes,
   parseTime,
+  buildSelection,
+  classesPerDay,
+  conflictsWithExisting,
+  hasConsecutiveLabs,
 } from "./conflict";
+import { computeScheduleMetrics } from "./metrics";
+import { defaultConstraints } from "./defaults";
 
 export interface ConflictFinding {
   type:
     | "course_always_conflicts"
     | "course_no_eligible_options"
-    | "constraint_eliminates_course";
-  courseCodeA: string;
+    | "constraint_eliminates_course"
+    /** A whole-week rule (gaps, back-to-back labs, classes a day), or all the
+     * time rules together, leave no week. */
+    | "rule_blocks_all"
+    /** Three or more courses clash as a group; no single pair is to blame. */
+    | "courses_cant_all_fit";
+  courseCodeA?: string;
   courseCodeB?: string;
+  courseCodes?: string[];
   constraintLabel?: string;
   /** The pair only clashes because rules removed its other options. */
   fromRules?: boolean;
@@ -37,9 +49,8 @@ export interface ConflictFinding {
  *   1. A course has zero options left after constraints are applied
  *   2. Two courses have no combination of options that doesn't conflict
  *
- * It does NOT diagnose complex multi-course interactions (e.g. "A, B, C have
- * valid pairs individually but no valid triple"). That's what the generator
- * already determined. The fallback message in ZeroResultsPanel handles that.
+ * When neither fits, a small search names the rule or the courses to change
+ * (pattern 3).
  */
 export function analyzeZeroResultCause(
   courses: Course[],
@@ -139,7 +150,97 @@ export function analyzeZeroResultCause(
     }
   }
 
+  if (findings.length > 0) return findings;
+
+  // ─── Pattern 3: no single course or pair is to blame ───
+  // Take one thing out at a time and look for any valid week.
+  const weekRules: Array<[string, Partial<Constraints>]> = [];
+  const plural = (n: number, word: string, many: string) => `${n} ${n === 1 ? word : many}`;
+  if (constraints.maxGapSlots !== null)
+    weekRules.push([`At most ${plural(constraints.maxGapSlots, "gap", "gaps")}`, { maxGapSlots: null }]);
+  if (constraints.noConsecutiveLabs)
+    weekRules.push(["No back-to-back labs", { noConsecutiveLabs: false }]);
+  if (constraints.maxClassesPerDay !== null)
+    weekRules.push([`At most ${plural(constraints.maxClassesPerDay, "class", "classes")} a day`, { maxClassesPerDay: null }]);
+  for (const [label, patch] of weekRules) {
+    if (hasAnyWeek(courses, slots, { ...constraints, ...patch })) {
+      findings.push({
+        type: "rule_blocks_all",
+        constraintLabel: label,
+        description: `No week with these courses keeps to "${label}".`,
+        severity: "error",
+      });
+    }
+  }
+  if (findings.length > 0) return findings;
+
+  if (hasAnyWeek(courses, slots, defaultConstraints)) {
+    return [{
+      type: "rule_blocks_all",
+      fromRules: true,
+      description: "Each of your rules is fine on its own, but together they leave no clash-free week.",
+      severity: "error",
+    }];
+  }
+
+  const blockers = courses.filter(
+    (course) => hasAnyWeek(courses.filter((other) => other !== course), slots, defaultConstraints)
+  );
+  if (blockers.length > 0) {
+    const codes = blockers.map((course) => course.courseCode);
+    const list = codes.length === 1 ? codes[0] : `${codes.slice(0, -1).join(", ")} and ${codes[codes.length - 1]}`;
+    findings.push({
+      type: "courses_cant_all_fit",
+      courseCodes: codes,
+      description: `${list} can't all fit in one week: every mix of their professors clashes somewhere.`,
+      severity: "error",
+    });
+  }
+
   return findings;
+}
+
+// ponytail: step cap so the diagnosis can't freeze the page on a huge course
+// list; past it we say nothing rather than guess. Move to the worker if it bites.
+const SEARCH_STEPS = 50_000;
+
+/** Whether at least one valid week exists, with the generator's hard rules.
+ * null when the search hit SEARCH_STEPS before deciding. */
+function hasAnyWeek(courses: Course[], slots: TimeSlot[], constraints: Constraints): boolean | null {
+  const slotMap = indexSlots(slots);
+  // Options with the same slots give the same answer, so keep one of each.
+  const choices = courses
+    .filter((course) => course.options.length > 0)
+    .map((course) => {
+      const bySlots = new Map<string, CourseOption>();
+      for (const option of course.options) {
+        if (violatesOptionHardConstraints(course, option, constraints, slotMap)) continue;
+        bySlots.set(getOptionSlotIds(option).sort().join(","), option);
+      }
+      return { course, options: [...bySlots.values()] };
+    })
+    .sort((a, b) => a.options.length - b.options.length);
+
+  let steps = 0;
+  function search(index: number, picks: CourseOption[], used: string[]): boolean | null {
+    if (++steps > SEARCH_STEPS) return null;
+    if (index === choices.length) {
+      if (constraints.maxGapSlots === null) return true;
+      const selections = picks.map((option, i) => buildSelection(choices[i].course, option, slotMap));
+      return computeScheduleMetrics(selections, slots).totalGapSlots <= constraints.maxGapSlots;
+    }
+    for (const option of choices[index].options) {
+      if (conflictsWithExisting(option, used, slotMap)) continue;
+      const next = [...used, ...getOptionSlotIds(option)];
+      if (constraints.noConsecutiveLabs && hasConsecutiveLabs(next, slotMap)) continue;
+      const limit = constraints.maxClassesPerDay;
+      if (limit !== null && Object.values(classesPerDay(next, slotMap)).some((count) => count > limit)) continue;
+      const found = search(index + 1, [...picks, option], next);
+      if (found !== false) return found;
+    }
+    return false;
+  }
+  return search(0, [], []);
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────
@@ -355,6 +456,28 @@ function identifyEliminatingConstraint(
     );
     if (allViolate)
       return `End before ${time} on ${day}`;
+  }
+
+  for (const [day, time] of Object.entries(constraints.latestEndByDay)) {
+    if (!time) continue;
+    const allViolate = options.every((opt) =>
+      getOptionSlotIds(opt).some((id) => {
+        const slot = slotMap.get(id);
+        return slot && slot.day === day && parseTime(slot.endTime) > parseTime(time);
+      })
+    );
+    if (allViolate) return `End before ${time} on ${day}`;
+  }
+
+  for (const [day, time] of Object.entries(constraints.startAfterByDay)) {
+    if (!time) continue;
+    const allViolate = options.every((opt) =>
+      getOptionSlotIds(opt).some((id) => {
+        const slot = slotMap.get(id);
+        return slot && slot.day === day && parseTime(slot.startTime) < parseTime(time);
+      })
+    );
+    if (allViolate) return `Start after ${time} on ${day}`;
   }
 
   return "your current constraints";

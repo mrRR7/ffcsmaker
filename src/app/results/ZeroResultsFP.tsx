@@ -21,12 +21,32 @@ function suggestionFor(finding: ConflictFinding): string {
       return `Loosen "${finding.constraintLabel}" or add more options for ${finding.courseCodeA}`;
     case "course_no_eligible_options":
       return `${finding.courseCodeA} has no available options — add professor options from the catalog`;
+    case "rule_blocks_all":
+      return finding.fromRules
+        ? "Clear your rules, or loosen them one at a time"
+        : `Drop "${finding.constraintLabel}" or loosen it`;
+    case "courses_cant_all_fit":
+      return "Add another professor option to any one of them, or drop one course";
   }
 }
 
 /** The constraint fields behind an analyzer label (see
  * identifyEliminatingConstraint), so "Drop" can clear just that rule. */
-function patchForLabel(label: string): Partial<Constraints> {
+function patchForLabel(label: string, current: Constraints): Partial<Constraints> {
+  if (label === "your current constraints") return defaultConstraints;
+  const dayRule = label.match(/^(Start after|End before) \S+ on (\w+)$/);
+  if (dayRule) {
+    const day = dayRule[2];
+    return dayRule[1] === "Start after"
+      ? { startAfterByDay: { ...current.startAfterByDay, [day]: null } }
+      : {
+          endBeforeByDay: { ...current.endBeforeByDay, [day]: null },
+          latestEndByDay: { ...current.latestEndByDay, [day]: null }
+        };
+  }
+  if (/^At most \d+ gaps?$/.test(label)) return { maxGapSlots: null };
+  if (label === "No back-to-back labs") return { noConsecutiveLabs: false };
+  if (/^At most \d+ class(es)? a day$/.test(label)) return { maxClassesPerDay: null };
   if (label === "Professor lock") return { professorLocks: [] };
   if (label === "Avoided professor list") return { avoidProfessors: [] };
   if (label.startsWith("No classes after")) return { noAfterTime: null };
@@ -84,14 +104,14 @@ export function ZeroResultsFP() {
   }
 
   function dropAndRegenerate(label: string) {
-    const patch = patchForLabel(label);
+    const patch = patchForLabel(label, constraints);
     for (const [key, value] of Object.entries(patch)) {
       setConstraint(key as keyof Constraints, value as never);
     }
     regenerateWith({ ...constraints, ...patch });
   }
 
-  const topIsConstraint = topFinding?.type === "constraint_eliminates_course" && !!topFinding.constraintLabel;
+  const topIsConstraint = Boolean(topFinding?.constraintLabel);
   const topFromRules = Boolean(topFinding?.fromRules);
 
   return (
@@ -101,7 +121,9 @@ export function ZeroResultsFP() {
           <h1 className="font-fp-display text-[28px] font-bold text-fp-text-strong sm:text-[length:var(--text-display)]">
             {topFinding?.type === "course_always_conflicts" && !topFromRules
               ? "Two of your courses can't fit together."
-              : findings.length > 0
+              : topFinding?.type === "courses_cant_all_fit"
+                ? "Your courses can't all fit together."
+                : findings.length > 0
                 ? "No week survives all of your rules."
                 : "No week survives this combination of courses and rules."}
           </h1>
@@ -121,7 +143,10 @@ export function ZeroResultsFP() {
               <div className="min-w-0 flex-1">
                 <div className="font-fp-mono text-[length:var(--text-h)] text-fp-text-strong sm:text-[22px]">
                   {topFinding.constraintLabel ??
-                    [topFinding.courseCodeA, topFinding.courseCodeB].filter(Boolean).join(" + ")}
+                    ((topFinding.courseCodes ?? [topFinding.courseCodeA, topFinding.courseCodeB])
+                      .filter(Boolean)
+                      .join(" + ") ||
+                      "Your rules together")}
                 </div>
                 <p className="mt-2 text-[14px] leading-[1.5] text-fp-text-body">
                   {topFinding.description} {suggestionFor(topFinding)}.
@@ -171,7 +196,7 @@ export function ZeroResultsFP() {
             </div>
             {findings.slice(1).map((finding, i) => {
               const index = i + 1;
-              const isConstraint = finding.type === "constraint_eliminates_course";
+              const isConstraint = Boolean(finding.constraintLabel);
               return (
                 <div
                   key={`${finding.type}-${finding.courseCodeA}-${finding.courseCodeB ?? index}`}
