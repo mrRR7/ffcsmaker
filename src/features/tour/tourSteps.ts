@@ -76,7 +76,8 @@ export const TOUR_STEPS: TourStep[] = [
     title: "Your draft, live",
     body: "Everything you add shows up in this grid instantly, before you generate anything.",
     // Phones drop the live grid (too wide to read); Results shows the real one.
-    precondition: () => window.matchMedia("(min-width: 1024px)").matches,
+    // Also evaluated while server-rendering (step counts), where there's no window.
+    precondition: () => typeof window === "undefined" || window.matchMedia("(min-width: 1024px)").matches,
   },
   {
     id: "planner-preferences",
