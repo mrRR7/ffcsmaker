@@ -45,12 +45,6 @@ export default async function NewSharedTimetablePage({ params }: { params: { id:
 
   return (
     <div className="-mx-4 -my-8 min-h-screen bg-fp-bg-page text-fp-text-body sm:-mx-6 lg:-mx-8">
-      {/*
-        Reuses the classic SharedTimetableView as-is for now (guarantees the
-        share flow keeps working end-to-end). Restyling this to the fp-ui
-        primitives is a good follow-up once the /results grid components
-        (built separately) are available to share with this route.
-      */}
       <SharedTimetableView snapshot={snapshot} />
     </div>
   );

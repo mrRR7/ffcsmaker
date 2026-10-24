@@ -18,7 +18,7 @@ export const SHOW_WINTER_BANNER = process.env.NEXT_PUBLIC_WINTER_BANNER !== "off
 // skipped on /support until that file exists.
 export const DONATE_UPI_ID: string = "rakeshrajanikanth@okicici";
 export const DONATE_PAYEE_NAME = "Ultimate FFCS";
-export const DONATE_QR_SRC = "/donate-upi-qr.png";
+export const DONATE_QR_SRC = "/donate-upi-qr.jpeg";
 // Donate banner: on unless NEXT_PUBLIC_DONATE_BANNER is "off", and only once a UPI ID is set.
 export const SHOW_DONATE_BANNER = DONATE_UPI_ID !== "" && process.env.NEXT_PUBLIC_DONATE_BANNER !== "off";
 
