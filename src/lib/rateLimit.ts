@@ -30,7 +30,9 @@ export interface RateLimitResult {
 
 export function rateLimit(
   key: string,
-  options: { max: number; windowMs: number }
+  options: { max: number; windowMs: number },
+  // How many units this call spends, e.g. events in a batch.
+  cost = 1
 ): RateLimitResult {
   const now = Date.now();
   const entry = buckets.get(key);
@@ -39,15 +41,15 @@ export function rateLimit(
     if (buckets.size >= MAX_TRACKED_KEYS) {
       buckets.clear();
     }
-    buckets.set(key, { count: 1, resetAt: now + options.windowMs });
-    return { allowed: true, remaining: options.max - 1, retryAfterMs: 0 };
+    buckets.set(key, { count: cost, resetAt: now + options.windowMs });
+    return { allowed: true, remaining: options.max - cost, retryAfterMs: 0 };
   }
 
-  if (entry.count >= options.max) {
+  if (entry.count + cost > options.max) {
     return { allowed: false, remaining: 0, retryAfterMs: entry.resetAt - now };
   }
 
-  entry.count += 1;
+  entry.count += cost;
   return {
     allowed: true,
     remaining: options.max - entry.count,

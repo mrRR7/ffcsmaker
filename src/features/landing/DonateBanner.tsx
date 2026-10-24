@@ -37,7 +37,7 @@ export function DonateBanner() {
     <div className="flex items-start gap-3 border-b border-fp-border-default bg-fp-bg-raised px-4 py-2.5 sm:px-6">
       <p className="flex-1 text-[length:var(--text-small)] leading-[1.5] text-fp-text-body">
         Ultimate FFCS is free and built by a student. If it saved you time, any amount helps keep it running.{" "}
-        <Link
+        <Link prefetch={false}
           href="/support"
           onClick={() => {
             track("donate_banner_clicked");

@@ -107,7 +107,7 @@ export default function CampusPage({ params }: { params: { campus: string } }) {
           {CAMPUS_PAGE_IDS.filter((other) => other !== campus).map((other, index) => (
             <span key={other}>
               {index > 0 ? " · " : null}
-              <Link href={`/${other}`} className="text-fp-text-body underline underline-offset-[3px] hover:text-fp-accent">
+              <Link prefetch={false} href={`/${other}`} className="text-fp-text-body underline underline-offset-[3px] hover:text-fp-accent">
                 {campusLabel(other)}
               </Link>
             </span>

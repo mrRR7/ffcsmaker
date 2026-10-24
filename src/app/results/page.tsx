@@ -249,9 +249,11 @@ function ResultsContent() {
       const newParams = new URLSearchParams(searchParams.toString());
       newParams.set("shape", activeShapeGroup.shapeId);
       newParams.set("variant", activeSchedule.id);
-      router.replace(`${pathname}?${newParams.toString()}`, { scroll: false });
+      // Not router.replace: that refetches the page from the server on every swap.
+      // Next 14.1+ still updates useSearchParams from a native replaceState.
+      window.history.replaceState(null, "", `${pathname}?${newParams.toString()}`);
     }
-  }, [activeShapeGroup, activeSchedule, pathname, router, searchParams]);
+  }, [activeShapeGroup, activeSchedule, pathname, searchParams]);
 
   // --- Handlers ---
 

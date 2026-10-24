@@ -3,7 +3,7 @@
 ## 1. The logo
 - **Idea**: an F built from timetable blocks, with one free slot in coral.
 - **Versions**: horizontal (primary) · stacked · symbol · wordmark. Each has a normal file (for light backgrounds) and a `-reversed` file (for dark backgrounds), plus `-black` and `-white` one-colour files.
-- **Files**: `svg/` masters and one-colour versions · `png/` 1600 px exports. The site's favicon, app icon, web manifest and OG image live in the app itself (`src/app/icon.svg`, `apple-icon.png`, `favicon.ico`, `public/site.webmanifest`, `public/og-image.png`); `gen_final.py` and `gen_og.py` regenerate the artwork they came from.
+- **Files**: `svg/` masters and one-colour versions · `png/` 1600 px exports. The site's favicon, app icon and OG image live in the app itself (`src/app/icon.svg`, `apple-icon.png`, `favicon.ico`, `public/og-image.png`); `gen_final.py` and `gen_og.py` regenerate the artwork they came from.
 - **Always use the supplied files.** The wordmark is outlined artwork, so never retype it.
 
 ## 2. Clear space
