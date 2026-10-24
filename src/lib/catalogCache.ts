@@ -1,111 +1,136 @@
 import { Campus, SlotVariant } from "@/engine/types";
-import { DBCourse } from "@/types/db";
+import { DBCourse, DBSemester } from "@/types/db";
 
 interface CatalogCacheEntry {
   courses: DBCourse[];
   semesterId: string | null;
   slotVariant: SlotVariant | null;
-  timestamp: number;
 }
 
-// Catalogs are small (a single campus/semester today) and change rarely, so
-// the whole thing is fetched once and cached here, then every search filters
-// this in-memory list instead of hitting the network per keystroke.
-const catalogCache = new Map<string, CatalogCacheEntry>();
-const inFlight = new Map<string, Promise<CatalogCacheEntry>>();
-// Matches the API's edge cache window (60s + 300s stale) so an admin import
-// reaches an open tab within a few minutes.
-const CACHE_TTL_MS = 5 * 60 * 1000;
+// Catalogs and semesters change rarely, so each is fetched once per tab and
+// shared by every caller: an in-memory promise (parallel callers share one
+// request) backed by sessionStorage (a reload doesn't refetch). Every search
+// then filters the in-memory course list instead of hitting the network.
+// An admin import reaches an open tab within the TTL; ?fresh=1 in the page
+// URL skips the stored copy.
+const CATALOG_TTL_MS = 15 * 60 * 1000;
+const SEMESTERS_TTL_MS = 60 * 60 * 1000;
+const STORAGE_PREFIX = "ffcs-cache:";
 
-function catalogCacheKey(campus: Campus, semesterId: string) {
-  return `${campus}::${semesterId}`;
-}
+const memory = new Map<string, { at: number; value: Promise<unknown> }>();
 
-function getFresh(key: string): CatalogCacheEntry | null {
-  const entry = catalogCache.get(key);
-  if (!entry) {
+function readStored<T>(key: string, ttlMs: number): { at: number; value: T } | null {
+  try {
+    if (new URLSearchParams(window.location.search).has("fresh")) return null;
+    const raw = sessionStorage.getItem(STORAGE_PREFIX + key);
+    if (!raw) return null;
+    const stored = JSON.parse(raw) as { at: number; value: T };
+    return Date.now() - stored.at < ttlMs ? stored : null;
+  } catch {
     return null;
   }
-  if (Date.now() - entry.timestamp > CACHE_TTL_MS) {
-    catalogCache.delete(key);
-    return null;
-  }
-  return entry;
 }
 
-/** Returns the cached full catalog for a campus+semester, if present and fresh. */
-export function getCachedCatalog(
-  campus: Campus,
-  semesterId: string
-): CatalogCacheEntry | null {
-  return getFresh(catalogCacheKey(campus, semesterId));
+function memo<T>(key: string, ttlMs: number, fetcher: () => Promise<T>, persist = true): Promise<T> {
+  const hit = memory.get(key);
+  if (hit && Date.now() - hit.at < ttlMs) return hit.value as Promise<T>;
+
+  const stored = persist ? readStored<T>(key, ttlMs) : null;
+  const at = stored?.at ?? Date.now();
+  const value = stored
+    ? Promise.resolve(stored.value)
+    : fetcher().then((result) => {
+        if (persist) {
+          try {
+            sessionStorage.setItem(STORAGE_PREFIX + key, JSON.stringify({ at, value: result }));
+          } catch {
+            // Blocked or full storage: the in-memory copy still serves this tab.
+          }
+        }
+        return result;
+      });
+  memory.set(key, { at, value });
+  // A failed request isn't cached, so the next caller retries.
+  value.catch(() => {
+    if (memory.get(key)?.value === value) memory.delete(key);
+  });
+  return value;
+}
+
+async function fetchCatalog(campus: Campus, semesterId?: string): Promise<CatalogCacheEntry> {
+  const params = new URLSearchParams({ campus });
+  if (semesterId) {
+    params.set("semester", semesterId);
+  }
+  const response = await fetch(`/api/catalog/search?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error("Catalog unavailable.");
+  }
+  const json = (await response.json()) as {
+    courses?: DBCourse[];
+    semesterId?: string | null;
+    slotVariant?: SlotVariant | null;
+  };
+  return {
+    courses: json.courses ?? [],
+    semesterId: json.semesterId ?? null,
+    slotVariant: json.slotVariant ?? null
+  };
 }
 
 /**
- * Loads the full catalog for a campus (optionally a specific semester),
- * using the cache when possible and de-duplicating concurrent requests for
- * the same campus+semester. Callers filter the returned course list
- * themselves rather than asking the server to filter per query.
+ * Loads the full catalog for a campus (optionally a specific semester).
+ * Callers filter the returned course list themselves rather than asking the
+ * server to filter per query.
  */
-export async function loadCatalog(
-  campus: Campus,
-  semesterId?: string
-): Promise<CatalogCacheEntry> {
-  if (semesterId) {
-    const cached = getCachedCatalog(campus, semesterId);
-    if (cached) {
-      return cached;
-    }
+export function loadCatalog(campus: Campus, semesterId?: string): Promise<CatalogCacheEntry> {
+  const active = memo(`catalog::${campus}::auto`, CATALOG_TTL_MS, () => fetchCatalog(campus));
+  if (!semesterId) {
+    return active;
   }
+  // Almost always the active semester: reuse that response, and store it only once.
+  return memo(
+    `catalog::${campus}::${semesterId}`,
+    CATALOG_TTL_MS,
+    async () => {
+      const entry = await active.catch(() => null);
+      return entry?.semesterId === semesterId ? entry : fetchCatalog(campus, semesterId);
+    },
+    false
+  );
+}
 
-  const requestKey = `${campus}::${semesterId ?? "auto"}`;
-  const pending = inFlight.get(requestKey);
-  if (pending) {
-    return pending;
-  }
-
-  const promise = (async () => {
-    const params = new URLSearchParams({ campus });
-    if (semesterId) {
-      params.set("semester", semesterId);
-    }
-    const response = await fetch(`/api/catalog/search?${params.toString()}`);
+/** All semesters for a campus, newest first. */
+export function loadSemesters(campus: Campus): Promise<DBSemester[]> {
+  return memo(`semesters::${campus}`, SEMESTERS_TTL_MS, async () => {
+    const response = await fetch(`/api/catalog/semesters?campus=${campus}`);
     if (!response.ok) {
-      throw new Error("Catalog unavailable.");
+      throw new Error("Semesters unavailable.");
     }
-    const json = (await response.json()) as {
-      courses?: DBCourse[];
-      semesterId?: string | null;
-      slotVariant?: SlotVariant | null;
-    };
-    const entry: CatalogCacheEntry = {
-      courses: json.courses ?? [],
-      semesterId: json.semesterId ?? null,
-      slotVariant: json.slotVariant ?? null,
-      timestamp: Date.now()
-    };
-    if (entry.semesterId) {
-      catalogCache.set(catalogCacheKey(campus, entry.semesterId), entry);
-    }
-    return entry;
-  })();
+    const json = (await response.json()) as { semesters?: DBSemester[] };
+    return json.semesters ?? [];
+  });
+}
 
-  inFlight.set(requestKey, promise);
+function clearWhere(match: (key: string) => boolean) {
+  for (const key of memory.keys()) {
+    if (match(key)) memory.delete(key);
+  }
   try {
-    return await promise;
-  } finally {
-    inFlight.delete(requestKey);
+    for (const key of Object.keys(sessionStorage)) {
+      if (key.startsWith(STORAGE_PREFIX) && match(key.slice(STORAGE_PREFIX.length))) {
+        sessionStorage.removeItem(key);
+      }
+    }
+  } catch {
+    // Nothing stored to clear.
   }
 }
 
 export function clearCampusCache(campus: Campus) {
-  for (const key of catalogCache.keys()) {
-    if (key.startsWith(`${campus}::`)) {
-      catalogCache.delete(key);
-    }
-  }
+  clearWhere((key) => key.split("::")[1] === campus);
 }
 
 export function clearAllCache() {
-  catalogCache.clear();
+  clearWhere(() => true);
 }

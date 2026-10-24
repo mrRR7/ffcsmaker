@@ -8,7 +8,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/form";
 import { ScoredTimetable, TimeSlot } from "@/engine/types";
 import { exportTimetableIcal } from "@/lib/export/exportIcal";
-import { DBSemester } from "@/types/db";
+import { loadSemesters } from "@/lib/catalogCache";
+import { useAppStore } from "@/store/useAppStore";
 import { track } from "@/lib/track";
 
 function todayIso() {
@@ -28,6 +29,7 @@ export function IcalExportDialog({
   schedule: ScoredTimetable;
   slots: TimeSlot[];
 }) {
+  const campus = useAppStore((state) => state.campus) ?? "chennai";
   const [isOpen, setIsOpen] = useState(false);
   const [startDate, setStartDate] = useState(todayIso());
   const [endDate, setEndDate] = useState(fourMonthsFromTodayIso());
@@ -42,25 +44,20 @@ export function IcalExportDialog({
     }
 
     let cancelled = false;
-    async function loadActiveSemester() {
-      try {
-        const response = await fetch("/api/catalog/semesters?active=1");
-        const json = (await response.json()) as { semesters?: DBSemester[] };
-        const semester = json.semesters?.[0];
+    loadSemesters(campus)
+      .then((semesters) => {
+        const semester = semesters.find((item) => item.is_active);
         if (!cancelled && semester) {
           setStartDate(semester.start_date ?? todayIso());
           setEndDate(semester.end_date ?? fourMonthsFromTodayIso());
         }
-      } catch {
-        // Defaults are enough when the catalog is not configured.
-      }
-    }
-
-    loadActiveSemester();
+      })
+      // Defaults are enough when the catalog is not configured.
+      .catch(() => undefined);
     return () => {
       cancelled = true;
     };
-  }, [isOpen]);
+  }, [isOpen, campus]);
 
   function download() {
     exportTimetableIcal(schedule, slots, startDate, endDate, timetableName);

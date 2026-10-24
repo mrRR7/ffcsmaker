@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { ChevronDown } from "lucide-react";
 import { DBCourse, DBCourseOption, DBSemester } from "@/types/db";
 import { mergeCourseOptions } from "@/features/courses/mergeCourseOptions";
-import { loadCatalog } from "@/lib/catalogCache";
+import { loadCatalog, loadSemesters } from "@/lib/catalogCache";
 import { useAppStore } from "@/store/useAppStore";
 import { cn } from "@/utils/cn";
 import { FPButton } from "@/components/fp-ui/button";
@@ -28,11 +28,6 @@ import { PROGRAM_PICKER_ENABLED, scopeCatalog } from "@/features/programs/progra
 const SEARCH_RESULTS_CAP = 10;
 // fetch() rejects with "Failed to fetch" offline; say what that means instead.
 const CATALOG_ERROR = "Couldn't load the course catalog. Check your connection and reload. Paste, File and Manual still work.";
-
-type SemesterResponse = {
-  semesters: DBSemester[];
-  error?: string;
-};
 
 /**
  * FPSearchTab — reskin of `src/features/catalog/CatalogSearch.tsx`. Same
@@ -74,31 +69,23 @@ export function FPSearchTab() {
   useEffect(() => {
     let cancelled = false;
 
-    async function loadSemesters() {
-      setSemestersLoaded(false);
-      try {
-        const response = await fetch(`/api/catalog/semesters?campus=${campus}`);
-        const json = (await response.json()) as SemesterResponse;
+    setSemestersLoaded(false);
+    loadSemesters(campus)
+      .then((list) => {
         if (cancelled) {
           return;
         }
         setSemestersLoaded(true);
-        if (!response.ok) {
-          setCatalogError(CATALOG_ERROR);
-          return;
-        }
-        setSemesters(json.semesters ?? []);
-        const active = json.semesters?.find((semester) => semester.is_active);
-        setSemesterId(active?.id || json.semesters?.[0]?.id || "");
-      } catch {
+        setSemesters(list);
+        const active = list.find((semester) => semester.is_active);
+        setSemesterId(active?.id || list[0]?.id || "");
+      })
+      .catch(() => {
         if (!cancelled) {
           setSemestersLoaded(true);
           setCatalogError(CATALOG_ERROR);
         }
-      }
-    }
-
-    loadSemesters();
+      });
     return () => {
       cancelled = true;
     };
