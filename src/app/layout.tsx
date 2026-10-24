@@ -52,7 +52,6 @@ export const metadata: Metadata = {
     description: "Generate and rank every valid FFCS timetable. Free for VIT Vellore, Chennai, Bhopal & AP students.",
     images: ["/og-image.png"],
   },
-  manifest: "/site.webmanifest",
   metadataBase: new URL(SITE_URL),
 }
 
