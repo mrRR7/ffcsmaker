@@ -62,3 +62,20 @@ export function sanitizeUsageEvent(input: unknown) {
     props: clean
   };
 }
+
+export const MAX_BATCH_EVENTS = 50;
+
+/**
+ * Accepts the batched `{ events: [...] }` body or a legacy single event. Returns
+ * the clean rows (invalid events dropped), or null for a malformed or oversized batch.
+ */
+export function sanitizeUsageBatch(input: unknown) {
+  if (!input || typeof input !== "object") return null;
+  const { events } = input as Record<string, unknown>;
+  if (events === undefined) {
+    const row = sanitizeUsageEvent(input);
+    return row ? [row] : [];
+  }
+  if (!Array.isArray(events) || events.length > MAX_BATCH_EVENTS) return null;
+  return events.map(sanitizeUsageEvent).filter((row) => row !== null);
+}

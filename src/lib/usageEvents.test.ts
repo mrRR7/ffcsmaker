@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { sanitizeUsageEvent, weeksBucket } from "./usageEvents";
+import { sanitizeUsageBatch, sanitizeUsageEvent, weeksBucket } from "./usageEvents";
 
 test("rejects unknown event names", () => {
   assert.equal(sanitizeUsageEvent({ name: "drop_table" }), null);
@@ -35,4 +35,25 @@ test("program codes pass, anything that could identify someone doesn't", () => {
 
 test("buckets week counts", () => {
   assert.deepEqual([0, 1, 10, 11, 50, 51].map(weeksBucket), ["0", "1-10", "1-10", "11-50", "11-50", "50+"]);
+});
+
+test("accepts batches and the legacy single-event body", () => {
+  assert.deepEqual(sanitizeUsageBatch({ name: "slot_list_copied", campus: "chennai" }), [
+    { name: "slot_list_copied", campus: "chennai", props: {} }
+  ]);
+  assert.deepEqual(
+    sanitizeUsageBatch({ events: [{ name: "timetable_saved" }, { name: "drop_table" }, null, { name: "ical_exported" }] })?.map(
+      (row) => row.name
+    ),
+    ["timetable_saved", "ical_exported"]
+  );
+  assert.deepEqual(sanitizeUsageBatch({ name: "drop_table" }), []);
+});
+
+test("rejects malformed and oversized batches", () => {
+  assert.equal(sanitizeUsageBatch(null), null);
+  assert.equal(sanitizeUsageBatch("events"), null);
+  assert.equal(sanitizeUsageBatch({ events: "course_added" }), null);
+  assert.equal(sanitizeUsageBatch({ events: Array(51).fill({ name: "slot_list_copied" }) }), null);
+  assert.equal(sanitizeUsageBatch({ events: Array(50).fill({ name: "slot_list_copied" }) })?.length, 50);
 });
