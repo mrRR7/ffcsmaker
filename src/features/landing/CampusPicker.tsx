@@ -13,7 +13,6 @@ import { FPLabel } from "@/components/fp-ui/label";
 import { BRAND_PALETTE } from "@/lib/coursePalette";
 import { useTour } from "@/features/tour/useTour";
 import { hasSeenTour } from "@/features/tour/tourStorage";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePickCampus } from "@/features/landing/usePickCampus";
 
 const campusCards: Array<{ campus: Campus; active: boolean; detail: string; swatch: string }> = [
@@ -30,10 +29,9 @@ export function CampusPicker() {
   const courseCount = useAppStore((state) => state.courses.length);
   const tour = useTour();
   const [tourPromptDismissed, setTourPromptDismissed] = useState(false);
-  const isMobile = useMediaQuery("(max-width: 767px)");
 
   const showTourPrompt =
-    hasHydrated && isMobile === false && !tour.active && !tourPromptDismissed && !hasSeenTour();
+    hasHydrated && !tour.active && !tourPromptDismissed && !hasSeenTour();
 
   const pickCampus = usePickCampus();
 

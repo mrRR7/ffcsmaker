@@ -29,6 +29,13 @@ const hasResults = () => {
   return generatedSchedules.length > 0 || generation.running;
 };
 
+/** The on-screen element for a target id. Phone and desktop can each render
+ * their own copy (e.g. two "Find my weeks" buttons), so skip hidden ones. */
+export function findTourTarget(targetId: string): HTMLElement | null {
+  const all = document.querySelectorAll<HTMLElement>(`[data-tour-id="${targetId}"]`);
+  return Array.from(all).find((el) => el.getClientRects().length > 0) ?? null;
+}
+
 export function isStepVisible(step: TourStep): boolean {
   return step.precondition ? step.precondition() : true;
 }
@@ -68,6 +75,8 @@ export const TOUR_STEPS: TourStep[] = [
     targetId: "planner-live-preview",
     title: "Your draft, live",
     body: "Everything you add shows up in this grid instantly, before you generate anything.",
+    // Phones drop the live grid (too wide to read); Results shows the real one.
+    precondition: () => window.matchMedia("(min-width: 1024px)").matches,
   },
   {
     id: "planner-preferences",

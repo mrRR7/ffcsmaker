@@ -4,7 +4,7 @@ import * as React from "react";
 import { usePathname, useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useAppStore } from "@/store/useAppStore";
-import { TOUR_STEPS, isStepVisible, snapshotTourStart, type TourStep } from "./tourSteps";
+import { TOUR_STEPS, findTourTarget, isStepVisible, snapshotTourStart, type TourStep } from "./tourSteps";
 import { markTourSeen } from "./tourStorage";
 import { buildSampleCourses } from "./sampleCourses";
 
@@ -44,8 +44,8 @@ const TourContext = React.createContext<TourContextValue | null>(null);
 const isValid = isStepVisible;
 
 function isTargetVisible(targetId: string): boolean {
-  const el = document.querySelector(`[data-tour-id="${targetId}"]`);
-  return el !== null && el.isConnected && (el as HTMLElement).offsetParent !== null;
+  // findTourTarget already skips hidden copies (and works inside fixed bars).
+  return findTourTarget(targetId) !== null;
 }
 
 /** First index >= from whose precondition passes, or -1 if none remain. */
@@ -135,9 +135,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
         }
         if (isTargetVisible(step.targetId)) {
           cancelPoll();
-          document
-            .querySelector(`[data-tour-id="${step.targetId}"]`)
-            ?.scrollIntoView({ block: "center", behavior: "smooth" });
+          findTourTarget(step.targetId)?.scrollIntoView({ block: "center", behavior: "smooth" });
           return;
         }
         if (Date.now() - startedAt >= POLL_CAP_MS) {

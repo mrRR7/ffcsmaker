@@ -7,7 +7,7 @@ import { cn } from "@/utils/cn";
 import { FPButton } from "@/components/fp-ui/button";
 import { FPLabel } from "@/components/fp-ui/label";
 import { useTour } from "./useTour";
-import { TOUR_STEPS, isStepVisible } from "./tourSteps";
+import { TOUR_STEPS, findTourTarget, isStepVisible } from "./tourSteps";
 import { useAppStore } from "@/store/useAppStore";
 import { usePlannerGeneration } from "@/features/planner/usePlannerGeneration";
 import { SAMPLE_COURSE_CODES } from "./sampleCourses";
@@ -78,7 +78,7 @@ export function TourCard() {
     }
     let frameId: number;
     const tick = () => {
-      setTargetEl(document.querySelector(`[data-tour-id="${targetId}"]`));
+      setTargetEl(findTourTarget(targetId));
       frameId = requestAnimationFrame(tick);
     };
     frameId = requestAnimationFrame(tick);
@@ -89,7 +89,9 @@ export function TourCard() {
     open: active && !!targetEl,
     placement: currentStep?.placement ?? "bottom",
     strategy: "fixed",
-    middleware: [offset(10), flip(), shift({ padding: 8 })],
+    // crossAxis: on phones a target can be taller than the screen (the home
+    // campus grid); keep the card on screen even if it overlaps the target.
+    middleware: [offset(10), flip(), shift({ padding: 8, crossAxis: true })],
     whileElementsMounted: autoUpdate,
   });
 
@@ -117,7 +119,7 @@ export function TourCard() {
       role="dialog"
       aria-labelledby="fp-tour-card-title"
       aria-describedby="fp-tour-card-body"
-      className="z-[110] w-[320px] rounded-[var(--radius-lg)] bg-fp-bg-surface p-4"
+      className="z-[110] w-[320px] max-w-[calc(100vw-16px)] rounded-[var(--radius-lg)] bg-fp-bg-surface p-4"
     >
       <FPLabel variant="eyebrow">
         STEP {visibleStepNumber} OF {visibleStepCount}

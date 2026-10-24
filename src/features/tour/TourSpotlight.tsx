@@ -3,7 +3,7 @@
 import * as React from "react";
 import { createPortal } from "react-dom";
 import { useTourContext } from "./TourProvider";
-import { TOUR_STEPS } from "./tourSteps";
+import { TOUR_STEPS, findTourTarget } from "./tourSteps";
 
 const RING_PADDING = 4;
 
@@ -38,7 +38,7 @@ export function TourSpotlight() {
     let frameId: number;
     const tick = () => {
       const step = TOUR_STEPS[stepIndex];
-      const el = step ? document.querySelector(`[data-tour-id="${step.targetId}"]`) : null;
+      const el = step ? findTourTarget(step.targetId) : null;
       setRect(el ? el.getBoundingClientRect() : null);
       resync();
       frameId = requestAnimationFrame(tick);

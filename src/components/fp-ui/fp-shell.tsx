@@ -210,7 +210,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
         Skip to content
       </a>
       <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-fp-border-default bg-fp-bg-surface px-4 py-3 sm:gap-5 sm:px-6">
-        <Link href="/" aria-label="Ultimate FFCS" className="flex select-none items-center">
+        <Link href="/" aria-label="Ultimate FFCS" className="flex shrink-0 select-none items-center">
           <Image src="/logo.svg" alt="Ultimate FFCS" width={1101} height={256} priority className="h-7 w-auto dark:hidden sm:h-8" />
           <Image src="/logo-reversed.svg" alt="Ultimate FFCS" width={1101} height={256} priority className="hidden h-7 w-auto dark:block sm:h-8" />
         </Link>
@@ -251,7 +251,9 @@ export function FPShell({ children }: { children: React.ReactNode }) {
                 onClick={() => setCampusMenuOpen((v) => !v)}
                 className="fp-text inline-flex items-center gap-1.5 whitespace-nowrap rounded-[var(--radius-md)] border border-fp-border-default px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-dim hover:text-fp-text-body"
               >
-                {CAMPUS_LABELS[campus]}
+                {/* Phones: "Chennai" — the full label plus the program button crushed the logo. */}
+                <span className="sm:hidden">{CAMPUS_LABELS[campus].replace("VIT ", "")}</span>
+                <span className="hidden sm:inline">{CAMPUS_LABELS[campus]}</span>
                 <ChevronDown className="h-3.5 w-3.5" />
               </button>
               <AnimatePresence>
@@ -305,7 +307,8 @@ export function FPShell({ children }: { children: React.ReactNode }) {
               onClick={() => (courseCount > 0 ? setPendingCampus("program") : resetProgram())}
               className="fp-text inline-flex min-w-0 max-w-[9rem] items-center gap-1.5 whitespace-nowrap rounded-[var(--radius-md)] border border-fp-border-default px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-dim hover:text-fp-text-body sm:max-w-[16rem]"
             >
-              <span className="truncate">{program ? programLabel(program) : "Program"}</span>
+              <span className="truncate sm:hidden">{program ?? "Program"}</span>
+              <span className="hidden truncate sm:inline">{program ? programLabel(program) : "Program"}</span>
               <ChevronDown className="h-3.5 w-3.5 shrink-0" />
             </button>
           ) : null}
@@ -322,9 +325,11 @@ export function FPShell({ children }: { children: React.ReactNode }) {
               <CircleHelp className="h-3.5 w-3.5" />
             </FPButton>
           ) : null}
+          {/* Under 360px the header can't fit it; Settings has the same toggle. */}
           <FPButton
             variant="secondary"
             size="sm"
+            className="max-[359px]:hidden"
             aria-label="Toggle theme"
             onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
           >

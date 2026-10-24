@@ -199,6 +199,7 @@ export default function NewPlannerPage() {
                 </Link>
               ) : null}
               <FPButton
+                data-tour-id="planner-generate"
                 variant={isGenerating ? "secondary" : "primary"}
                 className="flex-1"
                 onClick={isGenerating ? cancel : runGeneration}
