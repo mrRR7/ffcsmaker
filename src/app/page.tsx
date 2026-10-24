@@ -140,7 +140,7 @@ export default function LandingPage() {
           {CAMPUS_PAGE_IDS.map((id, index) => (
             <span key={id}>
               {index > 0 ? " · " : null}
-              <Link href={`/${id}`} className="text-fp-text-body underline underline-offset-[3px] hover:text-fp-accent">
+              <Link prefetch={false} href={`/${id}`} className="text-fp-text-body underline underline-offset-[3px] hover:text-fp-accent">
                 {CAMPUS_LABELS[id]}
               </Link>
             </span>

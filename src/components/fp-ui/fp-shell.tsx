@@ -210,7 +210,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
         Skip to content
       </a>
       <header className="sticky top-0 z-40 flex items-center gap-3 border-b border-fp-border-default bg-fp-bg-surface px-4 py-3 sm:gap-5 sm:px-6">
-        <Link href="/" aria-label="Ultimate FFCS" className="flex shrink-0 select-none items-center">
+        <Link prefetch={false} href="/" aria-label="Ultimate FFCS" className="flex shrink-0 select-none items-center">
           <Image src="/logo.svg" alt="Ultimate FFCS" width={1101} height={256} priority className="h-7 w-auto dark:hidden sm:h-8" />
           <Image src="/logo-reversed.svg" alt="Ultimate FFCS" width={1101} height={256} priority className="hidden h-7 w-auto dark:block sm:h-8" />
         </Link>
@@ -219,7 +219,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
             const active = item.href === activeHref;
             const Icon = item.icon;
             return (
-              <Link
+              <Link prefetch={false}
                 key={item.href}
                 href={item.href}
                 className={cn(
@@ -378,20 +378,20 @@ export function FPShell({ children }: { children: React.ReactNode }) {
         ) : null}
         <div className="ml-auto flex flex-wrap gap-x-5 gap-y-2 text-[length:var(--text-small)] text-fp-text-dim">
           {CAMPUS_PAGE_IDS.map((id) => (
-            <Link key={id} href={`/${id}`} className="hover:text-fp-text-body">
+            <Link prefetch={false} key={id} href={`/${id}`} className="hover:text-fp-text-body">
               {CAMPUS_LABELS[id].replace("VIT ", "")} slots
             </Link>
           ))}
-          <Link href="/privacy" className="hover:text-fp-text-body">
+          <Link prefetch={false} href="/privacy" className="hover:text-fp-text-body">
             Privacy
           </Link>
-          <Link href="/terms" className="hover:text-fp-text-body">
+          <Link prefetch={false} href="/terms" className="hover:text-fp-text-body">
             Terms
           </Link>
-          <Link href="/support" className="hover:text-fp-text-body">
+          <Link prefetch={false} href="/support" className="hover:text-fp-text-body">
             Support
           </Link>
-          <Link href="/terms#disclaimer" className="hover:text-fp-text-body">
+          <Link prefetch={false} href="/terms#disclaimer" className="hover:text-fp-text-body">
             Disclaimer
           </Link>
         </div>
@@ -407,7 +407,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
               const active = item.href === activeHref;
               const Icon = item.icon;
               return (
-                <Link
+                <Link prefetch={false}
                   key={item.href}
                   href={item.href}
                   aria-current={active ? "page" : undefined}
@@ -479,7 +479,7 @@ function FPPlannerIntro() {
           {CAMPUS_PAGE_IDS.map((id, index) => (
             <span key={id}>
               {index > 0 ? " · " : null}
-              <Link href={`/${id}`} className="underline underline-offset-[3px] hover:text-fp-text-body">
+              <Link prefetch={false} href={`/${id}`} className="underline underline-offset-[3px] hover:text-fp-text-body">
                 {CAMPUS_LABELS[id]}
               </Link>
             </span>
