@@ -215,8 +215,9 @@ export const useAppStore = create<UniTimeStore>()(
             activeVariantId: null,
             compareScheduleIds: [],
             constraints: defaultConstraints,
-            program: null,
-            programChosen: false
+            // Programs differ per campus, so the old one goes. programChosen stays:
+            // the program screen shows once ever, then only from the header button.
+            program: null
           };
         }),
       setProgram: (program) => set({ program, programChosen: true }),
@@ -240,7 +241,6 @@ export const useAppStore = create<UniTimeStore>()(
           return {
             campus: null,
             program: null,
-            programChosen: false,
             slotVariant: "standard",
             slots: getSlotCatalog("standard"),
             courses: [],

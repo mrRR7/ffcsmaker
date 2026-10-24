@@ -19,6 +19,11 @@ function readFlag(key: string) {
   }
 }
 
+/** True when this campus was last seen with no tagged programs (nothing to pick). */
+export function campusHasNoPrograms(campus: Campus) {
+  return readFlag(`fp-no-programs:${campus}`);
+}
+
 function writeFlag(key: string, on: boolean) {
   try {
     if (on) localStorage.setItem(key, "1");

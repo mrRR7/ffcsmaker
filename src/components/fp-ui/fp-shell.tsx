@@ -33,7 +33,7 @@ import { FPButton } from "@/components/fp-ui/button";
 import { FPBadge } from "@/components/fp-ui/badge";
 import { FPLabel } from "@/components/fp-ui/label";
 import { FPCard } from "@/components/fp-ui/card";
-import { FPProgramPicker } from "@/components/fp-ui/fp-program-picker";
+import { FPProgramPicker, campusHasNoPrograms } from "@/components/fp-ui/fp-program-picker";
 import { PROGRAM_PICKER_ENABLED, programLabel } from "@/features/programs/programCatalog";
 import { WinterBanner } from "@/features/landing/WinterBanner";
 import { INSTAGRAM_HANDLE } from "@/lib/site";
@@ -85,6 +85,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
   const program = useAppStore((state) => state.program);
   const programChosen = useAppStore((state) => state.programChosen);
   const resetProgram = useAppStore((state) => state.resetProgram);
+  const courseCount = useAppStore((state) => state.courses.length);
   const hasHydrated = useAppStore((state) => state.hasHydrated);
   const applySharedState = useAppStore((state) => state.applySharedState);
   const tour = useTour();
@@ -291,23 +292,25 @@ export function FPShell({ children }: { children: React.ReactNode }) {
                         </button>
                       );
                     })}
-                    {PROGRAM_PICKER_ENABLED && programChosen ? (
-                      <button
-                        type="button"
-                        onClick={() => setPendingCampus("program")}
-                        className="mt-1 flex w-full items-center justify-between gap-2 rounded-[var(--radius-sm)] border-t border-fp-border-default px-3 py-2 text-left text-[length:var(--text-small)] text-fp-text-body hover:bg-fp-bg-raised"
-                      >
-                        <span className="min-w-0 truncate">Program: {program ? programLabel(program) : "Other"}</span>
-                        <span className="shrink-0 text-fp-text-dim">Change</span>
-                      </button>
-                    ) : null}
                   </motion.div>
                 ) : null}
               </AnimatePresence>
             </div>
           ) : null}
+          {/* Shows the program; pressing it is the only way back to the program screen after the first visit. */}
+          {campus && PROGRAM_PICKER_ENABLED && programChosen && !campusHasNoPrograms(campus) ? (
+            <button
+              type="button"
+              aria-label={`Program: ${program ? programLabel(program) : "Other"}. Change program`}
+              onClick={() => (courseCount > 0 ? setPendingCampus("program") : resetProgram())}
+              className="fp-text inline-flex min-w-0 max-w-[9rem] items-center gap-1.5 whitespace-nowrap rounded-[var(--radius-md)] border border-fp-border-default px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-dim hover:text-fp-text-body sm:max-w-[16rem]"
+            >
+              <span className="truncate">{program ? programLabel(program) : "Program"}</span>
+              <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+            </button>
+          ) : null}
           <FPBadge tone="neutral" pill className="hidden sm:inline-flex">
-            Fall 2026
+            Winter Semester 2026-27
           </FPBadge>
           {isMobile === false ? (
             <FPButton
