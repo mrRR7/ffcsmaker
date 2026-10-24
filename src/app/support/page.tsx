@@ -1,6 +1,12 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import type { Metadata } from "next";
 import { FPLabel } from "@/components/fp-ui/label";
+import { DONATE_QR_SRC } from "@/lib/site";
 import { SupportActions } from "./SupportActions";
+
+// Checked at build: dropping the PNG into public/ turns the QR on, no code change.
+const showQr = existsSync(join(process.cwd(), "public", DONATE_QR_SRC));
 
 export const metadata: Metadata = {
   title: "Support",
@@ -21,7 +27,7 @@ export default function SupportPage() {
           hosting, any amount is appreciated. Totally optional.
         </p>
       </header>
-      <SupportActions />
+      <SupportActions showQr={showQr} />
     </div>
   );
 }
