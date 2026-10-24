@@ -61,6 +61,6 @@ test("no program: everything is All courses", () => {
 
 test("lists tagged programs only, and unknown codes label as themselves", () => {
   assert.deepEqual(catalogPrograms(catalog).sort(), ["BCE", "BDS", "BYB", "BYC"]);
-  assert.equal(programLabel("BCE"), "B.Tech CSE (Core)");
-  assert.equal(programLabel("MIA"), "MIA");
+  assert.equal(programLabel("BCE"), "B.Tech CSE");
+  assert.equal(programLabel("XYZ"), "XYZ");
 });
