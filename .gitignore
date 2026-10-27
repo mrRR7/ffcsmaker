@@ -17,3 +17,6 @@ tsconfig.tsbuildinfo
 dev.log
 .superpowers/
 docs/superpowers/
+.open-next
+.wrangler
+.dev.vars

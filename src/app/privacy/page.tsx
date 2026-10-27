@@ -30,8 +30,8 @@ export default function NewPrivacyPage() {
 
       <FPLegalSection title="Cookies & Analytics">
         <p>
-          Ultimate FFCS Planner may use lightweight analytics services such as Vercel
-          Analytics or similar privacy-focused tools to collect anonymous aggregate usage
+          Ultimate FFCS Planner may use lightweight analytics services such as Cloudflare
+          Web Analytics or similar privacy-focused tools to collect anonymous aggregate usage
           information, including:
         </p>
         <ul className="list-disc space-y-1 pl-5">

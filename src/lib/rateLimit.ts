@@ -64,6 +64,11 @@ export function rateLimit(
  * Vercel's own edge network for the first hop.
  */
 export function getClientIp(request: Request): string {
+  // Set by Cloudflare's edge and not spoofable through it.
+  const cfIp = request.headers.get("cf-connecting-ip");
+  if (cfIp) {
+    return cfIp.trim();
+  }
   const forwardedFor = request.headers.get("x-forwarded-for");
   if (forwardedFor) {
     return forwardedFor.split(",")[0]!.trim();

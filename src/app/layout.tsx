@@ -5,8 +5,10 @@ import "./fp-tokens.css";
 import "./fp-transitions.css";
 import { FPRoot } from "@/components/fp-ui/fp-root";
 import { cn } from "@/utils/cn";
-import { Analytics } from "@vercel/analytics/react";
 import { SITE_URL } from "@/lib/site";
+
+// Cloudflare Web Analytics: cookieless, off until the beacon token is set.
+const CF_BEACON_TOKEN = process.env.NEXT_PUBLIC_CF_BEACON_TOKEN;
 
 
 const inter = Inter({
@@ -66,7 +68,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={cn(inter.variable, "font-sans antialiased")}>
         <FPRoot>{children}</FPRoot>
-        <Analytics />
+        {CF_BEACON_TOKEN ? (
+          <script
+            defer
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon={JSON.stringify({ token: CF_BEACON_TOKEN })}
+          />
+        ) : null}
       </body>
     </html>
   );
