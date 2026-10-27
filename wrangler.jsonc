@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "ultimate-ffcs",
+  "name": "ultimateffcs",
   "main": "worker.ts",
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
@@ -8,6 +8,6 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS"
   },
-  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "ultimate-ffcs" }],
+  "services": [{ "binding": "WORKER_SELF_REFERENCE", "service": "ultimateffcs" }],
   "observability": { "enabled": true }
 }
