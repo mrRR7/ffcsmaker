@@ -6,10 +6,10 @@ import { consumeVtopImport } from "@/lib/vtopImport/storage";
 
 export async function GET(
   _request: Request,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    const token = params.token?.trim();
+    const token = (await params).token?.trim();
     if (!token || token.length > 32) {
       return NextResponse.json({ error: "Invalid import token." }, { status: 400 });
     }

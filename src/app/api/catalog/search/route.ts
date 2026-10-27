@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const semesterId = searchParams.get("semester");
     const campus = (searchParams.get("campus") ?? "chennai") as Campus;
-    const supabase = createServerSupabaseClient();
+    const supabase = await createServerSupabaseClient();
 
     let semester: DBSemester | null | undefined = getCachedSemester(campus, semesterId);
     if (semester === undefined) {

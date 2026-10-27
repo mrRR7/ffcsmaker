@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const activeOnly = searchParams.get("active") === "1";
     const campus = (searchParams.get("campus") ?? "chennai") as Campus;
-    const supabase = createServerSupabaseClient();
+    const supabase = await createServerSupabaseClient();
     let query = supabase
       .from("semesters")
       .select("id, label, campus, is_active, ffcs_opens, start_date, end_date")

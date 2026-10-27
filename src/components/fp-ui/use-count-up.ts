@@ -9,7 +9,7 @@ import { useEffect, useRef, useState } from "react";
  */
 export function useCountUp(value: number, durationMs = 500): number {
   const [display, setDisplay] = useState(0);
-  const frameRef = useRef<number>();
+  const frameRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
