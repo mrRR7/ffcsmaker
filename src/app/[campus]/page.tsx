@@ -22,16 +22,17 @@ export function generateStaticParams() {
   return CAMPUS_PAGE_IDS.map((campus) => ({ campus }));
 }
 
-export function generateMetadata({ params }: { params: { campus: string } }): Metadata {
-  if (!isCampusPageId(params.campus)) return {};
-  const label = campusLabel(params.campus);
-  const ready = PLANNER_READY[params.campus];
+export async function generateMetadata({ params }: { params: Promise<{ campus: string }> }): Promise<Metadata> {
+  const { campus } = await params;
+  if (!isCampusPageId(campus)) return {};
+  const label = campusLabel(campus);
+  const ready = PLANNER_READY[campus];
   return {
     title: ready ? `${label} FFCS Planner & Slot Timings` : `${label} FFCS Slot Timings`,
     description: ready
       ? `Every ${label} FFCS slot with its day and time, plus a free planner that finds every clash-free timetable for your courses. No login.`
       : `Every ${label} FFCS theory and lab slot with its day and time, in one chart. Free, no login.`,
-    alternates: { canonical: `/${params.campus}` }
+    alternates: { canonical: `/${campus}` }
   };
 }
 
@@ -40,9 +41,9 @@ const slotColumns = [
   { key: "when", header: "Meets", render: (row: SlotRow) => row.times.join(" · ") }
 ];
 
-export default function CampusPage({ params }: { params: { campus: string } }) {
-  if (!isCampusPageId(params.campus)) notFound();
-  const campus = params.campus;
+export default async function CampusPage({ params }: { params: Promise<{ campus: string }> }) {
+  const { campus } = await params;
+  if (!isCampusPageId(campus)) notFound();
   const label = campusLabel(campus);
   const ready = PLANNER_READY[campus];
   const rows = slotRows(campus);

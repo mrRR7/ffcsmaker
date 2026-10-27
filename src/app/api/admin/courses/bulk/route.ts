@@ -18,7 +18,7 @@ type AdminImportRow = {
 };
 
 async function isAdminAuthed() {
-  return isValidAdminSessionToken(cookies().get(ADMIN_SESSION_COOKIE)?.value);
+  return isValidAdminSessionToken((await cookies()).get(ADMIN_SESSION_COOKIE)?.value);
 }
 
 function splitSlots(value: string | string[] | undefined) {

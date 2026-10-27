@@ -18,8 +18,9 @@ const getSnapshot = cache(async (id: string) => {
 });
 
 // Shared weeks are personal and thin: good link previews, but kept out of the index.
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const snapshot = await getSnapshot(params.id);
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const snapshot = await getSnapshot(id);
   if (!snapshot) {
     return { title: "Timetable not found", robots: { index: false, follow: false } };
   }
@@ -31,13 +32,14 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
     title,
     description,
     robots: { index: false, follow: true },
-    openGraph: { title, description, url: `/timetable/${params.id}`, images: ["/og-image.png"] },
+    openGraph: { title, description, url: `/timetable/${id}`, images: ["/og-image.png"] },
     twitter: { card: "summary_large_image", title, description, images: ["/og-image.png"] }
   };
 }
 
-export default async function NewSharedTimetablePage({ params }: { params: { id: string } }) {
-  const snapshot = await getSnapshot(params.id);
+export default async function NewSharedTimetablePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const snapshot = await getSnapshot(id);
 
   if (!snapshot) {
     notFound();

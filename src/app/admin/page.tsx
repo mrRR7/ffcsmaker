@@ -7,7 +7,7 @@ import { UsagePanel } from "./UsagePanel";
 // Defence in depth: `src/middleware.ts` already guards `/admin/:path*`; this
 // repeats the same cookie check server-side in case the matcher ever changes.
 export default async function AdminPage() {
-  const token = cookies().get(ADMIN_SESSION_COOKIE)?.value;
+  const token = (await cookies()).get(ADMIN_SESSION_COOKIE)?.value;
   const authed = await isValidAdminSessionToken(token);
 
   if (!authed) {
