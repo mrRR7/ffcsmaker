@@ -1,6 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // No image optimiser on Workers; our images are logos and the UPI QR.
+  images: { unoptimized: true },
   async redirects() {
     return [
       // The FFCS Planner skin used to live under /new; keep old links working.
