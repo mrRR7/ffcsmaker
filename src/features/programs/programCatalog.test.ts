@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { DBCourse } from "@/types/db";
-import { catalogPrograms, programLabel, scopeCatalog } from "./programCatalog";
+import { catalogPrograms, programLabel, programNoun, scopeCatalog } from "./programCatalog";
 
 let nextId = 0;
 function course(code: string, rows: Array<[program: string | null, professor: string, theory: string]>): DBCourse {
@@ -63,4 +63,7 @@ test("lists tagged programs only, and unknown codes label as themselves", () => 
   assert.deepEqual(catalogPrograms(catalog).sort(), ["BCE", "BDS", "BYB", "BYC"]);
   assert.equal(programLabel("BCE"), "B.Tech CSE");
   assert.equal(programLabel("XYZ"), "XYZ");
+  assert.equal(programLabel("SCOPE25"), "SCOPE (’25 batch)");
+  assert.equal(programNoun("vellore"), "school");
+  assert.equal(programNoun("chennai"), "program");
 });

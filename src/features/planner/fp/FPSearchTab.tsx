@@ -23,7 +23,7 @@ import {
   TimeOfDayFilter
 } from "@/features/planner/fp/FPCourseOptionGroups";
 import { track } from "@/lib/track";
-import { PROGRAM_PICKER_ENABLED, scopeCatalog } from "@/features/programs/programCatalog";
+import { PROGRAM_PICKER_ENABLED, programNoun, scopeCatalog } from "@/features/programs/programCatalog";
 
 const SEARCH_RESULTS_CAP = 10;
 // fetch() rejects with "Failed to fetch" offline; say what that means instead.
@@ -336,7 +336,7 @@ export function FPSearchTab() {
       ) : (
         <div className="space-y-3">
           {PROGRAM_PICKER_ENABLED && programChosen && !program ? (
-            <FPNote>Showing all courses. Your program isn&apos;t tagged yet.</FPNote>
+            <FPNote>Showing all courses. Your {programNoun(campus)} isn&apos;t tagged yet.</FPNote>
           ) : null}
           {(showAllResults ? courses : courses.slice(0, SEARCH_RESULTS_CAP)).map((course, index) => {
             const expanded = expandedCourseId === course.id;
@@ -351,7 +351,7 @@ export function FPSearchTab() {
             const inPlanCount = inPlan?.options.length ?? 0;
             const visibleOptions = visibleGroups.flatMap((group) => group.options);
             const groupLabel =
-              index === 0 && mineCount > 0 ? "Your program" : program && index === mineCount ? "All courses" : null;
+              index === 0 && mineCount > 0 ? `Your ${programNoun(campus)}` : program && index === mineCount ? "All courses" : null;
             return (
               <Fragment key={course.id}>
               {groupLabel ? <FPLabel className="block pt-1">{groupLabel}</FPLabel> : null}

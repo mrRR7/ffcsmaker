@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
 import { CAMPUS_LABELS, type Campus } from "@/engine/types";
 import { loadCatalog } from "@/lib/catalogCache";
-import { catalogPrograms, programLabel } from "@/features/programs/programCatalog";
+import { catalogPrograms, programLabel, programNoun } from "@/features/programs/programCatalog";
 import { FPLabel } from "@/components/fp-ui/label";
 
 const SEARCH_THRESHOLD = 8;
@@ -81,6 +81,8 @@ export function FPProgramPicker({ campus, children }: { campus: Campus; children
   }
 
   const needle = query.trim().toLowerCase();
+  // Vellore tags by school, everywhere else by program.
+  const noun = programNoun(campus);
   const visible = programs.filter(
     (code) => !needle || code.toLowerCase().includes(needle) || programLabel(code).toLowerCase().includes(needle)
   );
@@ -93,19 +95,19 @@ export function FPProgramPicker({ campus, children }: { campus: Campus; children
       <div data-tour-id="campus-picker" className="w-full max-w-2xl">
         <FPLabel tone="accent" variant="eyebrow">{CAMPUS_LABELS[campus]}</FPLabel>
         <h1 className="mt-3 font-fp-display text-[length:var(--text-display)] font-bold tracking-[-0.01em] text-fp-text-strong">
-          What&apos;s your program?
+          Pick your {noun}
         </h1>
         <p className="mt-3 max-w-xl text-[length:var(--text-body-size)] leading-[1.5] text-fp-text-dim">
-          Your program&apos;s courses and professors show first in search. Every other course is still there.
+          Your {noun}&apos;s courses and professors show first in search. Every other course is still there.
         </p>
 
         <div className="mt-7 space-y-2.5">
           {programs.length > SEARCH_THRESHOLD ? (
             <input
-              aria-label="Search programs"
+              aria-label={`Search ${noun}s`}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search programs"
+              placeholder={`Search ${noun}s`}
               className="min-h-[44px] w-full rounded-[var(--radius-md)] border border-transparent bg-fp-bg-inset px-[14px] text-[length:var(--text-small)] text-fp-text-body placeholder:text-fp-text-dim focus:border-[var(--border-selected)] focus:outline-none"
             />
           ) : null}
@@ -120,7 +122,7 @@ export function FPProgramPicker({ campus, children }: { campus: Campus; children
             ))}
           </div>
           <button type="button" onClick={() => setProgram(null)} className={optionClass}>
-            <span className="text-[length:var(--text-small)] text-fp-text-body">Other / my program isn&apos;t listed</span>
+            <span className="text-[length:var(--text-small)] text-fp-text-body">Other / my {noun} isn&apos;t listed</span>
             <ArrowRight className="h-3.5 w-3.5 shrink-0 text-fp-text-dim" strokeWidth={1.5} />
           </button>
         </div>

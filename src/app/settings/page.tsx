@@ -10,7 +10,7 @@ import { clearAllCache } from "@/lib/catalogCache";
 import { checkStorageCapacity, formatBytes } from "@/lib/storageUtils";
 import { useAppStore } from "@/store/useAppStore";
 import { useTour } from "@/features/tour/useTour";
-import { PROGRAM_PICKER_ENABLED, programLabel } from "@/features/programs/programCatalog";
+import { PROGRAM_PICKER_ENABLED, programLabel, programNoun, programNounTitle } from "@/features/programs/programCatalog";
 import { resetTourSeen } from "@/features/tour/tourStorage";
 import { cn } from "@/utils/cn";
 import { FPButton } from "@/components/fp-ui/button";
@@ -66,7 +66,7 @@ export default function NewSettingsPage() {
   function confirmChange() {
     if (confirmReset === "campus") resetCampus();
     else resetProgram();
-    toast.success(confirmReset === "campus" ? "Choose your campus again." : "Choose your program again.");
+    toast.success(confirmReset === "campus" ? "Choose your campus again." : `Choose your ${programNoun(campus)} again.`);
     setConfirmReset(null);
   }
 
@@ -107,14 +107,14 @@ export default function NewSettingsPage() {
             {/* Hidden until answered: with no tagged programs the picker never asks. */}
             {PROGRAM_PICKER_ENABLED && campus && programChosen ? (
               <Row
-                label="Program"
+                label={programNounTitle(campus)}
                 detail={program ? programLabel(program) : "Other (all courses)"}
                 action="Change"
                 onClick={() => setConfirmReset("program")}
               />
             ) : null}
             <FPNote>
-              Changing campus or program clears your current course list and generated timetables.
+              Changing campus or {programNoun(campus)} clears your current course list and generated timetables.
             </FPNote>
           </div>
         </FPPanel>
@@ -266,7 +266,7 @@ export default function NewSettingsPage() {
         >
           <FPCard className="w-full max-w-md" padding="lg">
             <h2 className="font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong">
-              {confirmReset === "campus" ? "Change campus?" : "Change program?"}
+              {confirmReset === "campus" ? "Change campus?" : `Change ${programNoun(campus)}?`}
             </h2>
             <p className="mt-3 text-[length:var(--text-small)] leading-[1.5] text-fp-text-dim">
               This will clear your current course list and generated timetables. Your saved
@@ -277,7 +277,7 @@ export default function NewSettingsPage() {
                 Cancel
               </FPButton>
               <FPButton variant="primary" size="sm" onClick={confirmChange}>
-                {confirmReset === "campus" ? "Change campus" : "Change program"}
+                {confirmReset === "campus" ? "Change campus" : `Change ${programNoun(campus)}`}
               </FPButton>
             </div>
           </FPCard>

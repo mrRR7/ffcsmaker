@@ -29,7 +29,9 @@ test("program codes pass, anything that could identify someone doesn't", () => {
   assert.equal(program("BCE"), "BCE");
   assert.equal(program("other"), "other");
   assert.equal(program("bce"), undefined);
-  assert.equal(program("RAKESHR"), undefined);
+  for (const code of ["SCOPE25", "SELECT25", "MTECH", "MIS25"]) assert.equal(program(code), code);
+  assert.equal(program("RAKESHRAJ"), undefined); // over 8 characters
+  assert.equal(program("25SCOPE"), undefined); // must start with a letter
   assert.equal(program(42), undefined);
 });
 

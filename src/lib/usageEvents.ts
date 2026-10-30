@@ -2,7 +2,7 @@
 // Each prop is either a fixed set of strings or a non-negative integer.
 // Nothing here may identify a person: no ids, names, course codes or free text.
 
-// "code": a short uppercase program code (BCE) or "other".
+// "code": a short program code (BCE, SCOPE25, MTECH) or "other".
 type PropSpec = readonly string[] | "int" | "code";
 
 export const USAGE_EVENTS = {
@@ -48,7 +48,7 @@ export function sanitizeUsageEvent(input: unknown) {
         clean[key] = Math.min(Math.round(value), MAX_INT);
       }
     } else if (allowed === "code") {
-      if (typeof value === "string" && (value === "other" || /^[A-Z]{2,5}$/.test(value))) {
+      if (typeof value === "string" && (value === "other" || /^[A-Z][A-Z0-9]{1,7}$/.test(value))) {
         clean[key] = value;
       }
     } else if (typeof value === "string" && allowed.includes(value)) {

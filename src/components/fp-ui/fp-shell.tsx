@@ -34,7 +34,7 @@ import { FPBadge } from "@/components/fp-ui/badge";
 import { FPLabel } from "@/components/fp-ui/label";
 import { FPCard } from "@/components/fp-ui/card";
 import { FPProgramPicker, campusHasNoPrograms } from "@/components/fp-ui/fp-program-picker";
-import { PROGRAM_PICKER_ENABLED, programLabel } from "@/features/programs/programCatalog";
+import { PROGRAM_PICKER_ENABLED, programLabel, programNoun, programNounTitle } from "@/features/programs/programCatalog";
 import { WinterBanner } from "@/features/landing/WinterBanner";
 import { INSTAGRAM_HANDLE } from "@/lib/site";
 import { CAMPUS_PAGE_IDS } from "@/features/campus/campusPages";
@@ -303,12 +303,12 @@ export function FPShell({ children }: { children: React.ReactNode }) {
           {campus && PROGRAM_PICKER_ENABLED && programChosen && !campusHasNoPrograms(campus) ? (
             <button
               type="button"
-              aria-label={`Program: ${program ? programLabel(program) : "Other"}. Change program`}
+              aria-label={`${programNounTitle(campus)}: ${program ? programLabel(program) : "Other"}. Change ${programNoun(campus)}`}
               onClick={() => (courseCount > 0 ? setPendingCampus("program") : resetProgram())}
               className="fp-text inline-flex min-w-0 max-w-[9rem] items-center gap-1.5 whitespace-nowrap rounded-[var(--radius-md)] border border-fp-border-default px-2.5 py-1.5 text-[length:var(--text-small)] text-fp-text-dim hover:text-fp-text-body sm:max-w-[16rem]"
             >
-              <span className="truncate sm:hidden">{program ?? "Program"}</span>
-              <span className="hidden truncate sm:inline">{program ? programLabel(program) : "Program"}</span>
+              <span className="truncate sm:hidden">{program ?? programNounTitle(campus)}</span>
+              <span className="hidden truncate sm:inline">{program ? programLabel(program) : programNounTitle(campus)}</span>
               <ChevronDown className="h-3.5 w-3.5 shrink-0" />
             </button>
           ) : null}
@@ -442,7 +442,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-[rgba(5,8,10,0.72)] p-4">
           <FPCard className="w-full max-w-md" padding="lg">
             <h2 className="font-fp-display text-[length:var(--text-h)] font-bold text-fp-text-strong">
-              {pendingCampus === "program" ? "Change program?" : `Switch to ${CAMPUS_LABELS[pendingCampus]}?`}
+              {pendingCampus === "program" ? `Change ${programNoun(campus)}?` : `Switch to ${CAMPUS_LABELS[pendingCampus]}?`}
             </h2>
             <p className="mt-3 text-[length:var(--text-small)] leading-[1.5] text-fp-text-dim">
               This clears your current course list and generated timetables. Saved timetables stay.
@@ -452,7 +452,7 @@ export function FPShell({ children }: { children: React.ReactNode }) {
                 Cancel
               </FPButton>
               <FPButton variant="primary" size="sm" onClick={confirmCampusSwitch}>
-                {pendingCampus === "program" ? "Change program" : "Switch campus"}
+                {pendingCampus === "program" ? `Change ${programNoun(campus)}` : "Switch campus"}
               </FPButton>
             </div>
           </FPCard>

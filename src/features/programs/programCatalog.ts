@@ -1,3 +1,4 @@
+import type { Campus } from "@/engine/types";
 import { DBCourse, DBCourseOption } from "@/types/db";
 
 /** Kill switch: NEXT_PUBLIC_PROGRAM_PICKER=off hides the picker and searches every course.
@@ -30,8 +31,29 @@ export const PROGRAM_NAMES: Record<string, string> = {
   BFT: "B.Tech Fashion Technology",
   MID: "Int. M.Tech CSE (Data Science)",
   MIA: "Int. M.Tech (Business Analytics)",
-  MIS: "Int. M.Tech Software Engineering"
+  MIS: "Int. M.Tech Software Engineering",
+  // Vellore tags by school and batch, not by branch.
+  SENSE25: "SENSE (’25 batch)",
+  SCORE25: "SCORE (’25 batch)",
+  SCOPE25: "SCOPE (’25 batch)",
+  MIS25: "MIS (’25 batch)",
+  SCOPE: "SCOPE (senior batches)",
+  MTECH: "M.Tech",
+  SCE25: "SCE (’25 batch)",
+  SHINE25: "SHINE (’25 batch)",
+  SHINE: "SHINE (senior batches)",
+  SELECT25: "SELECT (’25 batch)"
 };
+
+/** What a program is called on each campus: Vellore's codes are schools. */
+export function programNoun(campus: Campus | null) {
+  return campus === "vellore" ? "school" : "program";
+}
+
+/** programNoun for the start of a label: "School" / "Program". */
+export function programNounTitle(campus: Campus | null) {
+  return campus === "vellore" ? "School" : "Program";
+}
 
 export function programLabel(code: string) {
   return PROGRAM_NAMES[code] ?? code;
