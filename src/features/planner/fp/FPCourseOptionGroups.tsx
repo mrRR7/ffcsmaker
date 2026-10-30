@@ -25,7 +25,7 @@ import { FPLabel } from "@/components/fp-ui/label";
  *
  * Classification uses each slot's REAL start time (via the existing
  * `resolveTheorySlotIds` resolver), not label-pattern matching — tutorial
- * slots (TA1, TAA1...) and soft-slots (S1-S15) don't match a simple
+ * slots (TA1, TAA1...) and V-slots (V1-V7) don't match a simple
  * "letter + 1/2" regex but do have real, resolvable clock times.
  */
 
