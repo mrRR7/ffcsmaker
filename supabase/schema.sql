@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS semesters (
   campus TEXT NOT NULL DEFAULT 'chennai'
     CHECK (campus IN ('chennai', 'vellore', 'bhopal', 'ap')),
   slot_variant TEXT NOT NULL DEFAULT 'standard'
-    CHECK (slot_variant IN ('standard', 'bhopal', 'ap')),
+    CHECK (slot_variant IN ('standard', 'vellore', 'bhopal', 'ap')),
   is_active BOOLEAN NOT NULL DEFAULT false,
   start_date DATE,
   end_date DATE,

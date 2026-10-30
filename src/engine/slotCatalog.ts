@@ -96,39 +96,72 @@ const labRows: SlotRow[] = [
   ["Friday", "17:40", "19:20", "L59 + L60"]
 ];
 
+// Vellore moved to on-the-hour theory periods, dropped S11/S15 and added V1–V7.
+const velloreTheoryTimes = [
+  ["08:00", "08:50"], ["09:00", "09:50"], ["10:00", "10:50"], ["11:00", "11:50"], ["12:00", "12:50"],
+  ["14:00", "14:50"], ["15:00", "15:50"], ["16:00", "16:50"], ["17:00", "17:50"], ["18:00", "18:50"],
+  ["19:01", "19:50"]
+] as const;
+
+const velloreTheoryLabels: [DayOfWeek, string[]][] = [
+  ["Monday", ["A1", "F1", "D1", "TB1", "TG1", "A2", "F2", "D2", "TB2", "TG2", "V3"]],
+  ["Tuesday", ["B1", "G1", "E1", "TC1", "TAA1", "B2", "G2", "E2", "TC2", "TAA2", "V4"]],
+  ["Wednesday", ["C1", "A1", "F1", "V1", "V2", "C2", "A2", "F2", "TD2", "TBB2", "V5"]],
+  ["Thursday", ["D1", "B1", "G1", "TE1", "TCC1", "D2", "B2", "G2", "TE2", "TCC2", "V6"]],
+  ["Friday", ["E1", "C1", "TA1", "TF1", "TD1", "E2", "C2", "TA2", "TF2", "TDD2", "V7"]]
+];
+
+const velloreTheoryRows: SlotRow[] = velloreTheoryLabels.flatMap(([day, labels]) =>
+  labels.map((label, i): SlotRow => [day, velloreTheoryTimes[i][0], velloreTheoryTimes[i][1], label])
+);
+
+const velloreLabRows: SlotRow[] = labRows.map(([day, startTime, endTime, label]) => [
+  day,
+  startTime === "09:50" ? "09:51" : startTime === "15:50" ? "15:51" : startTime,
+  endTime,
+  label
+]);
+
 function slug(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
-const STANDARD_SLOTS: TimeSlot[] = [
-  ...theoryRows.map(([day, startTime, endTime, label], index) => ({
-    id: `theory-${slug(label)}-${slug(day)}-${index}`,
-    label,
-    day,
-    startTime,
-    endTime,
-    kind: "theory" as const,
-    duration: 50
-  })),
-  ...labRows.map(([day, startTime, endTime, label]) => ({
-    id: `lab-${slug(label)}`,
-    label,
-    day,
-    startTime,
-    endTime,
-    kind: "lab" as const,
-    duration: 100
-  }))
-];
+function buildSlots(theory: SlotRow[], labs: SlotRow[]): TimeSlot[] {
+  return [
+    ...theory.map(([day, startTime, endTime, label], index) => ({
+      id: `theory-${slug(label)}-${slug(day)}-${index}`,
+      label,
+      day,
+      startTime,
+      endTime,
+      kind: "theory" as const,
+      duration: 50
+    })),
+    ...labs.map(([day, startTime, endTime, label]) => ({
+      id: `lab-${slug(label)}`,
+      label,
+      day,
+      startTime,
+      endTime,
+      kind: "lab" as const,
+      duration: 100
+    }))
+  ];
+}
+
+const STANDARD_SLOTS = buildSlots(theoryRows, labRows);
+const VELLORE_SLOTS = buildSlots(velloreTheoryRows, velloreLabRows);
 
 export const SLOT_CATALOGS: Record<SlotVariant, TimeSlot[]> = {
   standard: STANDARD_SLOTS,
+  vellore: VELLORE_SLOTS,
   bhopal: BHOPAL_SLOTS,
   ap: AP_SLOTS
 };
 
 export const SLOT_CATALOG_DAYS: Record<SlotVariant, readonly DayOfWeek[]> = {
   standard: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+  vellore: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
   bhopal: BHOPAL_DAYS,
   ap: AP_DAYS
 };
@@ -216,7 +249,7 @@ export function getTheoryCombinationOptions(slots: TimeSlot[]): SlotNameOption[]
   }
 
   const specialOptions = Array.from(labels)
-    .filter((label) => label.startsWith("S") || /^[A-Z]\d{2}$/.test(label)) // Support Bhopal A11, F24 etc.
+    .filter((label) => /^[SV]\d+$/.test(label) || /^[A-Z]\d{2}$/.test(label)) // Support Bhopal A11, F24 etc.
     .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
     .map((label) => ({
       label,

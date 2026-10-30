@@ -172,10 +172,33 @@ function buildLabColumns(slots: TimeSlot[]): MatrixColumn[] {
   return addLunchColumn(columns);
 }
 
+// The theory and lab rows share one table, so each side of lunch needs the same
+// column count. Vellore has 5 morning theory periods against 6 lab halves: pad
+// the theory side with empty columns, as VIT's own chart leaves that cell blank.
+function padTheoryToLab(theory: MatrixColumn[], lab: MatrixColumn[]): MatrixColumn[] {
+  const theoryLunch = theory.findIndex((column) => column.kind === "lunch");
+  const labLunch = lab.findIndex((column) => column.kind === "lunch");
+  if (theoryLunch < 0 || labLunch < 0) {
+    return theory;
+  }
+  const empty = (count: number): MatrixColumn[] =>
+    Array.from({ length: Math.max(0, count) }, () => ({ kind: "slot", track: "THEORY" }));
+  const before = theory.slice(0, theoryLunch);
+  const after = theory.slice(theoryLunch + 1);
+  return [
+    ...before,
+    ...empty(labLunch - before.length),
+    theory[theoryLunch],
+    ...after,
+    ...empty(lab.length - labLunch - 1 - after.length)
+  ];
+}
+
 export function buildMatrixColumns(slots: TimeSlot[]) {
+  const lab = buildLabColumns(slots);
   return {
-    theory: buildTheoryColumns(slots),
-    lab: buildLabColumns(slots)
+    theory: padTheoryToLab(buildTheoryColumns(slots), lab),
+    lab
   };
 }
 

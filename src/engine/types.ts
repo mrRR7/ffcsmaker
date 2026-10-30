@@ -10,11 +10,11 @@ export const DAYS = [
 export type DayOfWeek = (typeof DAYS)[number];
 
 export type Campus = "chennai" | "vellore" | "bhopal" | "ap";
-export type SlotVariant = "standard" | "bhopal" | "ap";
+export type SlotVariant = "standard" | "vellore" | "bhopal" | "ap";
 
 export const CAMPUS_SLOT_VARIANT: Record<Campus, SlotVariant> = {
   chennai: "standard",
-  vellore: "standard",
+  vellore: "vellore",
   bhopal: "bhopal",
   ap: "ap"
 };

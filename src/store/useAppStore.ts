@@ -75,6 +75,27 @@ function normalizeImportedConstraints(constraints?: Partial<Constraints>): Const
   };
 }
 
+// Theory slot ids carry their catalog row index, so plans saved while Vellore
+// used the standard catalog hold ids the Vellore catalog lacks. Map those back
+// through their label; ids that resolve to nothing (S11, S15) are dropped.
+const standardSlotById = new Map(defaultSlots.map((slot) => [slot.id, slot]));
+
+function remapSlotIds(ids: string[], slots: TimeSlot[]): string[] {
+  const known = new Set(slots.map((slot) => slot.id));
+  if (ids.every((id) => known.has(id))) return ids;
+  return Array.from(
+    new Set(
+      ids.flatMap((id) => {
+        if (known.has(id)) return [id];
+        const old = standardSlotById.get(id);
+        return old
+          ? slots.filter((slot) => slot.kind === old.kind && slot.label === old.label).map((slot) => slot.id)
+          : [];
+      })
+    )
+  );
+}
+
 function cleanOption(option: CourseOption): CourseOption {
   return {
     ...option,
@@ -862,8 +883,24 @@ export const useAppStore = create<UniTimeStore>()(
           state.slotVariant = state.campus
             ? CAMPUS_SLOT_VARIANT[state.campus]
             : "standard";
+          const slots = state.slots;
+          let slotIdsChanged = false;
+          const remap = <T extends { theorySlotIds: string[]; labSlotIds: string[] }>(item: T): T => {
+            const theorySlotIds = remapSlotIds(item.theorySlotIds, slots);
+            const labSlotIds = remapSlotIds(item.labSlotIds, slots);
+            if (theorySlotIds === item.theorySlotIds && labSlotIds === item.labSlotIds) return item;
+            slotIdsChanged = true;
+            return { ...item, theorySlotIds, labSlotIds };
+          };
+          state.courses = state.courses.map((course) => ({ ...course, options: course.options.map(remap) }));
+          state.savedSchedules = state.savedSchedules.map((saved) => ({
+            ...saved,
+            timetable: { ...saved.timetable, selections: saved.timetable.selections.map(remap) }
+          }));
           state.constraints = normalizeImportedConstraints(state.constraints);
+          // Results built on the old slot ids would show the old times: regenerate.
           const generationIsRecent =
+            !slotIdsChanged &&
             typeof state.generatedAt === "number" &&
             Date.now() - state.generatedAt < GENERATION_TTL_MS;
           if (!generationIsRecent) {
